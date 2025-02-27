@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reviews voor {{ abonnement.naam }}</title>
+</head>
+<body>
+    <h1>Reviews voor {{ abonnement.naam }}</h1>
+    <p>{{ abonnement.beschrijving }}</p>
+
+    <h2>Schrijf een review</h2>
+    <form method="POST">
+        <label for="score">Score (1-5):</label>
+        <input type="number" name="score" id="score" min="1" max="5" step="0.1" required>
+
+        <label for="comment">Opmerking (optioneel):</label>
+        <textarea name="comment" id="comment"></textarea>
+
+        <button type="submit">Review toevoegen</button>
+    </form>
+
+    <h2>Reviews</h2>
+    {% for review in abonnement.reviews %}
+        <div>
+            <p><strong>Score:</strong> {{ review.score }} / 5</p>
+            <p>{{ review.comment }}</p>
+            <p><small>Geplaatst op: {{ review.created_at.strftime('%d-%m-%Y %H:%M') }}</small></p>
+        </div>
+    {% else %}
+        <p>Er zijn nog geen reviews voor dit abonnement.</p>
+    {% endfor %}
+
+    <a href="{{ url_for('index') }}">Terug naar overzicht</a>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abonnement Bewerken | AbboHub</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header class="hero">
+        <div class="container">
+            <h1>Abonnement Bewerken</h1>
+        </div>
+    </header>
+
+    <main class="container">
+        <form action="{{ url_for('bewerk', id=abonnement.id) }}" method="POST" enctype="multipart/form-data" class="form-container">
+            <div class="form-group">
+                <label for="naam">Naam Abonnement:</label>
+                <input type="text" id="naam" name="naam" value="{{ abonnement.naam }}" required>
+            </div>
+            <div class="form-group">
+                <label for="beschrijving">Beschrijving:</label>
+                <input type="text" id="beschrijving" name="beschrijving" value="{{ abonnement.beschrijving }}">
+            </div>
+            <div class="form-group">
+                <label for="filter_optie">Filter Optie:</label>
+                <input type="text" id="filter_optie" name="filter_optie" value="{{ abonnement.filter_optie }}" required>
+            </div>
+            <div class="form-group">
+                <label for="categorie_id">Categorie:</label>
+                <select id="categorie_id" name="categorie_id" required>
+                    {% for categorie in categorieën %}
+                    <option value="{{ categorie.id }}" {% if categorie.id == abonnement.categorie_id %}selected{% endif %}>
+                        {{ categorie.naam }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="url">Website URL:</label>
+                <input type="url" id="url" name="url" value="{{ abonnement.url }}" placeholder="https://voorbeeld.com">
+            </div>
+            <div class="form-group">
+                <label for="logo">Logo (optioneel):</label>
+                <input type="file" id="logo" name="logo">
+                {% if abonnement.logo %}
+                    <p>Huidig logo: <img src="{{ url_for('static', filename='uploads/' + abonnement.logo) }}" alt="Logo" width="100"></p>
+                {% endif %}
+                         
+                    <label for="prijs">Prijs (bijv. €10/maand):</label>
+                    <input type="text" id="prijs" name="prijs">
+                
+                    <label for="contractduur">Contractduur:</label>
+                    <select id="contractduur" name="contractduur">
+                        <option value="maandelijks">Maandelijks</option>
+                        <option value="jaarlijks">Jaarlijks</option>
+                        <option value="flexibel">Flexibel</option>
+                    </select>
+                
+                    <label for="aanbiedingen">Aanbiedingen of kortingen:</label>
+                    <input type="text" id="aanbiedingen" name="aanbiedingen">
+                
+                    <label for="annuleringsvoorwaarden">Annuleringsvoorwaarden:</label>
+                    <textarea id="annuleringsvoorwaarden" name="annuleringsvoorwaarden"></textarea>
+                
+                    <label for="voordelen">Belangrijkste voordelen:</label>
+                    <textarea id="voordelen" name="voordelen"></textarea>
+                
+                    <label for="beoordelingen">Beoordelingen (1-5):</label>
+                    <input type="number" id="beoordelingen" name="beoordelingen" step="0.1" min="1" max="5">
+                
+                    <button type="submit">Toevoegen</button>             
+            
+            
+            </div>
+            <button type="submit" class="btn">Abonnement Bewerken</button>
+        </form>
+        <a href="{{ url_for('abonnementen') }}" class="btn-back">Terug naar Abonnementen</a>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 AbboHub. Alle rechten voorbehouden.</p>
+        </div>
+    </footer>
+</body>
+</html>

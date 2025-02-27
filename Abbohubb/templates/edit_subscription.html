@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abonnement Bewerken | AbboHub</title>
+
+    <!-- Stijlblad koppelen -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+    <style>
+        /* Algemene instellingen */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            margin-top: 5px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            background-color: #4CAF50;
+            color: white;
+            font-weight: bold;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .logo-preview {
+            margin-top: 10px;
+        }
+
+        img {
+            max-width: 150px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 5px;
+            background-color: #f9f9f9;
+        }
+
+        /* Flash-meldingen */
+        .flash-message {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .flash-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .flash-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Responsief ontwerp */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+            button {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+
+    <script>
+        // Dynamisch subcategorieën laden bij selectie van een categorie
+        function laadSubcategorieen(categorieId) {
+            fetch(`/api/subcategorieen/${categorieId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const subcategorieSelect = document.getElementById('subcategorie_id');
+                    subcategorieSelect.innerHTML = ''; // Verwijder bestaande opties
+                    data.forEach(subcategorie => {
+                        const option = document.createElement('option');
+                        option.value = subcategorie.id;
+                        option.textContent = subcategorie.naam;
+                        subcategorieSelect.appendChild(option);
+                    });
+                });
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Abonnement Bewerken</h1>
+        
+        <!-- Flash-meldingen -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-container">
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Het formulier -->
+        <form method="POST" enctype="multipart/form-data">
+            <!-- CSRF-token toevoegen -->
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="form-group">
+                <label for="naam">Naam</label>
+                <input type="text" id="naam" name="naam" value="{{ abonnement.naam }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="beschrijving">Beschrijving</label>
+                <textarea id="beschrijving" name="beschrijving">{{ abonnement.beschrijving }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="filter_optie">Filter Optie</label>
+                <input type="text" id="filter_optie" name="filter_optie" value="{{ abonnement.filter_optie }}">
+            </div>
+
+            <div class="form-group">
+                <label for="prijs">Prijs</label>
+                <input type="text" id="prijs" name="prijs" value="{{ abonnement.prijs }}">
+            </div>
+
+            <div class="form-group">
+                <label for="contractduur">Contractduur</label>
+                <input type="text" id="contractduur" name="contractduur" value="{{ abonnement.contractduur }}">
+            </div>
+
+            <div class="form-group">
+                <label for="aanbiedingen">Aanbiedingen</label>
+                <textarea id="aanbiedingen" name="aanbiedingen">{{ abonnement.aanbiedingen }}</textarea>
+            </div>
+
+            <label for="frequentie_bezorging">Frequentie Bezorging:</label>
+<input type="text" name="frequentie_bezorging" id="frequentie_bezorging" placeholder="Bijv. Wekelijks, Maandelijks">
+
+<label for="prijs_vanaf">Prijs Vanaf (€):</label>
+<input type="number" name="prijs_vanaf" id="prijs_vanaf" step="0.01" placeholder="Bijv. 10.00">
+
+<label for="prijs_tot">Prijs Tot (€):</label>
+<input type="number" name="prijs_tot" id="prijs_tot" step="0.01" placeholder="Bijv. 50.00">
+
+<label for="wat_is_het_abonnement">Wat is het abonnement?</label>
+<textarea name="wat_is_het_abonnement" id="wat_is_het_abonnement"></textarea>
+
+<label for="waarom_kiezen">Waarom kiezen voor dit abonnement?</label>
+<textarea name="waarom_kiezen" id="waarom_kiezen"></textarea>
+
+<label for="hoe_werkt_het">Hoe werkt het?</label>
+<textarea name="hoe_werkt_het" id="hoe_werkt_het"></textarea>
+
+<label for="past_dit_bij_jou">Past dit abonnement bij jou?</label>
+<textarea name="past_dit_bij_jou" id="past_dit_bij_jou"></textarea>
+
+
+            <!-- Annuleringsvoorwaarden -->
+            <label for="annuleringsvoorwaarden">Annuleringsvoorwaarden:</label>
+            <textarea 
+                name="annuleringsvoorwaarden" 
+                id="annuleringsvoorwaarden"
+                placeholder="Hoe en wanneer kun je opzeggen?"
+            >{{ abonnement.annuleringsvoorwaarden }}</textarea>
+
+            <!-- Voordelen -->
+            <label for="voordelen">Voordelen:</label>
+            <textarea 
+                name="voordelen" 
+                id="voordelen"
+                placeholder="Wat zijn de belangrijkste pluspunten?"
+            >{{ abonnement.voordelen }}</textarea>
+
+            <div class="form-group">
+                <label for="categorie_id">Categorie</label>
+                <select id="categorie_id" name="categorie_id" onchange="laadSubcategorieen(this.value)" required>
+                    <option value="">Selecteer een categorie</option>
+                    {% for categorie in categorieen %}
+                    <option value="{{ categorie.id }}"
+                        {% if abonnement.subcategorie and abonnement.subcategorie.categorie_id == categorie.id %}selected{% endif %}>
+                        {{ categorie.naam }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="subcategorie_id">Subcategorie</label>
+                <select id="subcategorie_id" name="subcategorie_id" required>
+                    <option value="">Selecteer een subcategorie</option>
+                    {% for subcategorie in subcategorieen %}
+                    <option value="{{ subcategorie.id }}"
+                        {% if abonnement.subcategorie_id == subcategorie.id %}selected{% endif %}>
+                        {{ subcategorie.naam }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="url">Website URL</label>
+                <input type="url" id="url" name="url" value="{{ abonnement.url }}">
+            </div>
+
+            <div class="form-group">
+                <label for="logo">Logo</label>
+                <input type="file" id="logo" name="logo">
+                {% if abonnement.logo %}
+                <div class="logo-preview">
+                    <p>Huidig logo:</p>
+                    <img src="{{ url_for('static', filename='uploads/' + abonnement.logo) }}" alt="Logo">
+                </div>
+                {% endif %}
+            </div>
+
+            <label for="doelgroepen">Doelgroepen:</label>
+            <select id="doelgroepen" name="doelgroepen" multiple>
+                {% for doelgroep in doelgroepen %}
+                <option value="{{ doelgroep.id }}" {% if doelgroep in abonnement.doelgroepen %}selected{% endif %}>
+                    {{ doelgroep.naam }}
+                </option>
+                {% endfor %}
+            </select>
+            
+            <label for="tags">Tags:</label>
+            <select id="tags" name="tags" multiple>
+                {% for tag in tags %}
+                <option value="{{ tag.id }}" {% if tag in abonnement.tags %}selected{% endif %}>
+                    {{ tag.naam }}
+                </option>
+                {% endfor %}
+            </select>
+
+            <button type="submit">Opslaan</button>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Vergelijk en bezoek abonnementen eenvoudig met AbboHub.">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Vergelijk Abonnementen | AbboHub</title>
+    
+    <!-- Eigen stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    
+    <!-- Inline style (bij voorkeur verplaatsen naar styles.css) -->
+    <style>
+        /* Algemene stijl */
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        /* Hoofdnavigatie */
+        nav {
+            background-color: #4CAF50;
+            padding: 10px 0;
+        }
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+        }
+        nav li {
+            margin: 0 1rem;
+        }
+        nav a {
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2rem;
+        }
+        header p {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .flash-container {
+            max-width: 1200px;
+            margin: 10px auto;
+            padding: 0 20px;
+        }
+        .flash-message {
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .flash-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .flash-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Tabelstijl */
+        .vergelijk-tabel {
+            width: 100%; /* Zorgt ervoor dat de tabel de volledige breedte gebruikt */
+            border-collapse: collapse; /* Verwijdert dubbele randen */
+            background-color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            table-layout: fixed; /* Zorgt ervoor dat alle kolommen even breed zijn */
+        }
+        .vergelijk-tabel caption {
+            caption-side: top;
+            padding: 10px;
+            font-weight: bold;
+        }
+        .vergelijk-tabel thead {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .vergelijk-tabel th, .vergelijk-tabel td {
+            padding: 10px; /* Binnenruimte voor cellen */
+            text-align: center; /* Centraal uitlijnen van tekst */
+            border: 1px solid #ddd; /* Voeg randen toe */
+            word-wrap: break-word; /* Zorgt ervoor dat tekst in een cel wordt afgebroken als deze te lang is */
+        }
+        .vergelijk-tabel th {
+            font-size: 1rem;
+        }
+        .vergelijk-tabel tbody tr:nth-child(odd) {
+            background-color: #f2f2f2;
+        }
+        .vergelijk-tabel tbody tr:hover {
+            background-color: #e9ffe9;
+        }
+        .vergelijk-tabel a {
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .vergelijk-tabel a:hover {
+            text-decoration: underline;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px 0;
+            background-color: #ef882e;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+        }
+
+        .btn:hover {
+            background-color: #45a049;
+        }
+
+        /* Footerstijl */
+        footer {
+            text-align: center;
+            padding: 10px 0;
+            background-color: #333;
+            color: white;
+            margin-top: 30px;
+        }
+        footer p {
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        /* Responsief ontwerp */
+        @media (max-width: 768px) {
+            nav li {
+                margin: 0 0.5rem;
+            }
+            header h1 {
+                font-size: 1.5rem;
+            }
+            header p {
+                font-size: 1rem;
+            }
+            .vergelijk-tabel th,
+            .vergelijk-tabel td {
+                font-size: 0.9rem;
+                padding: 10px;
+            }
+        }
+        .badge {
+    display: inline-block;
+    background-color: #ecb718bd;
+    color: white;
+    padding: 5px 10px;
+    font-size: 0.85rem;
+    border-radius: 12px;
+    margin: 2px;
+    text-align: center;
+}
+    </style>
+</head>
+<body>
+
+    <!-- Navigatiebalk -->
+    <nav aria-label="Hoofdnavigatie">
+        <ul>
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+            <li><a href="{{ url_for('vergelijk') }}">Vergelijk</a></li>
+            {% if current_user.is_authenticated %}
+                <li><a href="{{ url_for('logout') }}">Uitloggen</a></li>
+            {% else %}
+                <li><a href="{{ url_for('login') }}">Inloggen</a></li>
+            {% endif %}
+            <li><a href="/contact">Contact</a></li>
+            
+        </ul>
+    </nav>
+
+    <!-- Header sectie -->
+<header>
+    <h1>Vergelijk Abonnementen</h1>
+    <p>Bekijk en vergelijk de geselecteerde abonnementen.</p>
+    <button id="clear-comparison" class="btn">Wis vergelijking</button>
+</header>
+
+<!-- FLASH-BERICHTEN (optioneel, als je in Flask flash() gebruikt) -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-container">
+      {% for category, message in messages %}
+        <div class="flash-message flash-{{ category }}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<!-- Hoofdcontainer -->
+<div class="container">
+    <!-- Getransponeerde vergelijk-tabel -->
+    <table class="vergelijk-tabel" aria-label="Vergelijking van geselecteerde abonnementen">
+        <caption>Geselecteerde abonnementen vergelijken</caption>
+        <thead>
+            <tr>
+                <th scope="col">Provider</th>
+                {% for abonnement in abonnementen %}
+                <th scope="col">{{ abonnement.naam }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th scope="row">Prijs</th>
+                {% for abonnement in abonnementen %}
+                <td>{{ abonnement.prijs }}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <th scope="row">Contractduur</th>
+                {% for abonnement in abonnementen %}
+                <td>{{ abonnement.contractduur }}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <th scope="row">Aanbiedingen</th>
+                {% for abonnement in abonnementen %}
+                <td>{{ abonnement.aanbiedingen }}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <th scope="row">Voordelen</th>
+                {% for abonnement in abonnementen %}
+                <td>{{ abonnement.voordelen }}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <th scope="row">Annuleringsvoorwaarden</th>
+                {% for abonnement in abonnementen %}
+                <td>{{ abonnement.annuleringsvoorwaarden }}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <th scope="row">Doelgroepen</th>
+                {% for abonnement in abonnementen %}
+                <td>
+                    {% for doelgroep in abonnement.doelgroepen %}
+                        <span class="badge">{{ doelgroep.naam }}</span>
+                    {% endfor %}
+                </td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <th scope="row">Tags</th>
+                {% for abonnement in abonnementen %}
+                <td>
+                    {% for tag in abonnement.tags %}
+                        <span class="badge">{{ tag.naam }}</span>
+                    {% endfor %}
+                </td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <th scope="row">Gem. Beoordeling</th>
+                {% for abonnement in abonnementen %}
+                <td>
+                    {{ abonnement.get_average_score() }}
+                    <small>({{ abonnement.reviews|length }} beoordelingen)</small>
+                </td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <th scope="row">Reviews</th>
+                {% for abonnement in abonnementen %}
+                <td>
+                    <a href="{{ url_for('abonnement_reviews', abonnement_id=abonnement.id) }}">
+                        Bekijk of schrijf een review
+                    </a>
+                </td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <th scope="row">Bezoek website</th>
+                {% for abonnement in abonnementen %}
+                <td>
+                    <a href="{{ abonnement.url }}"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       aria-label="Bezoek de website van {{ abonnement.naam }}">
+                        Bezoek website
+                    </a>
+                </td>
+                {% endfor %}
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    document.getElementById('clear-comparison').addEventListener('click', () => {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+        fetch('/clear_comparison', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken || ''  // Voeg CSRF-token toe als deze bestaat
+            }
+        }).then(response => {
+            if (response.ok) {
+                window.location.href = "/";  // Dwing de gebruiker om naar de indexpagina te gaan
+            } else {
+                console.error('Vergelijking wissen mislukt:', response.statusText);
+            }
+        }).catch(error => console.error('Er is een fout opgetreden:', error));
+    });
+</script>
+
+
+<!-- Footer -->
+<footer>
+    <p>&copy; 2025 AbboHub. Alle rechten voorbehouden.</p>
+</footer>
