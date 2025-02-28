@@ -371,7 +371,7 @@ header p {
 /* ========== FLIP EFFECT (alleen voor de logo/beschrijving bovenaan) ========== */
 .flip-container {
   perspective: 1000px;
-  width: 100%;
+  width: 95%;
   height: 220px; /* Pas de hoogte aan naar behoefte */
   margin-bottom: 10px;
 }
