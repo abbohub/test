@@ -156,59 +156,66 @@
 
         <!-- Het formulier -->
         <form method="POST" enctype="multipart/form-data">
-            <!-- CSRF-token toevoegen -->
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-            <div class="form-group">
-                <label for="naam">Naam</label>
-                <input type="text" id="naam" name="naam" value="{{ abonnement.naam }}" required>
-            </div>
+            <label for="naam">Naam</label>
+            <input type="text" id="naam" name="naam" value="{{ abonnement.naam }}" required>
 
-            <div class="form-group">
-                <label for="beschrijving">Beschrijving</label>
-                <textarea id="beschrijving" name="beschrijving">{{ abonnement.beschrijving }}</textarea>
-            </div>
+            <label for="beschrijving">Beschrijving</label>
+            <textarea id="beschrijving" name="beschrijving">{{ abonnement.beschrijving }}</textarea>
 
-            <div class="form-group">
-                <label for="filter_optie">Filter Optie</label>
-                <input type="text" id="filter_optie" name="filter_optie" value="{{ abonnement.filter_optie }}">
-            </div>
+            <label for="prijs">Prijs</label>
+            <input type="text" id="prijs" name="prijs" value="{{ abonnement.prijs }}">
 
-            <div class="form-group">
-                <label for="prijs">Prijs</label>
-                <input type="text" id="prijs" name="prijs" value="{{ abonnement.prijs }}">
-            </div>
+            <label for="contractduur">Contractduur</label>
+            <input type="text" id="contractduur" name="contractduur" value="{{ abonnement.contractduur }}">
 
-            <div class="form-group">
-                <label for="contractduur">Contractduur</label>
-                <input type="text" id="contractduur" name="contractduur" value="{{ abonnement.contractduur }}">
-            </div>
+            <label for="filter_optie">Filter Optie</label>
+            <input type="text" id="filter_optie" name="filter_optie" value="{{ abonnement.filter_optie }}">
 
-            <div class="form-group">
-                <label for="aanbiedingen">Aanbiedingen</label>
-                <textarea id="aanbiedingen" name="aanbiedingen">{{ abonnement.aanbiedingen }}</textarea>
-            </div>
+            <label for="categorie_id">Categorie</label>
+            <select id="categorie_id" name="categorie_id" required>
+                {% for categorie in categorieen %}
+                    <option value="{{ categorie.id }}" {% if abonnement.subcategorie.categorie_id == categorie.id %}selected{% endif %}>{{ categorie.naam }}</option>
+                {% endfor %}
+            </select>
 
-            <label for="frequentie_bezorging">Frequentie Bezorging:</label>
-<input type="text" name="frequentie_bezorging" id="frequentie_bezorging" placeholder="Bijv. Wekelijks, Maandelijks">
+            <label for="subcategorie_id">Subcategorie</label>
+            <select id="subcategorie_id" name="subcategorie_id" required>
+                {% for subcategorie in subcategorieen %}
+                    <option value="{{ subcategorie.id }}" {% if abonnement.subcategorie_id == subcategorie.id %}selected{% endif %}>{{ subcategorie.naam }}</option>
+                {% endfor %}
+            </select>
 
-<label for="prijs_vanaf">Prijs Vanaf (€):</label>
-<input type="number" name="prijs_vanaf" id="prijs_vanaf" step="0.01" placeholder="Bijv. 10.00">
+            <label for="logo">Logo</label>
+            <input type="file" id="logo" name="logo">
+            {% if abonnement.logo %}
+                <img src="{{ url_for('static', filename='uploads/' + abonnement.logo) }}" alt="Logo" class="logo-preview">
+            {% endif %}
 
-<label for="prijs_tot">Prijs Tot (€):</label>
-<input type="number" name="prijs_tot" id="prijs_tot" step="0.01" placeholder="Bijv. 50.00">
+            <label for="aanbiedingen">Aanbiedingen</label>
+            <textarea id="aanbiedingen" name="aanbiedingen">{{ abonnement.aanbiedingen }}</textarea>
 
-<label for="wat_is_het_abonnement">Wat is het abonnement?</label>
-<textarea name="wat_is_het_abonnement" id="wat_is_het_abonnement"></textarea>
+            <label for="frequentie_bezorging">Frequentie Bezorging</label>
+            <input type="text" id="frequentie_bezorging" name="frequentie_bezorging" value="{{ abonnement.frequentie_bezorging }}">
 
-<label for="waarom_kiezen">Waarom kiezen voor dit abonnement?</label>
-<textarea name="waarom_kiezen" id="waarom_kiezen"></textarea>
+            <label for="prijs_vanaf">Prijs Vanaf (€)</label>
+            <input type="number" id="prijs_vanaf" name="prijs_vanaf" step="0.01" value="{{ abonnement.prijs_vanaf }}">
 
-<label for="hoe_werkt_het">Hoe werkt het?</label>
-<textarea name="hoe_werkt_het" id="hoe_werkt_het"></textarea>
+            <label for="prijs_tot">Prijs Tot (€)</label>
+            <input type="number" id="prijs_tot" name="prijs_tot" step="0.01" value="{{ abonnement.prijs_tot }}">
 
-<label for="past_dit_bij_jou">Past dit abonnement bij jou?</label>
-<textarea name="past_dit_bij_jou" id="past_dit_bij_jou"></textarea>
+            <label for="wat_is_het_abonnement">Wat is het abonnement?</label>
+            <textarea id="wat_is_het_abonnement" name="wat_is_het_abonnement">{{ abonnement.wat_is_het_abonnement }}</textarea>
+
+            <label for="waarom_kiezen">Waarom kiezen voor dit abonnement?</label>
+            <textarea id="waarom_kiezen" name="waarom_kiezen">{{ abonnement.waarom_kiezen }}</textarea>
+
+            <label for="hoe_werkt_het">Hoe werkt het?</label>
+            <textarea id="hoe_werkt_het" name="hoe_werkt_het">{{ abonnement.hoe_werkt_het }}</textarea>
+
+            <label for="past_dit_bij_jou">Past dit abonnement bij jou?</label>
+            <textarea id="past_dit_bij_jou" name="past_dit_bij_jou">{{ abonnement.past_dit_bij_jou }}</textarea>
 
 
             <!-- Annuleringsvoorwaarden -->

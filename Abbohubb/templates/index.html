@@ -84,55 +84,54 @@
                             {% if categorie_abonnementen %}
                                 {% for abonnement in categorie_abonnementen %}
                                 <article class="abonnement">
-                                    <!-- Subcategorie -->
-                                    <span class="subcategorie">{{ abonnement.subcategorie.naam }}</span>
-                                    
-                                    <!-- Logo met link -->
-                                    <a href="{{ url_for('abonnement_reviews', abonnement_id=abonnement.id) }}">
-                                        {% if abonnement.logo %}
-                                            <img 
+                                    <!-- voorkant altijd zichtbaar-->
+                                    <h3>{{ abonnement.naam }}</h3>
+                                    <!-- Flip-container voor logo en beschrijving -->
+                                    <div class="flip-container">
+                                      <div class="flip-inner">
+                                        <!-- Voorkant: toon het logo -->
+                                        <div class="flip-front">
+                                          <a href="{{ url_for('abonnement_reviews', abonnement_id=abonnement.id) }}">
+                                            {% if abonnement.logo %}
+                                              <img 
                                                 src="{{ url_for('static', filename='uploads/' ~ abonnement.logo) }}" 
                                                 alt="Logo van {{ abonnement.naam }}" 
                                                 class="abonnement-logo"
-                                            >
-                                        {% else %}
-                                            <img 
+                                              >
+                                            {% else %}
+                                              <img 
                                                 src="{{ url_for('static', filename='images/placeholder.png') }}" 
                                                 alt="Geen logo beschikbaar" 
                                                 class="abonnement-logo"
-                                            >
-                                        {% endif %}
-                                    </a>
-    
-                                    <!-- Abonnement details -->
-                                    <h3>{{ abonnement.naam }}</h3>
-                                    <p>{{ abonnement.beschrijving }}</p>
-    
-                                    <!-- Tags weergeven -->
+                                              >
+                                            {% endif %}
+                                          </a>
+                                        </div>
+                                        <!-- Achterkant: toon de beschrijving -->
+                                        <div class="flip-back">
+                                          <p class="beschrijving">{{ abonnement.beschrijving }}</p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <!-- Altijd zichtbare content -->
+                                    <!-- Subcategorie -->
+                                    <span class="subcategorie">{{ abonnement.subcategorie.naam }}</span>    
                                     <div class="abonnement-tags">
-                                        {% for tag in abonnement.tags %}
+                                      {% for tag in abonnement.tags %}
                                         <span class="badge">{{ tag.naam }}</span>
-                                        {% endfor %}
+                                      {% endfor %}
                                     </div>
-    
-                                    <!-- Acties: Vergelijk-checkbox en review-knop -->
                                     <div class="abonnement-acties">
-                                        <label>
-                                            <input 
-                                                type="checkbox" 
-                                                class="vergelijk-checkbox" 
-                                                value="{{ abonnement.id }}"
-                                            >
-                                            Vergelijk
-                                        </label>
-                                        <a 
-                                            href="{{ url_for('abonnement_reviews', abonnement_id=abonnement.id) }}" 
-                                            class="btn-review"
-                                        >
-                                            Meer info
-                                        </a>
+                                      <label>
+                                        <input type="checkbox" class="vergelijk-checkbox" value="{{ abonnement.id }}">
+                                        Vergelijk
+                                      </label>
+                                      <a href="{{ url_for('abonnement_reviews', abonnement_id=abonnement.id) }}" class="btn-review">
+                                        Meer info
+                                      </a>
                                     </div>
-                                </article>
+                                  </article>
+                                  
                                 {% endfor %}
                             {% else %}
                                 <p>Geen abonnementen beschikbaar in deze categorie.</p>
