@@ -1,29 +1,32 @@
-        /* Algemene font-instelling voor de hele website */
+/* Algemene font-instelling voor de hele website */
 body {
   font-family: 'Roboto', sans-serif; /* Kies een consistent lettertype */
 }
-/* Hoofdnavigatie */
 
-      nav ul {
-          list-style: none;
-          display: flex;
-          justify-content: center;
-          margin: 0;
-          padding: 0;
-      }
-      nav li {
-          margin: 0 1rem;
-      }
-      nav a {
-          text-decoration: none;
-          color: white;
-          font-weight: bold;
-      }
+/* Hoofdnavigatie */
+nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+}
+nav li {
+    margin: 0 1rem;
+}
+nav a {
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+}
+main {
+  background: #f3e6cc;
+}
 
 
 /* ========== HEADER ========== */
 header {
-    background: linear-gradient(135deg, #4CAF50 0%, #5cd65c 100%);
+    background: #9133bb; /* Aangepast: header achtergrond naar #9133bb */
     color: white;
     padding: 20px 10px;
     text-align: center;
@@ -73,7 +76,7 @@ header p {
 }
 
 .header-nav ul li a:hover {
-    background-color: #3e8e41;
+    background-color: #f6ae86; /* Aangepast: hover kleur naar #f6ae86 */
     color: #e6ffe6;
     transform: scale(1.1);
 }
@@ -122,14 +125,14 @@ header p {
 
 .zoek-filter-form input[type="text"]:focus,
 .zoek-filter-form select:focus {
-  border-color: #4CAF50;
-  box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+  border-color: #f6ae86; /* Aangepast: focus kleur naar #f6ae86 */
+  box-shadow: 0 0 5px rgba(246,174,134,0.5);
   outline: none;
 }
 
 /* Zoekknop */
 .zoek-filter-form button.btn {
-  background-color: #ef882e;
+  background-color: #f4cd00; /* Aangepast: knop kleur naar #f4cd00 */
   color: #fff;
   padding: 0.7rem 1.2rem;
   border: none;
@@ -141,13 +144,13 @@ header p {
 }
 
 .zoek-filter-form button.btn:hover {
-  background-color: #288d31;
+  background-color: #1bd3c6; /* Aangepast: hover knop kleur naar #1bd3c6 */
   transform: scale(1.05);
 }
 
 /* Rechteruitlijning voor vergelijk-knop */
 .btn-compare {
-  background-color: #ef882e;
+  background-color: #f4cd00; /* Aangepast */
   color: #fff;
   padding: 0.7rem 1.2rem; /* Consistente padding met zoekknop */
   border-radius: 4px;
@@ -157,11 +160,10 @@ header p {
   transition: background-color 0.3s, transform 0.2s;
   text-align: center; /* Knoptekst gecentreerd */
   justify-self: end; /* Rechts uitlijnen */
-  
 }
 
 .btn-compare:hover {
-  background-color: #288d31;
+  background-color: #1bd3c6; /* Aangepast */
   transform: scale(1.05);
 }
 
@@ -174,7 +176,7 @@ header p {
 /* Dropdown-knop */
 .dropdown-button {
   padding: 0.7rem 1.2rem;
-  background-color: #ef882e;
+  background-color: #f4cd00; /* Aangepast */
   color: white;
   border: none;
   border-radius: 4px;
@@ -183,15 +185,13 @@ header p {
   font-weight: bold;
   width: 130px;
   text-align: center; /* Zorgt ervoor dat de tekst gecentreerd is */
-  
   display: flex; /* Flexbox gebruiken */
   align-items: center; /* Tekst verticaal centreren */
   justify-content: center; /* Tekst horizontaal centreren */
 }
 
-
 .dropdown-button:hover {
-  background-color: #45a049;
+  background-color: #1bd3c6; /* Aangepast */
 }
 
 /* Dropdown-menu */
@@ -200,7 +200,7 @@ header p {
   position: absolute;
   top: 100%;
   left: 0;
-  background-color: white;
+  background-color: #f3e6cc; /* Aangepast: dropdown achtergrond naar #f3e6cc */
   border: 1px solid #ddd;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -219,7 +219,7 @@ header p {
   position: absolute;
   top: 0;
   left: 100%;
-  background-color: white;
+  background-color: #f3e6cc; /* Aangepast */
   border: 1px solid #ddd;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -236,7 +236,6 @@ header p {
 }
 
 /* Links styling */
-
 .dropdown-item a {
   display: block;
   padding: 8px 12px;
@@ -250,6 +249,7 @@ header p {
   border-radius: 4px;
   color: #4CAF50;
 }
+
 /* ========== ANIMATIONS ========== */
 @keyframes fadeIn {
     from {
@@ -284,7 +284,7 @@ header p {
     }
 }
 
-  /* Bestaande abonnement stijlen */
+/* Bestaande abonnement stijlen */
 .abonnementen-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -416,26 +416,25 @@ header p {
   background-color: #fff;
 }
 
-  
-  /*
-    Plaats de checkbox-acties onderaan de tegel.
-    We hebben in .abonnement "flex-direction: column", 
-    dus margin-top: auto plaatst dit blokje aan de onderzijde.
-  */
-  .abonnement-acties {
-    margin-top: auto;
-    text-align: center;
-  }
-  .vergelijk-checkbox {
-    margin-right: 5px;
-  }
-  
-/* review knop*/
+/*
+  Plaats de checkbox-acties onderaan de tegel.
+  We hebben in .abonnement "flex-direction: column", 
+  dus margin-top: auto plaatst dit blokje aan de onderzijde.
+*/
+.abonnement-acties {
+  margin-top: auto;
+  text-align: center;
+}
+.vergelijk-checkbox {
+  margin-right: 5px;
+}
+
+/* review knop */
 .btn-review {
   display: inline-block;
   margin-top: 10px;
   padding: 8px 15px;
-  background-color: #4CAF50;
+  background-color: #f4cd00; /* Aangepast */
   color: white;
   text-decoration: none;
   border-radius: 4px;
@@ -446,10 +445,10 @@ header p {
 }
 
 .btn-review:hover {
-  background-color: #45a049;
+  background-color: #1bd3c6; /* Aangepast */
 }
 
-/* delete knop review*/
+/* delete knop review */
 .btn-delete {
   background-color: #e74c3c;
   color: white;
@@ -465,13 +464,13 @@ header p {
   background-color: #c0392b;
 }
 
-/* chatbot*/
+/* chatbot */
 /* Chatknop */
 .chat-toggle-btn {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background: #ef882e;
+  background: #f4cd00; /* Aangepast */
   color: white;
   border: none;
   border-radius: 50px;
@@ -479,6 +478,10 @@ header p {
   cursor: pointer;
   font-size: 16px;
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.chat-toggle-btn:hover {
+  background: #1bd3c6; /* Toegevoegd hover */
 }
 
 /* Chatbox */
@@ -502,7 +505,7 @@ header p {
 #chat-header {
   display: flex;
   justify-content: space-between;
-  background: #ef882e;
+  background: #f4cd00; /* Aangepast */
   color: white;
   padding: 8px;
   font-size: 14px;
@@ -542,12 +545,18 @@ header p {
 #send-btn {
   margin-left: 5px;
   padding: 5px 10px;
-  background: #ef882e;
+  background: #f4cd00; /* Aangepast */
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
+  transition: background-color 0.3s;
 }
+
+#send-btn:hover {
+  background: #1bd3c6; /* Aangepast */
+}
+
 
 /* Zorgt ervoor dat de chat minimaliseerbaar is */
 .hidden {
@@ -563,7 +572,6 @@ header p {
     margin-top: 30px;
   }
   
-
   @media (max-width: 768px) {
 
     /* Header padding en uitlijning */
