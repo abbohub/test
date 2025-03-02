@@ -573,48 +573,46 @@ header p {
   }
   
   @media (max-width: 768px) {
-
-    /* Header padding en uitlijning */
-    header {
-      padding: 10px;
+    /* Verberg de navigatie */
+    nav {
+      display: none;
     }
-  
-    /* Navigatie naast elkaar zetten op mobiel */
-    nav ul,
-    .header-nav ul {
-      flex-direction: row !important; /* Zet de links naast elkaar */
+    
+    /* Zorg dat de hoofdinhoud (main) gecentreerd staat */
+    main {
+      display: flex;
       justify-content: center;
-      gap: 1rem; /* Ruimte tussen de links */
+      align-items: flex-start;
+      flex-direction: column;
     }
-  
-    nav li {
-      margin: 0;
+    
+    /* Centreer de tegel-lijst */
+    .abonnementen-lijst {
+      justify-content: center;
     }
-  
-    /* Zoek-knop verbergen op mobiel */
+    
+    /* Zoek-knop verbergen (indien nog niet gedaan) */
     .zoek-filter-form button.btn-search {
-      display: none !important; /* Verbergt de zoekknop volledig */
+      display: none !important;
     }
-  
-    /* Grid aanpassen voor mobiel */
+    
+    /* Pas de zoek-filter-container aan */
     .zoek-filter-container {
       grid-template-columns: 1fr;
       gap: 0.7rem;
       padding: 10px;
     }
-  
-    /* Titel centreren */
+    
     .zoek-filter-container h1 {
       text-align: center;
       justify-self: center;
     }
-  
-    /* Zoekformulier verticaal stapelen en centreren */
+    
     .zoek-filter-form {
       flex-direction: column;
       width: 100%;
     }
-  
+    
     .zoek-filter-form input[type="text"],
     .zoek-filter-form select,
     .dropdown-container,
@@ -622,26 +620,35 @@ header p {
       width: 100%;
       box-sizing: border-box;
     }
-  
-    /* Vergelijk-knop uitlijnen en centreren */
+    
     .btn-compare {
       justify-self: center !important;
       width: 100%;
       box-sizing: border-box;
       margin-top: 5px;
     }
-  
-    /* Dropdown correct positioneren voor mobiel */
-    .dropdown-menu, .sub-dropdown {
+    
+    .dropdown-menu,
+    .sub-dropdown {
       position: static;
       width: 100%;
       box-shadow: none;
       padding: 5px;
     }
-  
-    .dropdown-item, .sub-dropdown a {
+    
+    .dropdown-item,
+    .sub-dropdown a {
       text-align: center;
       padding: 5px 0;
+    }
+    
+    /* Footer vast onderaan het scherm */
+    footer {
+      position: static;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      z-index: 100;
     }
   }
     <style>
