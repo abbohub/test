@@ -364,9 +364,6 @@ header p {
   margin: 2px;
   text-align: center;
 }
-.badge:hover {
-  background-color: #45a049;
-}
 
 /* ========== FLIP EFFECT (alleen voor de logo/beschrijving bovenaan) ========== */
 .flip-container {
