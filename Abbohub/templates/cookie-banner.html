@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cookieverklaring</title>
+    <style>
+        #cookie-banner {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: #f8f9fa;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            display: none;
+            border-radius: 8px;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            z-index: 1000;
+        }
+        #cookie-banner p {
+            margin-bottom: 15px;
+        }
+        #cookie-banner button {
+            margin-right: 10px;
+            padding: 12px;
+            border: none;
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .accept { background: #28a745; color: white; }
+        .decline { background: #dc3545; color: white; }
+        .settings { background: #007bff; color: white; }
+        #cookie-settings {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            text-align: center;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Cookie Banner -->
+    <div id="cookie-banner">
+        <p>Wij gebruiken cookies om uw ervaring te verbeteren. Klik op 'Instellingen' om uw voorkeuren te beheren of op 'Accepteren' om alle cookies toe te staan.</p>
+        <button class="accept" onclick="setCookieConsent(true)">Accepteren</button>
+        <button class="decline" onclick="setCookieConsent(false)">Weigeren</button>
+        <button class="settings" onclick="openSettings()">Instellingen</button>
+    </div>
+
+    <!-- Cookie Instellingen -->
+    <div id="cookie-settings">
+        <p>Beheer uw cookievoorkeuren:</p>
+        <label><input type="checkbox" id="functional" checked disabled> Functionele cookies (verplicht)</label><br>
+        <label><input type="checkbox" id="analytics" checked> Analytische cookies</label><br>
+        <label><input type="checkbox" id="marketing"> Marketing cookies</label><br>
+        <button class="accept" onclick="saveSettings()">Opslaan</button>
+    </div>
+
+    <script>
+        function getCookieConsent() {
+            return localStorage.getItem("cookieConsent");
+        }
+
+        function setCookieConsent(consent) {
+            localStorage.setItem("cookieConsent", consent);
+            document.getElementById("cookie-banner").style.display = "none";
+            document.getElementById("cookie-settings").style.display = "none";
+
+            if (consent) {
+                enableCookies();
+            } else {
+                disableCookies();
+            }
+        }
+
+        function enableCookies() {
+            console.log("Functionele cookies ingeschakeld");
+
+            if (localStorage.getItem("analyticsCookies") !== "false") {
+                console.log("Analytische cookies ingeschakeld");
+                loadGoogleAnalytics();
+            }
+
+            if (localStorage.getItem("marketingCookies") === "true") {
+                console.log("Marketing cookies ingeschakeld");
+                loadGoogleAdSense();
+            }
+        }
+
+        function disableCookies() {
+            console.log("Cookies geweigerd, tracking wordt niet ingeladen.");
+            localStorage.setItem("analyticsCookies", "false");
+            localStorage.setItem("marketingCookies", "false");
+        }
+
+        function openSettings() {
+            document.getElementById("cookie-settings").style.display = "block";
+        }
+
+        function saveSettings() {
+            const analytics = document.getElementById("analytics").checked;
+            const marketing = document.getElementById("marketing").checked;
+
+            localStorage.setItem("analyticsCookies", analytics);
+            localStorage.setItem("marketingCookies", marketing);
+            localStorage.setItem("cookieConsent", "true");
+
+            document.getElementById("cookie-settings").style.display = "none";
+            enableCookies();
+        }
+
+        function loadGoogleAnalytics() {
+            let script = document.createElement("script");
+            script.src = "https://www.googletagmanager.com/gtag/js?id=UA-XXXXX-Y";
+            script.async = true;
+            document.head.appendChild(script);
+
+            script.onload = function () {
+                window.dataLayer = window.dataLayer || [];
+                function gtag() { dataLayer.push(arguments); }
+                gtag('js', new Date());
+                gtag('config', 'UA-XXXXX-Y', { 'anonymize_ip': true });
+            };
+        }
+
+        function loadGoogleAdSense() {
+            let script = document.createElement("script");
+            script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js";
+            script.setAttribute("data-ad-client", "ca-pub-XXXXX");
+            script.async = true;
+            document.head.appendChild(script);
+        }
+
+        window.onload = function () {
+            if (getCookieConsent() === null) {
+                document.getElementById("cookie-banner").style.display = "block";
+                localStorage.setItem("analyticsCookies", "true"); // Analytische cookies standaard aan
+            } else {
+                enableCookies();
+            }
+        };
+    </script>
+
+</body>
+</html>

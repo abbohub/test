@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="description" content="Bij AbboHub vind je snel en eenvoudig alle abonnementen in diverse categorieën. Vergelijk, filter en vind het abonnement dat bij jou past!">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>AbboHub - Vind en vergelijk abonnementen</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <!-- HEADER -->
+    <header>
+        <nav aria-label="Hoofdnavigatie">
+            <ul>
+                <li><a href="{{ url_for('index') }}">Home</a></li>
+                {% if current_user.is_authenticated %}
+                    <li><a href="{{ url_for('logout') }}">Uitloggen</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('login') }}">Inloggen</a></li>
+                {% endif %}
+                <li><a href="/contact">Contact</a></li>
+            </ul>
+        </nav>
+
+        <div class="zoek-filter-container">
+            <h1>AbboHub</h1>
+            <form method="GET" action="{{ url_for('index') }}" class="zoek-filter-form">
+                <!-- Zoekveld -->
+                <input 
+                    type="text" 
+                    name="zoekterm" 
+                    placeholder="Zoek abonnementen..." 
+                    value="{{ zoekterm }}" 
+                    aria-label="Zoek abonnementen"
+                >
+                 <!-- Zoekknop -->
+                        <button type="submit" class="btn btn-search">Zoek</button>
+
+                <!-- Categorieën en subcategorieën dropdown -->
+                <!-- Dropdown voor categorieën -->
+        <div class="dropdown-container">
+            <button type="button" class="dropdown-button">Categorieën</button>
+            <div class="dropdown-menu">
+                <!-- Optie voor alle categorieën -->
+                <div class="dropdown-item">
+                    <a href="?categorie=">Alle categorieën</a>
+                </div>
+
+                <!-- Individuele categorieën en subcategorieën -->
+                {% for cat in unieke_categorieën %}
+                <div class="dropdown-item">
+                    <a href="?categorie={{ cat.id }}">{{ cat.naam }}</a>
+                    <!-- Subcategorieën -->
+                    <div class="sub-dropdown">
+                        {% for subcat in unieke_subcategorieën if subcat.categorie_id == cat.id %}
+                        <a href="?subcategorie={{ subcat.id }}">{{ subcat.naam }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+            </form>        
+        
+            <!-- Vergelijk knop -->
+            <a href="{{ url_for('vergelijk') }}" class="btn btn-compare" id="vergelijk-knop">
+                Vergelijk
+            </a>
+        </div>
+          
+    </header>
+
+    <!-- HOOFDCONTENT: Abonnementen per categorie -->
+    <main>
+        <div class="abonnementen-container">
+            {% if abonnementen %}
+                {% for categorie in unieke_categorieën %}
+                    {% set categorie_abonnementen = abonnementen_per_categorie[categorie.id] %}
+                    {% if categorie_abonnementen or (not geselecteerde_subcategorie and not geselecteerde_categorie and not zoekterm) %}
+                    <section class="categorie" data-categorie-id="{{ categorie.id }}">
+                        <h2>{{ categorie.naam }}</h2>
+                        <div class="abonnementen-lijst">
+                            {% if categorie_abonnementen %}
+                                {% for abonnement in categorie_abonnementen %}
+                                <article class="abonnement">
+                                    <!-- voorkant altijd zichtbaar-->
+                                    <h3>{{ abonnement.naam }}</h3>
+                                    <!-- Flip-container voor logo en beschrijving -->
+                                    <div class="flip-container">
+                                      <div class="flip-inner">
+                                        <!-- Voorkant: toon het logo -->
+                                        <div class="flip-front">
+                                          <a href="{{ url_for('abonnement_reviews', abonnement_id=abonnement.id) }}">
+                                            {% if abonnement.logo %}
+                                              <img 
+                                                src="{{ url_for('static', filename='uploads/' ~ abonnement.logo) }}" 
+                                                alt="Logo van {{ abonnement.naam }}" 
+                                                class="abonnement-logo"
+                                              >
+                                            {% else %}
+                                              <img 
+                                                src="{{ url_for('static', filename='images/placeholder.png') }}" 
+                                                alt="Geen logo beschikbaar" 
+                                                class="abonnement-logo"
+                                              >
+                                            {% endif %}
+                                          </a>
+                                        </div>
+                                        <!-- Achterkant: toon de beschrijving -->
+                                        <div class="flip-back">
+                                          <p class="beschrijving">{{ abonnement.beschrijving }}</p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <!-- Altijd zichtbare content -->
+                                    <!-- Subcategorie -->
+                                    <span class="subcategorie">{{ abonnement.subcategorie.naam }}</span>    
+                                    <div class="abonnement-tags">
+                                      {% for tag in abonnement.tags %}
+                                        <span class="badge">{{ tag.naam }}</span>
+                                      {% endfor %}
+                                    </div>
+                                    <div class="abonnement-acties">
+                                      <label>
+                                        <input type="checkbox" class="vergelijk-checkbox" value="{{ abonnement.id }}">
+                                        Vergelijk
+                                      </label>
+                                      <a href="{{ url_for('abonnement_reviews', abonnement_id=abonnement.id) }}" class="btn-review">
+                                        Meer info
+                                      </a>
+                                    </div>
+                                  </article>
+                                  
+                                {% endfor %}
+                            {% else %}
+                                <p>Geen abonnementen beschikbaar in deze categorie.</p>
+                            {% endif %}
+                        </div>
+                    </section>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <p>Geen abonnementen gevonden. Probeer een andere zoekopdracht of filter.</p>
+            {% endif %}
+        </div>    
+
+        <!-- Chatbot Widget -->
+<!-- Knop om de chatbot te openen/sluiten -->
+<button id="toggle-chat" class="chat-toggle-btn">Vraag om advies</button>
+
+<!-- Chatbox --> 
+<div id="chatbox">
+    <div id="chat-header">
+      <span>Uw adviseur</span>
+      <button id="close-chat">−</button>
+    </div>
+    <div id="chatlog"></div>
+    <div id="user-input">
+      <input type="text" id="user-message" placeholder="Typ een bericht...">
+      <button id="send-btn">Verstuur</button>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 AbboHub. Alle rechten voorbehouden.</p>
+    <nav>
+      <ul>
+        <li><a href="privacy-cookieverklaring.html">Privacy en Cookieverklaring</a></li>
+        <li><a href="over-abbohub.html">Over AbboHub</a></li>
+        <li><a href="#" onclick="openSettings()">Cookievoorkeuren aanpassen</a></li>
+      </ul>
+    </nav>
+  </footer>
+
+  {% include 'cookie-banner.html' %}
+<script src="{{ url_for('static', filename='cookie-script.js') }}" defer></script>
+
+
+<!-- cookie-script -->
+<script>
+    fetch("cookie-banner.html")
+        .then(response => response.text())
+        .then(html => {
+            // Voeg de cookie-banner alleen toe op de indexpagina
+            if (window.location.pathname === "/") {
+                document.getElementById("cookie-placeholder").innerHTML = html;
+
+                // Controleer of de gebruiker al cookie toestemming heeft gegeven
+                if (localStorage.getItem("cookieConsent") === null) {
+                    document.getElementById("cookie-banner").style.display = "block";
+                }
+
+                // Voeg het script toe
+                const script = document.createElement("script");
+                script.src = "cookie-script.js";
+                script.defer = true;
+                document.body.appendChild(script);
+            }
+        });
+
+    function setCookieConsent(consent) {
+        localStorage.setItem("cookieConsent", consent);
+        document.getElementById("cookie-banner").style.display = "none";
+        document.getElementById("cookie-settings").style.display = "none";
+        if (consent) {
+            enableCookies();
+        }
+    }
+</script>
+ 
+  
+  <!-- Vergelijk-script -->
+  
+  <script>
+      document.getElementById("send-btn").addEventListener("click", function() {
+          let userMessage = document.getElementById("user-message").value;
+          if (!userMessage) return;
+  
+          let chatlog = document.getElementById("chatlog");
+          chatlog.innerHTML += `<div><b>Jij:</b> ${userMessage}</div>`;
+          document.getElementById("user-message").value = "";
+  
+          fetch(`http://localhost:8500/chatbot/?vraag=${encodeURIComponent(userMessage)}`)
+              .then(response => response.json())
+              .then(data => {
+                  let antwoordContent = "";
+                  if (Array.isArray(data.antwoord)) {
+                      // Als antwoord een array is, veronderstel dat elk element objecten bevat met naam en prijs
+                      antwoordContent = data.antwoord.map(a => `${a.naam}: ${a.prijs}`).join("<br>");
+                  } else {
+                      // Anders ga er van uit dat het een string is
+                      antwoordContent = data.antwoord;
+                  }
+                  chatlog.innerHTML += `<div><b>Adviseur:</b> ${antwoordContent}</div>`;
+                  chatlog.scrollTop = chatlog.scrollHeight;
+              })
+              .catch(error => {
+                  chatlog.innerHTML += `<div><b>Bot:</b> Er is een fout opgetreden.</div>`;
+              });
+      });
+  
+      document.addEventListener("DOMContentLoaded", function() {
+          const chatbox = document.getElementById("chatbox");
+          const toggleChatBtn = document.getElementById("toggle-chat");
+          const closeChatBtn = document.getElementById("close-chat");
+  
+          // Open/sluit de chatbox bij klikken op de knop
+          toggleChatBtn.addEventListener("click", function() {
+              if (chatbox.classList.contains("hidden")) {
+                  chatbox.classList.remove("hidden");
+                  chatbox.style.display = "flex";
+              } else {
+                  chatbox.classList.add("hidden");
+                  chatbox.style.display = "none";
+              }
+          });
+  
+          // Minimaliseer de chatbox
+          closeChatBtn.addEventListener("click", function() {
+              chatbox.classList.add("hidden");
+              chatbox.style.display = "none";
+          });
+      });
+  </script>
+      
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Haal de CSRF-token uit de meta-tag
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        
+            // 2. Selecteer de vergelijk-knop en alle checkboxes
+            const vergelijkKnop = document.getElementById('vergelijk-knop');
+            const checkboxes = document.querySelectorAll('.vergelijk-checkbox');
+        
+            // 3. Functie om de "Vergelijk" link (href) te updaten
+            function updateVergelijkLink() {
+                const geselecteerdeIDs = Array.from(checkboxes)
+                    .filter(cb => cb.checked)
+                    .map(cb => cb.value);
+        
+                // Als er één of meer geselecteerd zijn, plak ze in de querystring
+                vergelijkKnop.href = geselecteerdeIDs.length
+                    ? `/vergelijk?abonnementen=${geselecteerdeIDs.join(',')}`
+                    : '/vergelijk';
+            }
+        
+            // 4. Functie om de selectie door te geven aan de server (via POST, incl. CSRF-token)
+            function updateComparisonOnServer() {
+                const geselecteerdeIDs = Array.from(checkboxes)
+                    .filter(cb => cb.checked)
+                    .map(cb => cb.value);
+        
+                fetch('/update_comparison', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // Stuur de CSRF-token mee in de headers. 
+                        // Let op: voor Flask-WTF is de standaard header vaak 'X-CSRFToken'
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify({ abonnement_ids: geselecteerdeIDs })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        console.error('Fout bij het updaten van de vergelijking:', response.statusText);
+                    } else {
+                        console.log('Vergelijkingslijst bijgewerkt!');
+                    }
+                })
+                .catch(error => console.error('Fetch-fout:', error));
+            }
+        
+            // 5. Checkbox-change events → update link en server
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', () => {
+                    updateVergelijkLink();
+                    updateComparisonOnServer();
+                });
+            });
+        
+            // 6. Roep initieel aan om de link te updaten (bv. na een page reload)
+            updateVergelijkLink();
+        
+        
+            // Eventlisteners voor dropdown-links (optioneel als je die ook in 1 script wilt)
+            document.querySelectorAll('.dropdown-item a').forEach(link => {
+                link.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    window.location.href = this.getAttribute('href');
+                });
+            });
+        });
+        </script>
+        
+
+
+</body>
+</html>

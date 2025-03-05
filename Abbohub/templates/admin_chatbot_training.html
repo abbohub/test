@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <title>Chatbot Training - Admin Dashboard</title>
+  <!-- Bootstrap CSS voor moderne styling -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <style>
+    body {
+      background-color: #f9f9f9;
+    }
+    .info-box {
+      background-color: #e7f3fe;
+      border-left: 6px solid #2196F3;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+    #feedbackMessage {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    #testZone {
+      margin-top: 30px;
+      padding: 15px;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    #performanceMetrics {
+      margin-top: 20px;
+      padding: 15px;
+      border: 1px solid #ccc;
+      background-color: #fff;
+    }
+    /* Kleine extra aanpassingen voor de tabel */
+    #trainingTable input[type="text"] {
+      border: none;
+      background: transparent;
+    }
+    #trainingTable input[type="text"]:focus {
+      outline: none;
+      background: #fff;
+    }
+  </style>
+</head>
+<body class="container">
+  <h1 class="mt-4">Chatbot Training</h1>
+  
+  <div class="info-box">
+    <p>
+      Bekijk en bewerk de gestelde vragen en bijbehorende antwoorden. Wijzigingen worden opgeslagen en het model wordt opnieuw getraind.
+    </p>
+    <p>
+      <strong>Hoe werkt het?</strong><br>
+      1. Bewerk de bestaande vraag-antwoord paren of voeg nieuwe data toe.<br>
+      2. Klik op "Train Model" om de wijzigingen op te slaan en het model te trainen.<br>
+      3. Bekijk de performance metrics en test de chatbot in de testzone.
+    </p>
+  </div>
+  
+  <!-- Trainingsdata formulier -->
+  <form id="trainingForm" method="post" action="/admin/chatbot-training">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <table class="table table-bordered" id="trainingTable">
+      <thead class="thead-light">
+        <tr>
+          <th>ID</th>
+          <th>Vraag</th>
+          <th>Antwoord</th>
+          <th>Acties</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr data-id="{{ log['id'] }}">
+          <td>
+            {{ log["id"] }}
+            <input type="hidden" name="id" value="{{ log['id'] }}">
+          </td>
+          <td>
+            <input type="text" class="form-control" name="vraag" value="{{ log['vraag'] }}" required>
+          </td>
+          <td>
+            <input type="text" class="form-control" name="antwoord" value="{{ log['antwoord'] }}" required>
+          </td>
+          <td>
+            <button type="button" class="btn btn-danger btn-sm deleteRow">Verwijder</button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <button class="btn btn-primary" type="submit">Train Model</button>
+  </form>
+  
+  <div id="feedbackMessage" class="mt-3" style="display:none;"></div>
+  
+  <!-- Formulier voor nieuwe trainingsdata -->
+  <h2 class="mt-4">Nieuwe Trainingsdata Toevoegen</h2>
+  <form id="addDataForm" method="post" action="/admin/chatbot-add">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="form-group">
+      <label for="newVraag">Vraag:</label>
+      <input type="text" id="newVraag" name="newVraag" class="form-control" required>
+    </div>
+    <div class="form-group">
+      <label for="newAntwoord">Antwoord:</label>
+      <input type="text" id="newAntwoord" name="newAntwoord" class="form-control" required>
+    </div>
+    <button class="btn btn-secondary" type="submit">Voeg Toe</button>
+  </form>
+  
+  <!-- Filter en Paginering -->
+  <div id="filterSection" class="mt-4">
+    <h2>Filter Trainingsdata</h2>
+    <input type="text" id="filterInput" class="form-control" placeholder="Zoek op vraag of antwoord...">
+  </div>
+  
+  <div id="pagination" class="mt-3">
+    <button id="prevPage" class="btn btn-info">Vorige</button>
+    <span id="pageInfo"></span>
+    <button id="nextPage" class="btn btn-info">Volgende</button>
+  </div>
+  
+  <!-- Testzone voor chatbot -->
+  <div id="testZone" class="mt-5">
+    <h2>Test de Chatbot</h2>
+    <div class="form-group">
+      <input type="text" id="testVraag" class="form-control" placeholder="Voer een testvraag in...">
+    </div>
+    <button id="testBtn" class="btn btn-warning">Test Vraag</button>
+    <div id="testResponse" class="mt-3"></div>
+  </div>
+  
+  <!-- Performance Metrics -->
+  <div id="performanceMetrics" class="mt-5">
+    <h2>Model Performance Metrics</h2>
+    <p id="metricsInfo">Accuraatheid: ... | F1-score: ...</p>
+  </div>
+  
+  <p class="mt-4"><a href="/admin">Terug naar het dashboard</a></p>
+  
+  <!-- Scripts -->
+  <script>
+    // AJAX voor het trainen van het model
+    document.getElementById("trainingForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      var form = this;
+      var formData = new FormData(form);
+      
+      fetch(form.action, {
+  method: "POST",
+  headers: {
+    "X-Requested-With": "XMLHttpRequest"
+  },
+  body: formData,
+})
+      .then(response => response.json())
+      .then(data => {
+        var feedback = document.getElementById("feedbackMessage");
+        feedback.style.display = "block";
+        if(data.success) {
+          feedback.style.color = "green";
+          feedback.innerText = "Model succesvol getraind!";
+          updateMetrics(); // Update performance metrics na training
+          // Eventueel: herlaad de trainingsdata (of update dynamisch)
+        } else {
+          feedback.style.color = "red";
+          feedback.innerText = "Er is een fout opgetreden: " + (data.error || "onbekende fout");
+        }
+      })
+      .catch(error => {
+        var feedback = document.getElementById("feedbackMessage");
+        feedback.style.display = "block";
+        feedback.style.color = "red";
+        feedback.innerText = "Fetch-fout: " + error;
+      });
+    });
+    
+    // AJAX voor het toevoegen van nieuwe trainingsdata
+    document.getElementById("addDataForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      var form = this;
+      var formData = new FormData(form);
+      
+      fetch(form.action, {
+        method: "POST",
+        body: formData,
+      })
+      .then(response => response.json())
+      .then(data => {
+        var feedback = document.getElementById("feedbackMessage");
+        feedback.style.display = "block";
+        if(data.success) {
+          feedback.style.color = "green";
+          feedback.innerText = "Nieuwe trainingsdata toegevoegd!";
+          location.reload(); // Vernieuw de pagina om de gewijzigde data te zien
+        } else {
+          feedback.style.color = "red";
+          feedback.innerText = "Er is een fout opgetreden: " + (data.error || "onbekende fout");
+        }
+      })
+      .catch(error => {
+        var feedback = document.getElementById("feedbackMessage");
+        feedback.style.display = "block";
+        feedback.style.color = "red";
+        feedback.innerText = "Fetch-fout: " + error;
+      });
+    });
+// Delete functionaliteit voor trainingsdata
+document.querySelectorAll(".deleteRow").forEach(button => {
+  button.addEventListener("click", function() {
+    if (confirm("Weet je zeker dat je deze rij wilt verwijderen?")) {
+      var row = this.closest("tr");
+      var id = row.getAttribute("data-id");
+      // Haal de CSRF-token op uit een hidden input in het formulier
+      var csrfToken = document.querySelector('input[name="csrf_token"]').value;
+      fetch("/admin/chatbot-delete/" + id, { 
+        method: "DELETE",
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+          "X-CSRFToken": csrfToken
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          row.remove();
+        } else {
+          alert("Fout bij verwijderen: " + data.error);
+        }
+      })
+      .catch(error => alert("Fetch-fout: " + error));
+    }
+  });
+});
+    
+    // Filter functionaliteit voor de trainingsdata
+    document.getElementById("filterInput").addEventListener("input", function() {
+      var filter = this.value.toLowerCase();
+      var rows = document.querySelectorAll("#trainingTable tbody tr");
+      rows.forEach(function(row) {
+        var vraag = row.cells[1].querySelector("input").value.toLowerCase();
+        var antwoord = row.cells[2].querySelector("input").value.toLowerCase();
+        if (vraag.indexOf(filter) > -1 || antwoord.indexOf(filter) > -1) {
+          row.style.display = "";
+        } else {
+          row.style.display = "none";
+        }
+      });
+    });
+    
+    // Paginering voor de trainingsdata
+    var currentPage = 1;
+    var rowsPerPage = 10;
+    var rows = document.querySelectorAll("#trainingTable tbody tr");
+    function paginate() {
+      rows.forEach((row, index) => {
+        row.style.display = "none";
+        if (index >= (currentPage - 1) * rowsPerPage && index < currentPage * rowsPerPage) {
+          row.style.display = "";
+        }
+      });
+      document.getElementById("pageInfo").innerText = "Pagina " + currentPage + " van " + Math.ceil(rows.length / rowsPerPage);
+    }
+    document.getElementById("prevPage").addEventListener("click", function() {
+      if (currentPage > 1) {
+        currentPage--;
+        paginate();
+      }
+    });
+    document.getElementById("nextPage").addEventListener("click", function() {
+      if (currentPage < Math.ceil(rows.length / rowsPerPage)) {
+        currentPage++;
+        paginate();
+      }
+    });
+    paginate();
+    
+    // Testzone: Stuur testvraag naar chatbot endpoint
+    document.getElementById("testBtn").addEventListener("click", function() {
+      var testVraag = document.getElementById("testVraag").value;
+      if(!testVraag) {
+        alert("Voer een testvraag in!");
+        return;
+      }
+      fetch("http://localhost:8500/chatbot/?vraag=" + encodeURIComponent(testVraag))
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById("testResponse").innerHTML = "<strong>Antwoord:</strong> " + data.antwoord;
+      })
+      .catch(error => {
+        document.getElementById("testResponse").innerHTML = "Fout: " + error;
+      });
+    });
+    
+    // Update performance metrics via AJAX (placeholder functie)
+    function updateMetrics() {
+      fetch("/admin/chatbot-metrics")
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById("metricsInfo").innerText = "Accuraatheid: " + data.accuracy + " | F1-score: " + data.f1;
+      })
+      .catch(error => {
+        document.getElementById("metricsInfo").innerText = "Performance metrics niet beschikbaar.";
+      });
+    }
+  </script>
+  
+  <!-- Bootstrap JS dependencies -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
+

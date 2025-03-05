@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Abonnement Toevoegen - Beheerder</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+  <style>
+    /* Basistijl en container */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    .add-subscription-container {
+      max-width: 700px;
+      margin: 40px auto;
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    h2 {
+      margin-top: 0;
+      color: #4CAF50;
+      text-align: center;
+    }
+
+    /* Eventuele subtitel voor extra info (optioneel) */
+    .subtitle {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: #555;
+    }
+
+    /* Flash-meldingen (optioneel) */
+    .flash-container {
+      margin-bottom: 15px;
+    }
+    .flash-message {
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+    .flash-success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .flash-danger {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+
+    /* Form-styling */
+    form label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+      color: #555;
+    }
+    form input,
+    form textarea,
+    form select {
+      width: 100%;
+      margin-top: 5px;
+      padding: 10px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 0.95rem;
+    }
+    form textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    /* Submit-knop */
+    button[type="submit"] {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      background-color: #4CAF50;
+      color: #fff;
+      font-weight: bold;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.2s;
+    }
+    button[type="submit"]:hover {
+      background-color: #45a049;
+    }
+
+    /* Responsiviteit */
+    @media (max-width: 600px) {
+      .add-subscription-container {
+        margin: 20px auto;
+        padding: 20px;
+      }
+      button[type="submit"] {
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="add-subscription-container">
+    <h2>Voeg een nieuw abonnement toe</h2>
+    <p class="subtitle">Vul de gegevens in om een nieuw abonnement aan te maken.</p>
+
+    <!-- Flash-meldingen -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-container">
+          {% for category, message in messages %}
+            <div class="flash-message flash-{{ category }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('add_subscription') }}" enctype="multipart/form-data">
+      <!-- CSRF-token toevoegen (heel belangrijk) -->
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <!-- Naam (verplicht) -->
+      <label for="naam">Naam (verplicht):</label>
+      <input 
+        type="text" 
+        name="naam" 
+        id="naam" 
+        required 
+        placeholder="Bijv. 'Onbeperkt Bellen' of 'Internet Basis'"
+      >
+
+      <!-- Beschrijving (optioneel) -->
+      <label for="beschrijving">Beschrijving:</label>
+      <input 
+        type="text" 
+        name="beschrijving" 
+        id="beschrijving"
+        placeholder="Korte omschrijving van het abonnement..."
+      >
+
+      <!-- Filter Optie (verplicht) -->
+      <label for="filter_optie">Filter Optie (verplicht):</label>
+      <input 
+        type="text" 
+        name="filter_optie" 
+        id="filter_optie"
+        required
+        placeholder="Bijv. 'internet', 'mobiel', 'tv'..."
+      >
+
+      <!-- Prijs -->
+      <label for="prijs">Prijs:</label>
+      <input 
+        type="text" 
+        name="prijs" 
+        id="prijs"
+        placeholder="Bijv. '€19,99 p/m'"
+      >
+
+      <!-- Contractduur -->
+      <label for="contractduur">Contractduur:</label>
+      <input 
+        type="text" 
+        name="contractduur" 
+        id="contractduur"
+        placeholder="Bijv. '12 maanden', 'maandelijks opzegbaar'"
+      >
+
+      <!-- Aanbiedingen -->
+      <label for="aanbiedingen">Aanbiedingen:</label>
+      <input 
+        type="text" 
+        name="aanbiedingen" 
+        id="aanbiedingen"
+        placeholder="Bijv. '3 maanden korting, gratis installatie...'"
+      >
+
+      <!-- Annuleringsvoorwaarden -->
+      <label for="annuleringsvoorwaarden">Annuleringsvoorwaarden:</label>
+      <textarea 
+        name="annuleringsvoorwaarden" 
+        id="annuleringsvoorwaarden"
+        placeholder="Hoe en wanneer kun je opzeggen?"
+      ></textarea>
+
+      <!-- Voordelen -->
+      <label for="voordelen">Voordelen:</label>
+      <textarea 
+        name="voordelen" 
+        id="voordelen"
+        placeholder="Wat zijn de belangrijkste pluspunten?"
+      ></textarea>
+
+      <label for="frequentie_bezorging">Frequentie Bezorging:</label>
+<input type="text" name="frequentie_bezorging" id="frequentie_bezorging" placeholder="Bijv. Wekelijks, Maandelijks">
+
+<label for="prijs_vanaf">Prijs Vanaf (€):</label>
+<input type="number" name="prijs_vanaf" id="prijs_vanaf" step="0.01" placeholder="Bijv. 10.00">
+
+<label for="prijs_tot">Prijs Tot (€):</label>
+<input type="number" name="prijs_tot" id="prijs_tot" step="0.01" placeholder="Bijv. 50.00">
+
+<label for="wat_is_het_abonnement">Wat is het abonnement?</label>
+<textarea name="wat_is_het_abonnement" id="wat_is_het_abonnement"></textarea>
+
+<label for="waarom_kiezen">Waarom kiezen voor dit abonnement?</label>
+<textarea name="waarom_kiezen" id="waarom_kiezen"></textarea>
+
+<label for="hoe_werkt_het">Hoe werkt het?</label>
+<textarea name="hoe_werkt_het" id="hoe_werkt_het"></textarea>
+
+<label for="past_dit_bij_jou">Past dit abonnement bij jou?</label>
+<textarea name="past_dit_bij_jou" id="past_dit_bij_jou"></textarea>
+
+
+      <!-- Beoordelingen -->
+      <label for="beoordelingen">Beoordelingen:</label>
+      <input 
+        type="number" 
+        step="0.1" 
+        name="beoordelingen" 
+        id="beoordelingen"
+        placeholder="Bijv. '4.5'"
+      >
+
+      <!-- Logo uploaden -->
+      <label for="logo">Logo uploaden (optioneel):</label>
+      <input 
+        type="file" 
+        name="logo" 
+        id="logo" 
+        accept=".png, .jpg, .jpeg, .gif"
+      >
+
+      <!-- Website URL -->
+      <label for="url">Website URL:</label>
+      <input 
+        type="url" 
+        name="url" 
+        id="url"
+        placeholder="Bijv. 'https://www.provider.nl'"
+      >
+
+      <!-- Categorie (verplicht) -->
+      <label for="categorie_id">Categorie (verplicht):</label>
+      <select 
+        name="categorie_id" 
+        id="categorie_id" 
+        required
+      >
+        <option value="" disabled selected>-- Kies een categorie --</option>
+        {% for cat in categorieen %}
+        <option value="{{ cat.id }}">{{ cat.naam }}</option>
+        {% endfor %}
+      </select>
+
+      <!-- Subcategorie (verplicht) -->
+      <label for="subcategorie_id">Subcategorie (verplicht):</label>
+      <select id="subcategorie_id" name="subcategorie_id" required>
+          <option value="">-- Selecteer een subcategorie --</option>
+          {% for subcategorie in subcategorieen %}
+          <option value="{{ subcategorie.id }}">{{ subcategorie.naam }}</option>
+          {% endfor %}
+      </select>
+
+      <!-- Doelgroepen (meerdere selectie mogelijk) -->
+      <label for="doelgroepen">Doelgroepen:</label>
+      <select name="doelgroepen" id="doelgroepen" multiple>
+          {% for doelgroep in doelgroepen %}
+          <option value="{{ doelgroep.id }}">{{ doelgroep.naam }}</option>
+          {% endfor %}
+      </select>
+
+      <!-- Tags (meerdere selectie mogelijk) -->
+      <label for="tags">Tags:</label>
+      <select name="tags" id="tags" multiple>
+          {% for tag in tags %}
+          <option value="{{ tag.id }}">{{ tag.naam }}</option>
+          {% endfor %}
+      </select>
+
+      <!-- Submit-knop -->
+      <button type="submit">Toevoegen</button>
+    </form>
+  </div>
+</body>
+</html>
