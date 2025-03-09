@@ -330,7 +330,24 @@
             });
         });
         </script>
-        
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Alleen toepassen als het scherm mobiel is
+        if (window.innerWidth <= 768) {
+          // Selecteer alle categorie-links in de dropdown
+          var categoryLinks = document.querySelectorAll('.dropdown-menu a');
+          categoryLinks.forEach(function(link) {
+            link.addEventListener('click', function() {
+              var compareBtn = document.getElementById('vergelijk-knop');
+              if (compareBtn) {
+                compareBtn.style.display = 'none';
+              }
+            });
+          });
+        }
+      });
+      </script>
+          
 
 </body>
 </html>
