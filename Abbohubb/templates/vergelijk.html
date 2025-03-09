@@ -18,7 +18,7 @@
             line-height: 1.6;
             margin: 0;
             padding: 0;
-            background-color: #f9f9f9;
+            background-color: #f3e6cc;
             color: #333;
         }
 
@@ -143,6 +143,17 @@
         .btn:hover {
             background-color: #45a049;
         }
+        
+        .badge {
+    display: inline-block;
+    background-color: #cd95ccbd;
+    color: white;
+    padding: 5px 10px;
+    font-size: 0.85rem;
+    border-radius: 12px;
+    margin: 2px;
+    text-align: center;
+}
 
         /* Footerstijl */
         footer {
@@ -173,17 +184,7 @@
                 font-size: 0.9rem;
                 padding: 10px;
             }
-        }
-        .badge {
-    display: inline-block;
-    background-color: ##cd95ccbd;
-    color: white;
-    padding: 5px 10px;
-    font-size: 0.85rem;
-    border-radius: 12px;
-    margin: 2px;
-    text-align: center;
-}
+
     </style>
 </head>
 <body>
@@ -322,6 +323,10 @@
         </tbody>
     </table>
 </div>
+<!-- Footer -->
+<footer>
+    <p>&copy; 2025 AbboHub. Alle rechten voorbehouden.</p>
+</footer>
 
 <script>
     document.getElementById('clear-comparison').addEventListener('click', () => {
@@ -342,9 +347,3 @@
         }).catch(error => console.error('Er is een fout opgetreden:', error));
     });
 </script>
-
-
-<!-- Footer -->
-<footer>
-    <p>&copy; 2025 AbboHub. Alle rechten voorbehouden.</p>
-</footer>

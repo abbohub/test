@@ -25,49 +25,46 @@
 
         <div class="zoek-filter-container">
             <h1>AbboHub</h1>
-            <form method="GET" action="{{ url_for('index') }}" class="zoek-filter-form">
-                <!-- Zoekveld -->
+            <div class="search-row">
+              <!-- Zoekformulier -->
+              <form method="GET" action="{{ url_for('index') }}" class="zoek-filter-form">
                 <input 
-                    type="text" 
-                    name="zoekterm" 
-                    placeholder="Zoek abonnementen..." 
-                    value="{{ zoekterm }}" 
-                    aria-label="Zoek abonnementen"
+                  type="text" 
+                  name="zoekterm" 
+                  placeholder="Zoek abonnementen..." 
+                  value="{{ zoekterm }}" 
+                  aria-label="Zoek abonnementen"
                 >
-                 <!-- Zoekknop -->
-                        <button type="submit" class="btn btn-search">Zoek</button>
-
-                <!-- Categorieën en subcategorieën dropdown -->
-                <!-- Dropdown voor categorieën -->
-        <div class="dropdown-container">
-            <button type="button" class="dropdown-button">Categorieën</button>
-            <div class="dropdown-menu">
-                <!-- Optie voor alle categorieën -->
-                <div class="dropdown-item">
-                    <a href="?categorie=">Alle categorieën</a>
-                </div>
-
-                <!-- Individuele categorieën en subcategorieën -->
-                {% for cat in unieke_categorieën %}
-                <div class="dropdown-item">
-                    <a href="?categorie={{ cat.id }}">{{ cat.naam }}</a>
-                    <!-- Subcategorieën -->
-                    <div class="sub-dropdown">
+              </form>
+              <!-- Container met knoppen: Categorieën dropdown en Vergelijk-knop -->
+              <div class="button-container">
+                <div class="dropdown-container">
+                  <button type="button" class="dropdown-button">Categorieën</button>
+                  <div class="dropdown-menu">
+                    <div class="dropdown-item">
+                      <a href="?categorie=">Alle categorieën</a>
+                    </div>
+                    {% for cat in unieke_categorieën %}
+                    <div class="dropdown-item">
+                      <a href="?categorie={{ cat.id }}">{{ cat.naam }}</a>
+                      <div class="sub-dropdown">
                         {% for subcat in unieke_subcategorieën if subcat.categorie_id == cat.id %}
                         <a href="?subcategorie={{ subcat.id }}">{{ subcat.naam }}</a>
                         {% endfor %}
+                      </div>
                     </div>
+                    {% endfor %}
+                  </div>
                 </div>
-                {% endfor %}
+                <a href="{{ url_for('vergelijk') }}" class="btn btn-compare" id="vergelijk-knop">
+                  Vergelijk
+                </a>
+              </div>
             </div>
-        </div>
-            </form>        
-        
-            <!-- Vergelijk knop -->
-            <a href="{{ url_for('vergelijk') }}" class="btn btn-compare" id="vergelijk-knop">
-                Vergelijk
-            </a>
-        </div>
+          </div>
+          
+          
+          
           
     </header>
 
@@ -334,7 +331,6 @@
         });
         </script>
         
-
 
 </body>
 </html>

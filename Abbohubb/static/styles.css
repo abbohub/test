@@ -356,7 +356,7 @@ header p {
 }
 .badge {
   display: inline-block;
-  background-color: #cd95ccbd;
+  background-color:#cd95ccbd;
   color: white;
   padding: 5px 10px;
   font-size: 0.85rem;
@@ -560,6 +560,7 @@ header p {
   display: none !important;
 }
 
+
   /* ========== FOOTER ========== */
   footer {
     text-align: center;
@@ -569,83 +570,166 @@ header p {
     margin-top: 30px;
   }
   
-  @media (max-width: 768px) {
-    /* Verberg de navigatie */
-    nav {
-      display: none;
-    }
-    
-    /* Zorg dat de hoofdinhoud (main) gecentreerd staat */
-    main {
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      flex-direction: column;
-    }
-    
-    /* Centreer de tegel-lijst */
-    .abonnementen-lijst {
-      justify-content: center;
-    }
-    
-    /* Zoek-knop verbergen (indien nog niet gedaan) */
-    .zoek-filter-form button.btn-search {
-      display: none !important;
-    }
-    
-    /* Pas de zoek-filter-container aan */
-    .zoek-filter-container {
-      grid-template-columns: 1fr;
-      gap: 0.7rem;
-      padding: 10px;
-    }
-    
-    .zoek-filter-container h1 {
-      text-align: center;
-      justify-self: center;
-    }
-    
-    .zoek-filter-form {
-      flex-direction: column;
-      width: 100%;
-    }
-    
-    .zoek-filter-form input[type="text"],
-    .zoek-filter-form select,
-    .dropdown-container,
-    .dropdown-button {
-      width: 100%;
-      box-sizing: border-box;
-    }
-    
-    .btn-compare {
-      justify-self: center !important;
-      width: 100%;
-      box-sizing: border-box;
-      margin-top: 5px;
-    }
-    
-    .dropdown-menu,
-    .sub-dropdown {
-      position: static;
-      width: 100%;
-      box-shadow: none;
-      padding: 5px;
-    }
-    
-    .dropdown-item,
-    .sub-dropdown a {
-      text-align: center;
-      padding: 5px 0;
-    }
-    
-    /* Footer vast onderaan het scherm */
-    footer {
-      position: static;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      z-index: 100;
-    }
+  /* Algemene styling voor het zoek/filter gedeelte */
+.zoek-filter-container {
+  padding: 20px;
+}
+
+/* Desktop: Zoekbalk en knoppen naast elkaar */
+.search-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-direction: row;
+}
+
+.zoek-filter-form {
+  flex: 1;
+}
+
+.zoek-filter-form input[type="text"] {
+  width: 90%;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+/* Container met knoppen (Categorieën & Vergelijk) */
+.button-container {
+  display: flex;
+  gap: 10px;
+}
+
+.button-container .dropdown-container,
+.button-container .btn-compare {
+  min-width: 120px;
+}
+
+/* Zorg dat beide knoppen exact dezelfde hoogte en uitlijning hebben */
+.button-container .dropdown-container .dropdown-button,
+.button-container .btn-compare {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  font-size: 0.9rem;
+  height: 40px;            /* Vaste hoogte */
+  line-height: 40px;       /* Zorgt voor verticale uitlijning */
+  display: flex;           /* Gebruik flex voor centreren */
+  align-items: center;
+  justify-content: center;
+}
+
+/* Dropdown-menu styling */
+.dropdown-menu,
+.sub-dropdown {
+  position: absolute;
+  width: 100%;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  padding: 5px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  display: none;
+}
+
+.dropdown-container:hover .dropdown-menu,
+.dropdown-container:focus-within .dropdown-menu {
+  display: block;
+}
+
+.dropdown-item,
+.sub-dropdown a {
+  text-align: center;
+  padding: 5px 0;
+}
+
+/* Media query voor mobiele weergave */
+@media (max-width: 768px) {
+  /* Verberg de navigatie */
+  nav {
+    display: none;
   }
-    <style>
+  
+  /* Centreer de hoofdinhoud en de tegel-lijst */
+  main {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .abonnementen-lijst {
+    justify-content: center;
+  }
+  
+  /* Verberg de zoekknop indien aanwezig */
+  .zoek-filter-form button.btn-search {
+    display: none !important;
+  }
+  
+  /* Pas de zoek-filter-container aan */
+  .zoek-filter-container {
+    grid-template-columns: 1fr;
+    gap: 0.7rem;
+    padding: 10px;
+  }
+  .zoek-filter-container h1 {
+    text-align: center;
+    justify-self: center;
+  }
+  .zoek-filter-form {
+    flex-direction: column;
+    width: 50%;
+  }
+  .zoek-filter-form input[type="text"],
+  .zoek-filter-form select,
+  .dropdown-container,
+  .dropdown-button {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .btn-compare {
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 5px;
+  }
+  .dropdown-menu,
+  .sub-dropdown {
+    position: static;
+    width: 100%;
+    box-shadow: none;
+    padding: 5px;
+  }
+  .dropdown-item,
+  .sub-dropdown a {
+    text-align: center;
+    padding: 5px 0;
+  }
+  
+  /* Footer onderaan het scherm */
+  footer {
+    position: static;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+  }
+  
+  /* Zet de zoek-row in mobiele versie in kolom */
+  .search-row {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  /* Zorg dat de container met knoppen in mobiele versie de twee knoppen naast elkaar zet en even groot maakt */
+  .button-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;      /* Zorgt ervoor dat de knoppen verticaal gecentreerd worden */
+    justify-content: center;  /* Je kunt hier ook 'space-between' of 'space-around' proberen */
+  }
+  .button-container .dropdown-container,
+  .button-container .btn-compare {
+    flex: 1;
+    margin: 0;                /* Pas hier de marge aan als er extra ruimte nodig is */
+    padding: 0;               /* Voeg padding toe als je extra ruimte binnen de knoppen wilt */
+  }
+}
