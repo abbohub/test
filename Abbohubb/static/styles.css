@@ -706,13 +706,22 @@ header p {
     padding: 0.5rem;
   }
   
-  /* Dropdown styling voor een heldere weergave */
+  /* Dropdown styling: zorg dat het menu als overlay verschijnt zodat de layout niet wordt verplaatst */
+  .dropdown-container {
+    position: relative; /* Nodig voor de absolute positionering van het menu */
+  }
   .dropdown-menu,
   .sub-dropdown {
-    position: static;
+    position: absolute;
+    top: 100%; /* Onder de knop */
+    left: 0;
     width: 100%;
     box-shadow: none;
     padding: 0.5rem;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    z-index: 10;
   }
   .dropdown-item,
   .sub-dropdown a {
@@ -749,4 +758,13 @@ header p {
     margin: 0;
     padding: 0;
   }
+  
+  /* Zorg dat de dropdown-knop de volledige breedte benut */
+  .button-container .dropdown-container .dropdown-button {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 10px;
+    font-size: 0.9rem;
+  }
 }
+
