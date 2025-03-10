@@ -699,12 +699,6 @@ header p {
     padding: 0.5rem; /* grotere hit-area voor touch */
     margin-bottom: 0.5rem;
   }
-  .btn-compare {
-    width: 100%;
-    box-sizing: border-box;
-    margin-top: 0.5rem;
-    padding: 0.5rem;
-  }
   
   /* Dropdown styling: zorg dat het menu als overlay verschijnt zodat de layout niet wordt verplaatst */
   .dropdown-container {
@@ -760,7 +754,24 @@ header p {
   }
   
   /* Zorg dat de dropdown-knop de volledige breedte benut */
-  .button-container .dropdown-container .dropdown-button {
+.button-container {
+    display: flex;
+    gap: 1rem;
+    align-items: stretch; /* Zorgt dat beide knoppen dezelfde hoogte krijgen */
+    justify-content: center;
+  }
+  
+  /* Zorg dat de knoppen in de button-container gelijk en responsief zijn */
+  .button-container .dropdown-container,
+  .button-container .btn-compare {
+    flex: 1;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Pas de styling van de dropdown-knop en vergelijk-knop aan */
+  .button-container .dropdown-container .dropdown-button,
+  .button-container .btn-compare {
     width: 100%;
     box-sizing: border-box;
     padding: 8px 10px;
@@ -768,3 +779,8 @@ header p {
   }
 }
 
+.btn-compare {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem;
+}
