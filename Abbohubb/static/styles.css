@@ -694,7 +694,7 @@ header p {
   .zoek-filter-form select,
   .dropdown-container,
   .dropdown-button {
-    width: 75%;
+    width: 85%;
     box-sizing: border-box;
     padding: 0.5rem; /* grotere hit-area voor touch */
     margin-bottom: 0.5rem;
