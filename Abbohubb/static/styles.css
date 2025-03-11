@@ -28,7 +28,7 @@ main {
 header {
     background: #9133bb; /* Aangepast: header achtergrond naar #9133bb */
     color: white;
-    padding: 20px 10px;
+    padding: 15px 10px;
     text-align: center;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     position: sticky;
@@ -87,9 +87,9 @@ header p {
   grid-template-columns: 1fr 2fr 1fr; /* Links, midden, rechts */
   align-items: center;
   gap: 1rem;
-  margin-top: 20px;
+  margin-top: 15px;
   padding: 20px;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(246, 243, 243, 0.2);
   border-radius: 8px;
 }
 
@@ -648,6 +648,10 @@ header p {
   nav {
     display: none;
   }
+  /* verklein header */
+  header {
+    padding: 10px 10px;
+}
 
   /* Optimaliseer de hoofdinhoud */
   main {
@@ -673,9 +677,10 @@ header p {
   /* Pas de zoek-filter-container aan */
   .zoek-filter-container {
     display: grid;
+    margin-top: 5px;
     grid-template-columns: 1fr;
     gap: 0.7rem;
-    padding: 1rem;
+    padding: 0.5rem;
   }
   .zoek-filter-container h1 {
     text-align: center;
@@ -694,7 +699,7 @@ header p {
   .zoek-filter-form select,
   .dropdown-container,
   .dropdown-button {
-    width: 85%;
+    width: 75%;
     box-sizing: border-box;
     padding: 0.5rem; /* grotere hit-area voor touch */
     margin-bottom: 0.5rem;
