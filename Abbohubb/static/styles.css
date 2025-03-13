@@ -26,7 +26,7 @@ main {
 
 /* ========== HEADER ========== */
 header {
-    background: #8968cd; /* Aangepast: header achtergrond naar #9133bb */
+    background: #9133bb; /* Aangepast: header achtergrond naar #9133bb */
     color: white;
     padding: 15px 10px;
     text-align: center;
@@ -297,11 +297,54 @@ header p {
 .categorie h2 {
   margin-bottom: 15px;
 }
+/* Wrapper voor de scrollbare container en pijlen */
+.categorie-scroll-wrapper {
+  position: relative;
+}
+
+/* Scrollbare container met ruimte voor beide pijlen */
+.categorie-scroll-container {
+  overflow-x: auto;
+  padding: 0 40px; /* ruimte aan beide kanten zodat pijlen niet over de tegels vallen */
+  scrollbar-width: none; /* Firefox */
+}
+.categorie-scroll-container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari en Opera */
+}
+
+/* Abonnementen-lijst dwingt horizontale layout */
 .abonnementen-lijst {
   display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
+  flex-wrap: nowrap;   /* voorkom afbreken naar een nieuwe regel */
   gap: 20px;
+  width: max-content;  /* breedte wordt bepaald door de inhoud */
+}
+
+/* Algemene styling voor beide scroll-pijlen */
+.scroll-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+/* Specifieke positie voor linker- en rechterpijl */
+.scroll-arrow-left {
+  left: 0;
+}
+.scroll-arrow-right {
+  right: 0;
 }
 
 /* Stijlen voor de abonnement tegel */
@@ -650,7 +693,7 @@ header p {
   }
   /* verklein header */
   header {
-    padding: 10px 10px;
+    padding: 8px 10px;
 }
 
   /* Optimaliseer de hoofdinhoud */

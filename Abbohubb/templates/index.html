@@ -26,7 +26,7 @@
         <div class="zoek-filter-container">
             <h1>AbboHub</h1>
             <div class="search-row">
-              <!-- Zoekformulier -->
+              <!-- Zoekformulier (zoekknop is weggelaten) -->
               <form method="GET" action="{{ url_for('index') }}" class="zoek-filter-form">
                 <input 
                   type="text" 
@@ -68,79 +68,86 @@
           
     </header>
 
-    <!-- HOOFDCONTENT: Abonnementen per categorie -->
-    <main>
-        <div class="abonnementen-container">
-            {% if abonnementen %}
-                {% for categorie in unieke_categorieën %}
-                    {% set categorie_abonnementen = abonnementen_per_categorie[categorie.id] %}
-                    {% if categorie_abonnementen or (not geselecteerde_subcategorie and not geselecteerde_categorie and not zoekterm) %}
-                    <section class="categorie" data-categorie-id="{{ categorie.id }}">
-                        <h2>{{ categorie.naam }}</h2>
-                        <div class="abonnementen-lijst">
-                            {% if categorie_abonnementen %}
-                                {% for abonnement in categorie_abonnementen %}
-                                <article class="abonnement">
-                                    <!-- voorkant altijd zichtbaar-->
-                                    <h3>{{ abonnement.naam }}</h3>
-                                    <!-- Flip-container voor logo en beschrijving -->
-                                    <div class="flip-container">
-                                      <div class="flip-inner">
-                                        <!-- Voorkant: toon het logo -->
-                                        <div class="flip-front">
-                                          <a href="{{ url_for('abonnement_reviews', abonnement_id=abonnement.id) }}">
-                                            {% if abonnement.logo %}
-                                              <img 
-                                                src="{{ url_for('static', filename='uploads/' ~ abonnement.logo) }}" 
-                                                alt="Logo van {{ abonnement.naam }}" 
-                                                class="abonnement-logo"
-                                              >
-                                            {% else %}
-                                              <img 
-                                                src="{{ url_for('static', filename='images/placeholder.png') }}" 
-                                                alt="Geen logo beschikbaar" 
-                                                class="abonnement-logo"
-                                              >
-                                            {% endif %}
-                                          </a>
-                                        </div>
-                                        <!-- Achterkant: toon de beschrijving -->
-                                        <div class="flip-back">
-                                          <p class="beschrijving">{{ abonnement.beschrijving }}</p>
-                                        </div>
-                                      </div>
-                                    </div>
-                                    <!-- Altijd zichtbare content -->
-                                    <!-- Subcategorie -->
-                                    <span class="subcategorie">{{ abonnement.subcategorie.naam }}</span>    
-                                    <div class="abonnement-tags">
-                                      {% for tag in abonnement.tags %}
-                                        <span class="badge">{{ tag.naam }}</span>
-                                      {% endfor %}
-                                    </div>
-                                    <div class="abonnement-acties">
-                                      <label>
-                                        <input type="checkbox" class="vergelijk-checkbox" value="{{ abonnement.id }}">
-                                        Vergelijk
-                                      </label>
-                                      <a href="{{ url_for('abonnement_reviews', abonnement_id=abonnement.id) }}" class="btn-review">
-                                        Meer info
-                                      </a>
-                                    </div>
-                                  </article>
-                                  
-                                {% endfor %}
-                            {% else %}
-                                <p>Geen abonnementen beschikbaar in deze categorie.</p>
-                            {% endif %}
+<!-- HOOFDCONTENT: Abonnementen per categorie -->
+<main>
+  <div class="abonnementen-container">
+    {% if abonnementen %}
+      {% for categorie in unieke_categorieën %}
+        {% set categorie_abonnementen = abonnementen_per_categorie[categorie.id] %}
+        {% if categorie_abonnementen or (not geselecteerde_subcategorie and not geselecteerde_categorie and not zoekterm) %}
+        <section class="categorie" data-categorie-id="{{ categorie.id }}">
+          <h2>{{ categorie.naam }}</h2>
+          <div class="categorie-scroll-wrapper">
+            <!-- Linker scroll-pijl -->
+            <div class="scroll-arrow scroll-arrow-left">&lt;</div>
+            <!-- Scrollbare container -->
+            <div class="categorie-scroll-container">
+              <div class="abonnementen-lijst">
+                {% if categorie_abonnementen %}
+                  {% for abonnement in categorie_abonnementen %}
+                    <article class="abonnement">
+                      <h3>{{ abonnement.naam }}</h3>
+                      <div class="flip-container">
+                        <div class="flip-inner">
+                          <div class="flip-front">
+                            <a href="{{ url_for('abonnement_reviews', abonnement_id=abonnement.id) }}">
+                              {% if abonnement.logo %}
+                                <img 
+                                  src="{{ url_for('static', filename='uploads/' ~ abonnement.logo) }}" 
+                                  alt="Logo van {{ abonnement.naam }}" 
+                                  class="abonnement-logo"
+                                >
+                              {% else %}
+                                <img 
+                                  src="{{ url_for('static', filename='images/placeholder.png') }}" 
+                                  alt="Geen logo beschikbaar" 
+                                  class="abonnement-logo"
+                                >
+                              {% endif %}
+                            </a>
+                          </div>
+                          <div class="flip-back">
+                            <p class="beschrijving">{{ abonnement.beschrijving }}</p>
+                          </div>
                         </div>
-                    </section>
-                    {% endif %}
-                {% endfor %}
-            {% else %}
-                <p>Geen abonnementen gevonden. Probeer een andere zoekopdracht of filter.</p>
-            {% endif %}
-        </div>    
+                      </div>
+                      <span class="subcategorie">{{ abonnement.subcategorie.naam }}</span>
+                      <div class="abonnement-tags">
+                        {% for tag in abonnement.tags %}
+                          <span class="badge">{{ tag.naam }}</span>
+                        {% endfor %}
+                      </div>
+                      <div class="abonnement-acties">
+                        <label>
+                          <input type="checkbox" class="vergelijk-checkbox" value="{{ abonnement.id }}">
+                          Vergelijk
+                        </label>
+                        <a href="{{ url_for('abonnement_reviews', abonnement_id=abonnement.id) }}" class="btn-review">
+                          Meer info
+                        </a>
+                      </div>
+                    </article>
+                  {% endfor %}
+                {% else %}
+                  <p>Geen abonnementen beschikbaar in deze categorie.</p>
+                {% endif %}
+              </div>
+            </div>
+            <!-- Rechter scroll-pijl -->
+            <div class="scroll-arrow scroll-arrow-right">&gt;</div>
+          </div>
+        </section>
+        
+        
+        
+        {% endif %}
+      {% endfor %}
+    {% else %}
+      <p>Geen abonnementen gevonden. Probeer een andere zoekopdracht of filter.</p>
+    {% endif %}
+  </div>
+</main>
+   
 
         <!-- Chatbot Widget -->
 <!-- Knop om de chatbot te openen/sluiten -->
@@ -330,24 +337,30 @@
             });
         });
         </script>
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        // Alleen toepassen als het scherm mobiel is
-        if (window.innerWidth <= 768) {
-          // Selecteer alle categorie-links in de dropdown
-          var categoryLinks = document.querySelectorAll('.dropdown-menu a');
-          categoryLinks.forEach(function(link) {
-            link.addEventListener('click', function() {
-              var compareBtn = document.getElementById('vergelijk-knop');
-              if (compareBtn) {
-                compareBtn.style.display = 'none';
-              }
-            });
-          });
-        }
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.categorie-scroll-wrapper').forEach(function(wrapper) {
+      const container = wrapper.querySelector('.categorie-scroll-container');
+      const leftArrow = wrapper.querySelector('.scroll-arrow-left');
+      const rightArrow = wrapper.querySelector('.scroll-arrow-right');
+      
+      leftArrow.addEventListener('click', function() {
+        container.scrollBy({
+          left: -250,  // scroll naar links (pas de waarde naar wens aan)
+          behavior: 'smooth'
+        });
       });
-      </script>
-          
-
+      
+      rightArrow.addEventListener('click', function() {
+        container.scrollBy({
+          left: 250,  // scroll naar rechts (pas de waarde naar wens aan)
+          behavior: 'smooth'
+        });
+      });
+    });
+  });
+  </script>
+  
+  
 </body>
 </html>
