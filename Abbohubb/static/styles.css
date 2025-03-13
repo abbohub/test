@@ -697,7 +697,7 @@ header p {
     display: none;
   }
   
-  /* Verklein en lock de header */
+  /* Verklein en fix de header */
   header {
     padding: 8px 10px;
     position: fixed;
@@ -707,28 +707,19 @@ header p {
     z-index: 1000;
   }
   
-  /* Optimaliseer de hoofdinhoud, voeg extra top-padding toe zodat de header er niet overheen scrolt */
+  /* Zorg dat de main niet onder de header valt */
   main {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: flex-start;
-    padding: 70px 1rem 1rem; /* 70px bovenaan om rekening te houden met de header */
+    padding: 70px 1rem 1rem; /* Top-padding aangepast op basis van headerhoogte */
   }
   
-  /* Centreer de abonnementen-lijst */
-  .abonnementen-lijst {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  /* Verberg de zoekknop */
+  /* Zoek-filter en formulier optimalisaties */
   .zoek-filter-form button.btn-search {
     display: none;
   }
-  
-  /* Pas de zoek-filter-container aan */
   .zoek-filter-container {
     display: grid;
     margin-top: 5px;
@@ -740,8 +731,6 @@ header p {
     text-align: center;
     margin: 0 auto;
   }
-  
-  /* Optimaliseer het zoek-filter-formulier */
   .zoek-filter-form {
     display: flex;
     flex-direction: column;
@@ -759,7 +748,7 @@ header p {
     margin-bottom: 0.5rem;
   }
   
-  /* Dropdown styling: zorg dat het menu als overlay verschijnt zodat de layout niet wordt verplaatst */
+  /* Dropdown overlay */
   .dropdown-container {
     position: relative;
   }
@@ -782,7 +771,7 @@ header p {
     padding: 0.5rem 0;
   }
   
-  /* Footer aangepast voor mobiele weergave */
+  /* Footer */
   footer {
     position: static;
     width: 100%;
@@ -791,14 +780,14 @@ header p {
     z-index: 100;
   }
   
-  /* Zet de zoek-row in kolom met voldoende spacing */
+  /* Zoek-row layout */
   .search-row {
     display: flex;
     flex-direction: column;
     gap: 1rem;
   }
   
-  /* Zorg dat de knoppen in de button-container gelijk en responsief zijn */
+  /* Button-container styling */
   .button-container {
     display: flex;
     gap: 1rem;
@@ -819,25 +808,20 @@ header p {
     font-size: 0.9rem;
   }
   
-  /* Extra stijlen voor horizontaal scrollen in de categorieën */
-  
-  /* Wrapper om de scroll-container en scroll-pijlen te bevatten */
+  /* Horizontaal scrollen voor categorieën */
   .categorie-scroll-wrapper {
     position: relative;
+    margin-top: 10px; /* zorg voor wat ruimte tussen h2 en de scroll-container */
   }
-  
-  /* Scrollbare container: horizontaal scrollen binnen de wrapper, met padding voor de pijlen */
   .categorie-scroll-container {
     overflow-x: auto;
-    padding: 0 40px;
+    padding: 0 40px; /* ruimte voor de pijlen */
     scrollbar-width: none; /* Firefox */
   }
   .categorie-scroll-container::-webkit-scrollbar {
     display: none; /* Chrome, Safari en Opera */
   }
-  
-  /* Zorg dat de abonnementen-lijst horizontaal blijft: 
-     gebruik nowrap en een breedte gebaseerd op de inhoud */
+  /* Zorg dat de abonnementen-lijst horizontaal uitlijnt en alle items weergeeft */
   .abonnementen-lijst {
     display: flex;
     flex-wrap: nowrap;
@@ -845,7 +829,7 @@ header p {
     width: max-content;
   }
   
-  /* Styling voor de scroll-pijlen */
+  /* Scroll-pijlen (links en rechts) */
   .scroll-arrow {
     position: absolute;
     top: 50%;
