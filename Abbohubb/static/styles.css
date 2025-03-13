@@ -687,22 +687,33 @@ header p {
 
 /* Optimized media query voor mobiele apparaten */
 @media (max-width: 768px) {
+  /* Voorkom horizontale scroll op de hele pagina */
+  html, body {
+    overflow-x: hidden;
+  }
+  
   /* Verberg de navigatie */
   nav {
     display: none;
   }
-  /* verklein header */
+  
+  /* Verklein en lock de header */
   header {
     padding: 8px 10px;
-}
-
-  /* Optimaliseer de hoofdinhoud */
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+  }
+  
+  /* Optimaliseer de hoofdinhoud, voeg extra top-padding toe zodat de header er niet overheen scrolt */
   main {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: flex-start;
-    padding: 1rem; /* extra ruimte voor betere leesbaarheid */
+    padding: 70px 1rem 1rem; /* 70px bovenaan om rekening te houden met de header */
   }
   
   /* Centreer de abonnementen-lijst */
@@ -735,7 +746,7 @@ header p {
     display: flex;
     flex-direction: column;
     width: 100%;
-    max-width: 400px; /* beperkt de breedte voor betere leesbaarheid */
+    max-width: 400px;
     margin: 0 auto;
   }
   .zoek-filter-form input[type="text"],
@@ -744,18 +755,18 @@ header p {
   .dropdown-button {
     width: 75%;
     box-sizing: border-box;
-    padding: 0.5rem; /* grotere hit-area voor touch */
+    padding: 0.5rem;
     margin-bottom: 0.5rem;
   }
   
   /* Dropdown styling: zorg dat het menu als overlay verschijnt zodat de layout niet wordt verplaatst */
   .dropdown-container {
-    position: relative; /* Nodig voor de absolute positionering van het menu */
+    position: relative;
   }
   .dropdown-menu,
   .sub-dropdown {
     position: absolute;
-    top: 100%; /* Onder de knop */
+    top: 100%;
     left: 0;
     width: 100%;
     box-shadow: none;
@@ -791,7 +802,7 @@ header p {
   .button-container {
     display: flex;
     gap: 1rem;
-    align-items: center;
+    align-items: stretch;
     justify-content: center;
   }
   .button-container .dropdown-container,
@@ -800,30 +811,63 @@ header p {
     margin: 0;
     padding: 0;
   }
-  
-  /* Zorg dat de dropdown-knop de volledige breedte benut */
-.button-container {
-    display: flex;
-    gap: 1rem;
-    align-items: stretch; /* Zorgt dat beide knoppen dezelfde hoogte krijgen */
-    justify-content: center;
-  }
-  
-  /* Zorg dat de knoppen in de button-container gelijk en responsief zijn */
-  .button-container .dropdown-container,
-  .button-container .btn-compare {
-    flex: 1;
-    margin: 0;
-    padding: 0;
-  }
-  
-  /* Pas de styling van de dropdown-knop en vergelijk-knop aan */
   .button-container .dropdown-container .dropdown-button,
   .button-container .btn-compare {
     width: 100%;
     box-sizing: border-box;
     padding: 8px 10px;
     font-size: 0.9rem;
+  }
+  
+  /* Extra stijlen voor horizontaal scrollen in de categorieën */
+  
+  /* Wrapper om de scroll-container en scroll-pijlen te bevatten */
+  .categorie-scroll-wrapper {
+    position: relative;
+  }
+  
+  /* Scrollbare container: horizontaal scrollen binnen de wrapper, met padding voor de pijlen */
+  .categorie-scroll-container {
+    overflow-x: auto;
+    padding: 0 40px;
+    scrollbar-width: none; /* Firefox */
+  }
+  .categorie-scroll-container::-webkit-scrollbar {
+    display: none; /* Chrome, Safari en Opera */
+  }
+  
+  /* Zorg dat de abonnementen-lijst horizontaal blijft: 
+     gebruik nowrap en een breedte gebaseerd op de inhoud */
+  .abonnementen-lijst {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 20px;
+    width: max-content;
+  }
+  
+  /* Styling voor de scroll-pijlen */
+  .scroll-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid #ddd;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    font-size: 1.2rem;
+    color: #333;
+  }
+  .scroll-arrow-left {
+    left: 0;
+  }
+  .scroll-arrow-right {
+    right: 0;
   }
 }
 

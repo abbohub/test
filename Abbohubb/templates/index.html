@@ -76,69 +76,68 @@
         {% set categorie_abonnementen = abonnementen_per_categorie[categorie.id] %}
         {% if categorie_abonnementen or (not geselecteerde_subcategorie and not geselecteerde_categorie and not zoekterm) %}
         <section class="categorie" data-categorie-id="{{ categorie.id }}">
-          <h2>{{ categorie.naam }}</h2>
-          <div class="categorie-scroll-wrapper">
-            <!-- Linker scroll-pijl -->
-            <div class="scroll-arrow scroll-arrow-left">&lt;</div>
-            <!-- Scrollbare container -->
-            <div class="categorie-scroll-container">
-              <div class="abonnementen-lijst">
-                {% if categorie_abonnementen %}
-                  {% for abonnement in categorie_abonnementen %}
-                    <article class="abonnement">
-                      <h3>{{ abonnement.naam }}</h3>
-                      <div class="flip-container">
-                        <div class="flip-inner">
-                          <div class="flip-front">
-                            <a href="{{ url_for('abonnement_reviews', abonnement_id=abonnement.id) }}">
-                              {% if abonnement.logo %}
-                                <img 
-                                  src="{{ url_for('static', filename='uploads/' ~ abonnement.logo) }}" 
-                                  alt="Logo van {{ abonnement.naam }}" 
-                                  class="abonnement-logo"
-                                >
-                              {% else %}
-                                <img 
-                                  src="{{ url_for('static', filename='images/placeholder.png') }}" 
-                                  alt="Geen logo beschikbaar" 
-                                  class="abonnement-logo"
-                                >
-                              {% endif %}
-                            </a>
-                          </div>
-                          <div class="flip-back">
-                            <p class="beschrijving">{{ abonnement.beschrijving }}</p>
-                          </div>
-                        </div>
-                      </div>
-                      <span class="subcategorie">{{ abonnement.subcategorie.naam }}</span>
-                      <div class="abonnement-tags">
-                        {% for tag in abonnement.tags %}
-                          <span class="badge">{{ tag.naam }}</span>
-                        {% endfor %}
-                      </div>
-                      <div class="abonnement-acties">
-                        <label>
-                          <input type="checkbox" class="vergelijk-checkbox" value="{{ abonnement.id }}">
-                          Vergelijk
-                        </label>
-                        <a href="{{ url_for('abonnement_reviews', abonnement_id=abonnement.id) }}" class="btn-review">
-                          Meer info
-                        </a>
-                      </div>
-                    </article>
-                  {% endfor %}
-                {% else %}
-                  <p>Geen abonnementen beschikbaar in deze categorie.</p>
-                {% endif %}
+  <h2>{{ categorie.naam }}</h2>
+  <div class="categorie-scroll-wrapper">
+    <!-- Linker scroll-pijl -->
+    <div class="scroll-arrow scroll-arrow-left">&lt;</div>
+    <!-- Scrollbare container -->
+    <div class="categorie-scroll-container">
+      <div class="abonnementen-lijst">
+        {% if categorie_abonnementen %}
+          {% for abonnement in categorie_abonnementen %}
+            <article class="abonnement">
+              <h3>{{ abonnement.naam }}</h3>
+              <div class="flip-container">
+                <div class="flip-inner">
+                  <div class="flip-front">
+                    <a href="{{ url_for('abonnement_reviews', abonnement_id=abonnement.id) }}">
+                      {% if abonnement.logo %}
+                        <img 
+                          src="{{ url_for('static', filename='uploads/' ~ abonnement.logo) }}" 
+                          alt="Logo van {{ abonnement.naam }}" 
+                          class="abonnement-logo"
+                        >
+                      {% else %}
+                        <img 
+                          src="{{ url_for('static', filename='images/placeholder.png') }}" 
+                          alt="Geen logo beschikbaar" 
+                          class="abonnement-logo"
+                        >
+                      {% endif %}
+                    </a>
+                  </div>
+                  <div class="flip-back">
+                    <p class="beschrijving">{{ abonnement.beschrijving }}</p>
+                  </div>
+                </div>
               </div>
-            </div>
-            <!-- Rechter scroll-pijl -->
-            <div class="scroll-arrow scroll-arrow-right">&gt;</div>
-          </div>
-        </section>
-        
-        
+              <span class="subcategorie">{{ abonnement.subcategorie.naam }}</span>
+              <div class="abonnement-tags">
+                {% for tag in abonnement.tags %}
+                  <span class="badge">{{ tag.naam }}</span>
+                {% endfor %}
+              </div>
+              <div class="abonnement-acties">
+                <label>
+                  <input type="checkbox" class="vergelijk-checkbox" value="{{ abonnement.id }}">
+                  Vergelijk
+                </label>
+                <a href="{{ url_for('abonnement_reviews', abonnement_id=abonnement.id) }}" class="btn-review">
+                  Meer info
+                </a>
+              </div>
+            </article>
+          {% endfor %}
+        {% else %}
+          <p>Geen abonnementen beschikbaar in deze categorie.</p>
+        {% endif %}
+      </div>
+    </div>
+    <!-- Rechter scroll-pijl -->
+    <div class="scroll-arrow scroll-arrow-right">&gt;</div>
+  </div>
+</section>
+     
         
         {% endif %}
       {% endfor %}
@@ -361,6 +360,33 @@
   });
   </script>
   
-  
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.categorie-scroll-wrapper').forEach(function(wrapper) {
+        const container = wrapper.querySelector('.categorie-scroll-container') || wrapper.querySelector('.abonnementen-lijst');
+        const leftArrow = wrapper.querySelector('.scroll-arrow-left');
+        const rightArrow = wrapper.querySelector('.scroll-arrow-right');
+        
+        if(leftArrow) {
+          leftArrow.addEventListener('click', function() {
+            container.scrollBy({
+              left: -250,  // pas de scrollafstand aan naar wens
+              behavior: 'smooth'
+            });
+          });
+        }
+        
+        if(rightArrow) {
+          rightArrow.addEventListener('click', function() {
+            container.scrollBy({
+              left: 250,  // pas de scrollafstand aan naar wens
+              behavior: 'smooth'
+            });
+          });
+        }
+      });
+    });
+    </script>
+    
 </body>
 </html>
