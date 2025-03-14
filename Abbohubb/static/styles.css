@@ -26,7 +26,7 @@ main {
 
 /* ========== HEADER ========== */
 header {
-    background: #9133bb; /* Aangepast: header achtergrond naar #9133bb */
+    background: #8968cd; /* Aangepast: header achtergrond naar #9133bb */
     color: white;
     padding: 15px 10px;
     text-align: center;
@@ -297,54 +297,11 @@ header p {
 .categorie h2 {
   margin-bottom: 15px;
 }
-/* Wrapper voor de scrollbare container en pijlen */
-.categorie-scroll-wrapper {
-  position: relative;
-}
-
-/* Scrollbare container met ruimte voor beide pijlen */
-.categorie-scroll-container {
-  overflow-x: auto;
-  padding: 0 40px; /* ruimte aan beide kanten zodat pijlen niet over de tegels vallen */
-  scrollbar-width: none; /* Firefox */
-}
-.categorie-scroll-container::-webkit-scrollbar {
-  display: none; /* Chrome, Safari en Opera */
-}
-
-/* Abonnementen-lijst dwingt horizontale layout */
 .abonnementen-lijst {
   display: flex;
-  flex-wrap: nowrap;   /* voorkom afbreken naar een nieuwe regel */
+  flex-wrap: wrap;
+  align-items: stretch;
   gap: 20px;
-  width: max-content;  /* breedte wordt bepaald door de inhoud */
-}
-
-/* Algemene styling voor beide scroll-pijlen */
-.scroll-arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid #ddd;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 10;
-  font-size: 1.2rem;
-  color: #333;
-}
-
-/* Specifieke positie voor linker- en rechterpijl */
-.scroll-arrow-left {
-  left: 0;
-}
-.scroll-arrow-right {
-  right: 0;
 }
 
 /* Stijlen voor de abonnement tegel */
@@ -685,41 +642,101 @@ header p {
   padding: 5px 0;
 }
 
+/* Wrapper voor de scrollbare container en pijlen */
+.categorie-scroll-wrapper {
+  position: relative;
+}
+
+.categorie-scroll-container {
+  display: flex;
+  flex-direction: row;
+  gap: 20px; /* Zorgt voor een consistente ruimte tussen de originele lijst en de kloon */
+  overflow-x: auto;
+  padding: 0 40px; /* Ruimte zodat de pijlen niet over de inhoud vallen */
+  scrollbar-width: none; /* Firefox */
+}
+.categorie-scroll-container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari en Opera */
+}
+
+
+.categorie-scroll-container::-webkit-scrollbar {
+  display: none;              /* Chrome, Safari en Opera */
+}
+
+.categorie-scroll-container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari en Opera */
+}
+
+/* Abonnementen-lijst dwingt horizontale layout */
+.abonnementen-lijst {
+  display: flex;
+  flex-wrap: nowrap;   /* voorkom dat de tegels op een nieuwe regel komen */
+  gap: 20px;
+  width: max-content;  /* breedte wordt bepaald door de inhoud */
+}
+
+/* Algemene styling voor beide scroll-pijlen */
+.scroll-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+/* Specifieke positie voor linker- en rechterpijl */
+.scroll-arrow-left {
+  left: 0;
+}
+.scroll-arrow-right {
+  right: 0;
+}
+
+
 /* Optimized media query voor mobiele apparaten */
 @media (max-width: 768px) {
-  /* Voorkom horizontale scroll op de hele pagina */
-  html, body {
-    overflow-x: hidden;
-  }
-  
   /* Verberg de navigatie */
   nav {
     display: none;
   }
-  
-  /* Verklein en fix de header */
+  /* verklein header */
   header {
-    padding: 8px 10px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-  }
-  
-  /* Zorg dat de main niet onder de header valt */
+    padding: 10px 10px;
+}
+
+  /* Optimaliseer de hoofdinhoud */
   main {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: flex-start;
-    padding: 70px 1rem 1rem; /* Top-padding aangepast op basis van headerhoogte */
+    padding: 1rem; /* extra ruimte voor betere leesbaarheid */
   }
   
-  /* Zoek-filter en formulier optimalisaties */
+  /* Centreer de abonnementen-lijst */
+  .abonnementen-lijst {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  /* Verberg de zoekknop */
   .zoek-filter-form button.btn-search {
     display: none;
   }
+  
+  /* Pas de zoek-filter-container aan */
   .zoek-filter-container {
     display: grid;
     margin-top: 5px;
@@ -731,11 +748,13 @@ header p {
     text-align: center;
     margin: 0 auto;
   }
+  
+  /* Optimaliseer het zoek-filter-formulier */
   .zoek-filter-form {
     display: flex;
     flex-direction: column;
     width: 100%;
-    max-width: 400px;
+    max-width: 400px; /* beperkt de breedte voor betere leesbaarheid */
     margin: 0 auto;
   }
   .zoek-filter-form input[type="text"],
@@ -744,18 +763,18 @@ header p {
   .dropdown-button {
     width: 75%;
     box-sizing: border-box;
-    padding: 0.5rem;
+    padding: 0.5rem; /* grotere hit-area voor touch */
     margin-bottom: 0.5rem;
   }
   
-  /* Dropdown overlay */
+  /* Dropdown styling: zorg dat het menu als overlay verschijnt zodat de layout niet wordt verplaatst */
   .dropdown-container {
-    position: relative;
+    position: relative; /* Nodig voor de absolute positionering van het menu */
   }
   .dropdown-menu,
   .sub-dropdown {
     position: absolute;
-    top: 100%;
+    top: 100%; /* Onder de knop */
     left: 0;
     width: 100%;
     box-shadow: none;
@@ -771,7 +790,7 @@ header p {
     padding: 0.5rem 0;
   }
   
-  /* Footer */
+  /* Footer aangepast voor mobiele weergave */
   footer {
     position: static;
     width: 100%;
@@ -780,18 +799,18 @@ header p {
     z-index: 100;
   }
   
-  /* Zoek-row layout */
+  /* Zet de zoek-row in kolom met voldoende spacing */
   .search-row {
     display: flex;
     flex-direction: column;
     gap: 1rem;
   }
   
-  /* Button-container styling */
+  /* Zorg dat de knoppen in de button-container gelijk en responsief zijn */
   .button-container {
     display: flex;
     gap: 1rem;
-    align-items: stretch;
+    align-items: center;
     justify-content: center;
   }
   .button-container .dropdown-container,
@@ -800,6 +819,24 @@ header p {
     margin: 0;
     padding: 0;
   }
+  
+  /* Zorg dat de dropdown-knop de volledige breedte benut */
+.button-container {
+    display: flex;
+    gap: 1rem;
+    align-items: stretch; /* Zorgt dat beide knoppen dezelfde hoogte krijgen */
+    justify-content: center;
+  }
+  
+  /* Zorg dat de knoppen in de button-container gelijk en responsief zijn */
+  .button-container .dropdown-container,
+  .button-container .btn-compare {
+    flex: 1;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Pas de styling van de dropdown-knop en vergelijk-knop aan */
   .button-container .dropdown-container .dropdown-button,
   .button-container .btn-compare {
     width: 100%;
@@ -807,56 +844,41 @@ header p {
     padding: 8px 10px;
     font-size: 0.9rem;
   }
-  
-  /* Horizontaal scrollen voor categorieën */
-  .categorie-scroll-wrapper {
-    position: relative;
-    margin-top: 10px; /* zorg voor wat ruimte tussen h2 en de scroll-container */
-  }
-  .categorie-scroll-container {
-    overflow-x: auto;
-    padding: 0 40px; /* ruimte voor de pijlen */
-    scrollbar-width: none; /* Firefox */
-  }
-  .categorie-scroll-container::-webkit-scrollbar {
-    display: none; /* Chrome, Safari en Opera */
-  }
-  /* Zorg dat de abonnementen-lijst horizontaal uitlijnt en alle items weergeeft */
-  .abonnementen-lijst {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: 20px;
-    width: max-content;
-  }
-  
-  /* Scroll-pijlen (links en rechts) */
-  .scroll-arrow {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(255, 255, 255, 0.9);
-    border: 1px solid #ddd;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 10;
-    font-size: 1.2rem;
-    color: #333;
-  }
-  .scroll-arrow-left {
-    left: 0;
-  }
-  .scroll-arrow-right {
-    right: 0;
-  }
 }
 
 .btn-compare {
   width: 100%;
   box-sizing: border-box;
   padding: 0.5rem;
+}
+
+/* Wrapper voor de scrollbare container en pijlen */
+.categorie-scroll-wrapper {
+  position: relative;
+}
+
+/* Scrollbare container met flex-layout zodat de duplicaatlijst naast de originele komt */
+.categorie-scroll-container {
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  padding: 0 40px; /* ruimte voor beide pijlen */
+  scrollbar-width: none; /* Firefox */
+}
+.categorie-scroll-container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari en Opera */
+}
+
+/* Zorg dat de abonnementen-lijst horizontaal blijft staan */
+.abonnementen-lijst {
+  display: flex;
+  flex-wrap: nowrap;   /* tegels blijven op één regel */
+  gap: 20px;
+  width: max-content;  /* breedte wordt bepaald door de inhoud */
+}
+
+@media (max-width: 768px) {
+  html, body {
+    overflow-x: hidden; /* Voorkomt horizontaal scrollen van de hele pagina */
+  }
 }
