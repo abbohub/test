@@ -655,14 +655,6 @@ header p {
   padding: 0 40px; /* Ruimte zodat de pijlen niet over de inhoud vallen */
   scrollbar-width: none; /* Firefox */
 }
-.categorie-scroll-container::-webkit-scrollbar {
-  display: none; /* Chrome, Safari en Opera */
-}
-
-
-.categorie-scroll-container::-webkit-scrollbar {
-  display: none;              /* Chrome, Safari en Opera */
-}
 
 .categorie-scroll-container::-webkit-scrollbar {
   display: none; /* Chrome, Safari en Opera */
@@ -882,3 +874,49 @@ header p {
     overflow-x: hidden; /* Voorkomt horizontaal scrollen van de hele pagina */
   }
 }
+@media (max-width: 768px) {
+  .abonnementen-lijst::after {
+    content: "";
+    flex: 0 0 calc(50vw - 125px);
+  }
+}
+@media (max-width: 768px) {
+  .abonnement {
+    width: 300px;           /* vaste breedte */
+    height: 430px;          /* vaste hoogte; pas dit aan naar wat nodig is voor alle inhoud */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between; /* verdeelt de ruimte tussen elementen */
+    box-sizing: border-box;
+    padding: 15px;
+    overflow: hidden;       /* voorkomt dat inhoud buiten de tegel valt */
+  }
+  
+  /* Zorg dat het logo binnen een vaste ruimte past */
+  .abonnement-logo {
+    width: 200px;
+    height: 200px;
+    object-fit: contain;
+    margin-bottom: 5px;
+  }
+  
+  /* Stel consistente marges en tekststijlen in voor titels en paragrafen */
+  .abonnement h3 {
+    margin: 0px 0 5px;
+    text-align: center;
+  }
+  
+  .abonnement p {
+    margin: 0 0 10px;
+    text-align: center;
+    flex: 1;
+    overflow: hidden;  /* zorg ervoor dat lange teksten niet de vaste hoogte doorbreken */
+  }
+  
+  .subcategorie {
+    margin: 5px 0;
+    text-align: center;
+  }
+}
+

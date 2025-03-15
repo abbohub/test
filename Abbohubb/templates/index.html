@@ -356,11 +356,25 @@
             document.addEventListener('DOMContentLoaded', function () {
               document.querySelectorAll('.categorie-scroll-container').forEach(function(container) {
                 const list = container.querySelector('.abonnementen-lijst');
-                // Clone de lijst en voeg deze toe als extra kind zodat de lijsten naast elkaar staan
-                const clone = list.cloneNode(true);
-                container.appendChild(clone);
-            
-                // Functie voor reset van scrollpositie
+                if (!list) return;
+                
+                // Bepaal of we op mobiel zitten
+                const isMobile = window.innerWidth < 768;
+                const tileCount = list.children.length;
+                
+                // Voor desktop: activeer endless scroll en pijlen alleen als er 4 of meer tegels zijn.
+                // Voor mobiel: activeer endless scroll en pijlen als er 2 of meer tegels zijn.
+                if (!isMobile && tileCount < 4) return;
+                if (isMobile && tileCount < 2) return;
+                
+                // Dupliceer de lijst voor endless scroll (alleen als dat nog niet is gebeurd)
+                if (!container.dataset.duplicated) {
+                  const clone = list.cloneNode(true);
+                  container.appendChild(clone);
+                  container.dataset.duplicated = "true";
+                }
+                
+                // Endless scroll logica: reset de scrollpositie zodra de gebruiker de breedte van de originele lijst overschrijdt.
                 container.addEventListener('scroll', function() {
                   const listWidth = list.offsetWidth;
                   if (container.scrollLeft >= listWidth) {
@@ -369,78 +383,31 @@
                     container.scrollLeft = container.scrollLeft + listWidth;
                   }
                 });
-            
-                // Pijl-functionaliteit
-                const wrapper = container.parentNode; // De wrapper (.categorie-scroll-wrapper)
-                const leftArrow = wrapper.querySelector('.scroll-arrow-left');
-                const rightArrow = wrapper.querySelector('.scroll-arrow-right');
-            
-                if (leftArrow && rightArrow) {
-                  leftArrow.addEventListener('click', function() {
-                    container.scrollBy({
-                      left: -250,  // scroll naar links (pas de waarde naar wens aan)
-                      behavior: 'smooth'
+                
+                // Pijl-functionaliteit: zoek de pijlen in de wrapper (.categorie-scroll-wrapper).
+                const wrapper = container.closest('.categorie-scroll-wrapper');
+                if (wrapper) {
+                  const leftArrow = wrapper.querySelector('.scroll-arrow-left');
+                  const rightArrow = wrapper.querySelector('.scroll-arrow-right');
+                  if (leftArrow && rightArrow) {
+                    leftArrow.addEventListener('click', function() {
+                      container.scrollBy({
+                        left: -250,  // Pas de scrollafstand aan indien nodig.
+                        behavior: 'smooth'
+                      });
                     });
-                  });
-                  rightArrow.addEventListener('click', function() {
-                    container.scrollBy({
-                      left: 250,  // scroll naar rechts (pas de waarde naar wens aan)
-                      behavior: 'smooth'
+                    rightArrow.addEventListener('click', function() {
+                      container.scrollBy({
+                        left: 250,   // Pas de scrollafstand aan indien nodig.
+                        behavior: 'smooth'
+                      });
                     });
-                  });
+                  }
                 }
               });
             });
             </script>
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    // Controleer of we op een mobiel apparaat zitten
-    if (window.innerWidth <= 768) {
-      document.querySelectorAll('.categorie-scroll-container').forEach(function(container) {
-        const list = container.querySelector('.abonnementen-lijst');
-        // Zorg dat we de duplicatie slechts één keer uitvoeren per container
-        if (list && !container.dataset.duplicated) {
-          const clone = list.cloneNode(true);
-          container.appendChild(clone);
-          container.dataset.duplicated = "true";
-        }
-        
-        // Endless scroll logica
-        container.addEventListener('scroll', function() {
-          const listWidth = list.offsetWidth;
-          // Als we voorbij de originele lijst scrollen, reset de scrollpositie
-          if (container.scrollLeft >= listWidth) {
-            container.scrollLeft = container.scrollLeft - listWidth;
-          } else if (container.scrollLeft < 0) {
-            container.scrollLeft = container.scrollLeft + listWidth;
-          }
-        });
-        
-        // Pijl-functionaliteit (optioneel, als je pijlen hebt in de HTML)
-        const wrapper = container.closest('.categorie-scroll-wrapper');
-        if (wrapper) {
-          const leftArrow = wrapper.querySelector('.scroll-arrow-left');
-          const rightArrow = wrapper.querySelector('.scroll-arrow-right');
-          if (leftArrow && rightArrow) {
-            leftArrow.addEventListener('click', function() {
-              container.scrollBy({
-                left: -250, // scroll naar links; pas de waarde naar wens aan
-                behavior: 'smooth'
-              });
-            });
-            rightArrow.addEventListener('click', function() {
-              container.scrollBy({
-                left: 250, // scroll naar rechts; pas de waarde naar wens aan
-                behavior: 'smooth'
-              });
-            });
-          }
-        }
-      });
-    }
-  });
-  </script>
-                             
-</body>
+            
+            </body>
 </html>
 
