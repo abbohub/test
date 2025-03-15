@@ -719,8 +719,9 @@ header p {
   /* Centreer de abonnementen-lijst */
   .abonnementen-lijst {
     display: flex;
-    justify-content: center;
-    align-items: center;
+    justify-content: flex-start;
+    align-items: center;`
+
   }
   
   /* Verberg de zoekknop */
