@@ -919,4 +919,9 @@ header p {
     text-align: center;
   }
 }
+@media (max-width: 768px) {
+  .scroll-arrow-left {
+    display: none;
+  }
+}
 
