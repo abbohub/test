@@ -719,7 +719,7 @@ header p {
   /* Centreer de abonnementen-lijst */
   .abonnementen-lijst {
     display: flex;
-    justify-content: left;
+    justify-content: center;
     align-items: center;`
     
   }
@@ -923,6 +923,13 @@ header p {
 @media (max-width: 768px) {
   .scroll-arrow-left {
     display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .categorie-scroll-container {
+    padding-left: 20px; /* of een andere gewenste waarde */
+    padding-right: 40px;
   }
 }
 
