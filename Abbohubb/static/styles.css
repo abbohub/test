@@ -884,11 +884,11 @@ header p {
 @media (max-width: 768px) {
   .abonnement {
     width: 300px;           /* vaste breedte */
-    height: 430px;          /* vaste hoogte; pas dit aan naar wat nodig is voor alle inhoud */
+    height: 430px;          /* vaste hoogte; pas dit aan als er meer ruimte nodig is */
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-between; /* verdeelt de ruimte tussen elementen */
+    justify-content: space-between; /* verdeelt de ruimte tussen de elementen */
     box-sizing: border-box;
     padding: 15px;
     overflow: hidden;       /* voorkomt dat inhoud buiten de tegel valt */
@@ -902,7 +902,7 @@ header p {
     margin-bottom: 5px;
   }
   
-  /* Stel consistente marges en tekststijlen in voor titels en paragrafen */
+  /* Consistente opmaak voor titels en paragrafen */
   .abonnement h3 {
     margin: 0px 0 5px;
     text-align: center;
@@ -912,7 +912,7 @@ header p {
     margin: 0 0 10px;
     text-align: center;
     flex: 1;
-    overflow: hidden;  /* zorg ervoor dat lange teksten niet de vaste hoogte doorbreken */
+    overflow: hidden;  /* voorkomt dat lange teksten de vaste hoogte doorbreken */
   }
   
   .subcategorie {
@@ -928,8 +928,7 @@ header p {
 
 @media (max-width: 768px) {
   .categorie-scroll-container {
-    padding-left: 20px; /* of een andere gewenste waarde */
-    padding-right: 40px;
+    padding-left: 5px; /* of een andere gewenste waarde */
+    padding-right: 10px;
   }
 }
-
