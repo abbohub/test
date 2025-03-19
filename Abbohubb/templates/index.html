@@ -41,31 +41,30 @@
                 <div class="dropdown-container">
                   <button type="button" class="dropdown-button">Categorieën</button>
                   <div class="dropdown-menu">
-                    <div class="dropdown-item">
-                      <a href="?categorie=">Alle categorieën</a>
-                    </div>
-                    {% for cat in unieke_categorieën %}
-                    <div class="dropdown-item">
-                      <a href="?categorie={{ cat.id }}">{{ cat.naam }}</a>
-                      <div class="sub-dropdown">
-                        {% for subcat in unieke_subcategorieën if subcat.categorie_id == cat.id %}
-                        <a href="?subcategorie={{ subcat.id }}">{{ subcat.naam }}</a>
-                        {% endfor %}
+                      <div class="dropdown-item">
+                          <a href="?categorie=">Alle categorieën</a>
                       </div>
-                    </div>
-                    {% endfor %}
+                      {% for cat in unieke_categorieën %}
+                      <div class="dropdown-item">
+                          <!-- Hoofdcategorie als klikbare link -->
+                          <a href=>{{ cat.naam }}</a>
+                          <div class="sub-dropdown">
+                              <!-- Subcategorieën tonen, inclusief een optie om de hoofdcategorie zelf te selecteren -->
+                              <a href="?categorie={{ cat.id }}">Alle {{ cat.naam }} </a>
+                              {% for subcat in unieke_subcategorieën if subcat.categorie_id == cat.id %}
+                              <a href="?subcategorie={{ subcat.id }}">{{ subcat.naam }}</a>
+                              {% endfor %}
+                          </div>
+                      </div>
+                      {% endfor %}
                   </div>
-                </div>
-                <a href="{{ url_for('vergelijk') }}" class="btn btn-compare" id="vergelijk-knop">
+              </div>
+                              <a href="{{ url_for('vergelijk') }}" class="btn btn-compare" id="vergelijk-knop">
                   Vergelijk
                 </a>
               </div>
             </div>
-          </div>
-          
-          
-          
-          
+          </div>       
     </header>
 
     <!-- HOOFDCONTENT: Abonnementen per categorie -->

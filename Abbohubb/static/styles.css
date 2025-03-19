@@ -173,6 +173,7 @@ header p {
   display: inline-block;
 }
 
+
 /* Dropdown-knop */
 .dropdown-button {
   padding: 0.7rem 1.2rem;
@@ -233,6 +234,7 @@ header p {
 
 .dropdown-item {
   position: relative;
+  cursor: default; /* Voorkomt dat het eruitziet als een klikbare link */
 }
 
 /* Links styling */
