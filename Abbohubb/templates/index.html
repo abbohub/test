@@ -1,26 +1,28 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
+  <!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-NRGH8P6W');</script>
+  <!-- End Google Tag Manager -->
     <meta charset="UTF-8">
     <meta name="description" content="Bij AbboHub vind je snel en eenvoudig alle abonnementen in diverse categorieën. Vergelijk, filter en vind het abonnement dat bij jou past!">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>AbboHub - Vind en vergelijk abonnementen</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-        <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-96HGGXSKDW"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-96HGGXSKDW');
-</script>
 </head>
 <body>
+  <!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NRGH8P6W"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
     <!-- HEADER -->
     <header>
-        <nav aria-label="Hoofdnavigatie">
+        <nav class="main-nav" aria-label="Hoofdnavigatie">
             <ul>
                 <li><a href="{{ url_for('index') }}">Home</a></li>
                 {% if current_user.is_authenticated %}
@@ -172,7 +174,7 @@
 
   <footer>
     <p>&copy; 2025 AbboHub. Alle rechten voorbehouden.</p>
-    <nav>
+    <nav class="footer-nav">
       <ul>
         <li><a href="privacy-cookieverklaring.html">Privacy en Cookieverklaring</a></li>
         <li><a href="over-abbohub.html">Over AbboHub</a></li>
@@ -357,8 +359,7 @@
           });
         }
       });
-      </script>
-          
+      </script>   
           <script>
             document.addEventListener('DOMContentLoaded', function () {
               document.querySelectorAll('.categorie-scroll-container').forEach(function(container) {
@@ -414,7 +415,46 @@
               });
             });
             </script>
+            <script>
+              document.addEventListener('DOMContentLoaded', function () {
+                const scrollWrappers = document.querySelectorAll('.categorie-scroll-wrapper');
             
+                scrollWrappers.forEach(wrapper => {
+                  const scrollContainer = wrapper.querySelector('.categorie-scroll-container');
+                  const leftArrow = wrapper.querySelector('.scroll-arrow-left');
+                  const rightArrow = wrapper.querySelector('.scroll-arrow-right');
+            
+                  // Initieel: verberg linker pijl
+                  leftArrow.style.display = 'none';
+            
+                  // Voeg scroll-event toe
+                  scrollContainer.addEventListener('scroll', function () {
+                    if (scrollContainer.scrollLeft > 0) {
+                      leftArrow.style.display = 'flex';
+                    } else {
+                      leftArrow.style.display = 'none';
+                    }
+                  });
+            
+                  // Scroll gedrag bij klikken op pijlen
+                  const scrollAmount = 300; // pas aan indien gewenst
+            
+                  rightArrow.addEventListener('click', function () {
+                    scrollContainer.scrollBy({
+                      left: scrollAmount,
+                      behavior: 'smooth'
+                    });
+                  });
+            
+                  leftArrow.addEventListener('click', function () {
+                    scrollContainer.scrollBy({
+                      left: -scrollAmount,
+                      behavior: 'smooth'
+                    });
+                  });
+                });
+              });
+            </script>            
             </body>
 </html>
 

@@ -50,107 +50,118 @@
 </head>
 <body>
 
-    <!-- Cookie Banner -->
-    <div id="cookie-banner">
-        <p>Wij gebruiken cookies om uw ervaring te verbeteren. Klik op 'Instellingen' om uw voorkeuren te beheren of op 'Accepteren' om alle cookies toe te staan.</p>
-        <button class="accept" onclick="setCookieConsent(true)">Accepteren</button>
-        <button class="decline" onclick="setCookieConsent(false)">Weigeren</button>
-        <button class="settings" onclick="openSettings()">Instellingen</button>
-    </div>
+<!-- Cookie Banner -->
+<div id="cookie-banner">
+    <p>Wij gebruiken cookies om uw ervaring te verbeteren. Klik op 'Instellingen' om uw voorkeuren te beheren of op 'Accepteer' om alle cookies toe te staan.</p>
 
-    <!-- Cookie Instellingen -->
-    <div id="cookie-settings">
-        <p>Beheer uw cookievoorkeuren:</p>
-        <label><input type="checkbox" id="functional" checked disabled> Functionele cookies (verplicht)</label><br>
-        <label><input type="checkbox" id="analytics" checked> Analytische cookies</label><br>
-        <label><input type="checkbox" id="marketing"> Marketing cookies</label><br>
-        <button class="accept" onclick="saveSettings()">Opslaan</button>
-    </div>
+    <button class="accept" onclick="setCookieConsent(true)">Accepteer alle cookies</button>
+    <button class="accept" onclick="acceptAnalyticalOnly()">Alleen noodzakelijke + analytische cookies</button>
+    <button class="decline" onclick="setCookieConsent(false)">Weigeren</button>
+    <button class="settings" onclick="openSettings()">Instellingen</button>
+</div>
 
-    <script>
-        function getCookieConsent() {
-            return localStorage.getItem("cookieConsent");
+<!-- Cookie Instellingen -->
+<div id="cookie-settings">
+    <p>Beheer uw cookievoorkeuren:</p>
+    <label><input type="checkbox" id="functional" checked disabled> Functionele cookies (verplicht)</label><br>
+    <label><input type="checkbox" id="analytics"> Analytische cookies</label><br>
+    <label><input type="checkbox" id="marketing"> Marketing cookies</label><br>
+    <button class="accept" onclick="saveSettings()">Opslaan</button>
+</div>
+
+<script>
+    function getCookieConsent() {
+        return localStorage.getItem("cookieConsent");
+    }
+
+    function setCookieConsent(consent) {
+        localStorage.setItem("cookieConsent", consent);
+        document.getElementById("cookie-banner").style.display = "none";
+        document.getElementById("cookie-settings").style.display = "none";
+
+        if (consent) {
+            localStorage.setItem("analyticsCookies", "true");
+            localStorage.setItem("marketingCookies", "true");
+            enableCookies();
+        } else {
+            disableCookies();
         }
+    }
 
-        function setCookieConsent(consent) {
-            localStorage.setItem("cookieConsent", consent);
-            document.getElementById("cookie-banner").style.display = "none";
-            document.getElementById("cookie-settings").style.display = "none";
+    function acceptAnalyticalOnly() {
+        localStorage.setItem("cookieConsent", "true");
+        localStorage.setItem("analyticsCookies", "true");
+        localStorage.setItem("marketingCookies", "false");
 
-            if (consent) {
-                enableCookies();
-            } else {
-                disableCookies();
-            }
+        document.getElementById("cookie-banner").style.display = "none";
+        document.getElementById("cookie-settings").style.display = "none";
+
+        loadGoogleAnalytics();
+
+        // Stuur trigger naar Google Tag Manager
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({ 'event': 'consent_given' });
+    }
+
+    function enableCookies() {
+        if (localStorage.getItem("analyticsCookies") === "true") {
+            loadGoogleAnalytics();
         }
-
-        function enableCookies() {
-            console.log("Functionele cookies ingeschakeld");
-
-            if (localStorage.getItem("analyticsCookies") !== "false") {
-                console.log("Analytische cookies ingeschakeld");
-                loadGoogleAnalytics();
-            }
-
-            if (localStorage.getItem("marketingCookies") === "true") {
-                console.log("Marketing cookies ingeschakeld");
-                loadGoogleAdSense();
-            }
+        if (localStorage.getItem("marketingCookies") === "true") {
+            loadGoogleAdSense();
         }
+    }
 
-        function disableCookies() {
-            console.log("Cookies geweigerd, tracking wordt niet ingeladen.");
-            localStorage.setItem("analyticsCookies", "false");
-            localStorage.setItem("marketingCookies", "false");
-        }
+    function disableCookies() {
+        localStorage.setItem("analyticsCookies", "false");
+        localStorage.setItem("marketingCookies", "false");
+    }
 
-        function openSettings() {
-            document.getElementById("cookie-settings").style.display = "block";
-        }
+    function openSettings() {
+        document.getElementById("cookie-settings").style.display = "block";
+    }
 
-        function saveSettings() {
-            const analytics = document.getElementById("analytics").checked;
-            const marketing = document.getElementById("marketing").checked;
+    function saveSettings() {
+        const analytics = document.getElementById("analytics").checked;
+        const marketing = document.getElementById("marketing").checked;
 
-            localStorage.setItem("analyticsCookies", analytics);
-            localStorage.setItem("marketingCookies", marketing);
-            localStorage.setItem("cookieConsent", "true");
+        localStorage.setItem("analyticsCookies", analytics);
+        localStorage.setItem("marketingCookies", marketing);
+        localStorage.setItem("cookieConsent", "true");
 
-            document.getElementById("cookie-settings").style.display = "none";
+        document.getElementById("cookie-settings").style.display = "none";
+        enableCookies();
+    }
+
+    function loadGoogleAnalytics() {
+        let script = document.createElement("script");
+        script.src = "https://www.googletagmanager.com/gtag/js?id=G-96HGGXSKDW"; // ✅ Vervang met jouw GA4-ID
+        script.async = true;
+        document.head.appendChild(script);
+
+        script.onload = function () {
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag('js', new Date());
+            gtag('config', 'G-96HGGXSKDW', { 'anonymize_ip': true }); // ✅ Vervang hier ook je GA4-ID
+        };
+    }
+
+    function loadGoogleAdSense() {
+        let script = document.createElement("script");
+        script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js";
+        script.setAttribute("data-ad-client", "ca-pub-XXXXXXXX"); // ✅ Vervang met jouw AdSense ID
+        script.async = true;
+        document.head.appendChild(script);
+    }
+
+    window.onload = function () {
+        if (getCookieConsent() === null) {
+            document.getElementById("cookie-banner").style.display = "block";
+        } else {
             enableCookies();
         }
-
-        function loadGoogleAnalytics() {
-            let script = document.createElement("script");
-            script.src = "https://www.googletagmanager.com/gtag/js?id=UA-XXXXX-Y";
-            script.async = true;
-            document.head.appendChild(script);
-
-            script.onload = function () {
-                window.dataLayer = window.dataLayer || [];
-                function gtag() { dataLayer.push(arguments); }
-                gtag('js', new Date());
-                gtag('config', 'UA-XXXXX-Y', { 'anonymize_ip': true });
-            };
-        }
-
-        function loadGoogleAdSense() {
-            let script = document.createElement("script");
-            script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js";
-            script.setAttribute("data-ad-client", "ca-pub-XXXXX");
-            script.async = true;
-            document.head.appendChild(script);
-        }
-
-        window.onload = function () {
-            if (getCookieConsent() === null) {
-                document.getElementById("cookie-banner").style.display = "block";
-                localStorage.setItem("analyticsCookies", "true"); // Analytische cookies standaard aan
-            } else {
-                enableCookies();
-            }
-        };
-    </script>
-
-</body>
-</html>
+    };
+</script>
+    </body>
+    </html>

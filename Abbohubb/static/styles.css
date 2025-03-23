@@ -563,22 +563,58 @@ header p {
 }
 
 
-  /* ========== FOOTER ========== */
-  footer {
-    text-align: center;
-    padding: 20px;
-    background-color: #333;
-    color: white;
-    margin-top: 30px;
-  }
-  
+/* Algemene footerstijl */
+footer {
+  background-color: #333;
+  color: #fff;
+  width: 100%;
+  padding: 1rem;
+  text-align: center;
+  z-index: 100;
+}
+footer {
+  overflow-x: hidden; /* voorkom dat iets binnen de footer horizontaal scrollt */
+  box-sizing: border-box; /* zorg dat padding niet optelt bij breedte */
+}
+
+
+/* Footer navigatie */
+.footer-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.footer-nav li {
+  margin: 0;
+}
+
+/* Links en knop */
+.footer-nav a,
+.footer-nav .cookie-btn {
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.95rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
   /* Algemene styling voor het zoek/filter gedeelte */
 .zoek-filter-container {
   padding: 20px;
 }
 
 /* Desktop: Zoekbalk en knoppen naast elkaar */
-.search-row {
+.search-row { 
   display: flex;
   gap: 10px;
   align-items: center;
@@ -654,7 +690,7 @@ header p {
   flex-direction: row;
   gap: 20px; /* Zorgt voor een consistente ruimte tussen de originele lijst en de kloon */
   overflow-x: auto;
-  padding: 0 40px; /* Ruimte zodat de pijlen niet over de inhoud vallen */
+  padding: 0 10px; /* Ruimte zodat de pijlen niet over de inhoud vallen */
   scrollbar-width: none; /* Firefox */
 }
 
@@ -704,6 +740,7 @@ header p {
   nav {
     display: none;
   }
+  
   /* verklein header */
   header {
     padding: 10px 10px;
@@ -779,11 +816,13 @@ header p {
     border-radius: 4px;
     z-index: 10;
   }
+  
   .dropdown-item,
   .sub-dropdown a {
     text-align: center;
     padding: 0.5rem 0;
   }
+  
   
   /* Footer aangepast voor mobiele weergave */
   footer {
@@ -850,18 +889,6 @@ header p {
 /* Wrapper voor de scrollbare container en pijlen */
 .categorie-scroll-wrapper {
   position: relative;
-}
-
-/* Scrollbare container met flex-layout zodat de duplicaatlijst naast de originele komt */
-.categorie-scroll-container {
-  display: flex;
-  flex-direction: row;
-  overflow-x: auto;
-  padding: 0 40px; /* ruimte voor beide pijlen */
-  scrollbar-width: none; /* Firefox */
-}
-.categorie-scroll-container::-webkit-scrollbar {
-  display: none; /* Chrome, Safari en Opera */
 }
 
 /* Zorg dat de abonnementen-lijst horizontaal blijft staan */
