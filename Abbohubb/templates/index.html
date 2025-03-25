@@ -57,16 +57,14 @@
                       </div>
                       {% for cat in unieke_categorieën %}
                       <div class="dropdown-item">
-                          <!-- Hoofdcategorie als klikbare link -->
-                          <a href=>{{ cat.naam }}</a>
-                          <div class="sub-dropdown">
-                              <!-- Subcategorieën tonen, inclusief een optie om de hoofdcategorie zelf te selecteren -->
-                              <a href="?categorie={{ cat.id }}">Alle {{ cat.naam }} </a>
-                              {% for subcat in unieke_subcategorieën if subcat.categorie_id == cat.id %}
-                              <a href="?subcategorie={{ subcat.id }}">{{ subcat.naam }}</a>
-                              {% endfor %}
-                          </div>
-                      </div>
+                        <button class="category-button" type="button">{{ cat.naam }}</button>
+                        <div class="sub-dropdown">
+                          <a href="?categorie={{ cat.id }}">Alle {{ cat.naam }}</a>
+                          {% for subcat in unieke_subcategorieën if subcat.categorie_id == cat.id %}
+                          <a href="?subcategorie={{ subcat.id }}">{{ subcat.naam }}</a>
+                          {% endfor %}
+                        </div>
+                      </div>                      
                       {% endfor %}
                   </div>
               </div>
@@ -145,9 +143,7 @@
                         <!-- Rechter scroll-pijl -->
                         <div class="scroll-arrow scroll-arrow-right">&gt;</div>
                       </div>
-                    </section>
-                    
-                    
+                    </section>                    
                     {% endif %}
                 {% endfor %}
             {% else %}
@@ -454,7 +450,8 @@
                   });
                 });
               });
-            </script>            
+            </script>
+                        
             </body>
 </html>
 

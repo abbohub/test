@@ -252,6 +252,26 @@ header p {
   color: #4CAF50;
 }
 
+.category-button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  color: #333;
+  
+}
+
+.category-button:hover {
+  background-color: #f9f9f9;
+  border-radius: 4px;
+  color: #4CAF50;
+}
+
+
 /* ========== ANIMATIONS ========== */
 @keyframes fadeIn {
     from {
