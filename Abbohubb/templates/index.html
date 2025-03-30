@@ -129,9 +129,11 @@
                                       <input type="checkbox" class="vergelijk-checkbox" value="{{ abonnement.id }}">
                                       Vergelijk
                                     </label>
-                                    <a href="{{ url_for('abonnement_reviews', abonnement_id=abonnement.id) }}" class="btn-review">
-                                      Meer info
-                                    </a>
+                                    <a href="{{ url_for('abonnement_reviews', abonnement_id=abonnement.id) }}"
+                                    class="btn-review"
+                                    onclick="trackMeerInfo('{{ abonnement.naam }}')">
+                                   Meer info
+                                 </a>                                 
                                   </div>
                                 </article>
                               {% endfor %}
