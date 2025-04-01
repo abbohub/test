@@ -166,13 +166,15 @@ window.dataLayer.push({ event: 'consent_given' });
             enableCookies();
         }
     };
-    function trackMeerInfo(tegelNaam) {
-  window.dataLayer = window.dataLayer || [];
-  window.dataLayer.push({
-    event: 'klik_meer_info',
-    tegel: tegelNaam
-  });
-}
 </script>
+<script>
+    function trackMeerInfo(tegelNaam) {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: 'klik_meer_info',
+        tegel: tegelNaam
+      });
+    }
+    </script>
     </body>
     </html>
