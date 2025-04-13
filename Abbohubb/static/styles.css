@@ -977,8 +977,21 @@ footer {
 
 @media (max-width: 768px) {
   .categorie-scroll-container {
-    padding-left: 5px; /* of een andere gewenste waarde */
+    overflow-x: auto;
+    width: 50%;
+  }
+
+  .abonnementen-lijst {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 20px;
+    width: max-content; /* dit is al goed bij jou */
+    padding-left: 10px;
     padding-right: 10px;
-    
+  }
+
+  .abonnement {
+    width: 300px;
+    flex: 0 0 auto;
   }
 }

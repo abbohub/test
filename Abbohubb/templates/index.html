@@ -452,7 +452,71 @@
                   });
                 });
               });
-            </script>                         
+            </script>      
+            <script>
+              document.addEventListener('DOMContentLoaded', function () {
+                document.querySelectorAll('.categorie-scroll-container').forEach(function(container) {
+                  const list = container.querySelector('.abonnementen-lijst');
+                  if (!list) return;
+              
+                  const isMobile = window.innerWidth < 768;
+                  const tileCount = list.children.length;
+              
+                  // Alleen scroll activeren indien genoeg tegels
+                  if ((!isMobile && tileCount < 4) || (isMobile && tileCount < 2)) return;
+              
+                  // Dupliceer lijst één keer voor endless scroll
+                  if (!container.dataset.duplicated) {
+                    const clone = list.cloneNode(true);
+                    container.appendChild(clone);
+                    container.dataset.duplicated = "true";
+                  }
+              
+                  // Endless scroll effect
+                  container.addEventListener('scroll', function() {
+                    const listWidth = list.offsetWidth;
+                    if (container.scrollLeft >= listWidth) {
+                      container.scrollLeft -= listWidth;
+                    } else if (container.scrollLeft < 0) {
+                      container.scrollLeft += listWidth;
+                    }
+                  });
+              
+                  // Pijlen logica
+                  const wrapper = container.closest('.categorie-scroll-wrapper');
+                  if (wrapper) {
+                    const leftArrow = wrapper.querySelector('.scroll-arrow-left');
+                    const rightArrow = wrapper.querySelector('.scroll-arrow-right');
+              
+                    const getTileScrollWidth = () => {
+                      const tile = container.querySelector('.abonnement');
+                      const gap = 20;
+                      return tile ? tile.offsetWidth + gap : 300;
+                    };
+              
+                    if (leftArrow && rightArrow) {
+                      const scrollAmount = getTileScrollWidth();
+              
+                      leftArrow.addEventListener('click', function () {
+                        container.scrollBy({
+                          left: -scrollAmount,
+                          behavior: 'smooth'
+                        });
+                      });
+              
+                      rightArrow.addEventListener('click', function () {
+                        container.scrollBy({
+                          left: scrollAmount,
+                          behavior: 'smooth'
+                        });
+                      });
+                    }
+                  }
+                });
+              });
+              
+              </script>
+                                 
             </body>
 </html>
 
