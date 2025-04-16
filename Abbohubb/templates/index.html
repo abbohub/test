@@ -341,182 +341,70 @@
             });
         });
         </script>
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        // Alleen toepassen als het scherm mobiel is
-        if (window.innerWidth <= 768) {
-          // Selecteer alle categorie-links in de dropdown
-          var categoryLinks = document.querySelectorAll('.dropdown-menu a');
-          categoryLinks.forEach(function(link) {
-            link.addEventListener('click', function() {
-              var compareBtn = document.getElementById('vergelijk-knop');
-              if (compareBtn) {
-                compareBtn.style.display = 'none';
-              }
-            });
-          });
-        }
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // 1) Mobile: hide Vergelijk-knop bij klikken op categorie-link
+    if (window.matchMedia('(max-width: 768px)').matches) {
+      document.querySelectorAll('.dropdown-menu a').forEach(function(link) {
+        link.addEventListener('click', function() {
+          const compareBtn = document.getElementById('vergelijk-knop');
+          if (compareBtn) compareBtn.style.display = 'none';
+        });
       });
-      </script>   
-          <script>
-            document.addEventListener('DOMContentLoaded', function () {
-              document.querySelectorAll('.categorie-scroll-container').forEach(function(container) {
-                const list = container.querySelector('.abonnementen-lijst');
-                if (!list) return;
-                
-                // Bepaal of we op mobiel zitten
-                const isMobile = window.innerWidth < 768;
-                const tileCount = list.children.length;
-                
-                // Voor desktop: activeer endless scroll en pijlen alleen als er 4 of meer tegels zijn.
-                // Voor mobiel: activeer endless scroll en pijlen als er 2 of meer tegels zijn.
-                if (!isMobile && tileCount < 4) return;
-                if (isMobile && tileCount < 2) return;
-                
-                // Dupliceer de lijst voor endless scroll (alleen als dat nog niet is gebeurd)
-                if (!container.dataset.duplicated) {
-                  const clone = list.cloneNode(true);
-                  container.appendChild(clone);
-                  container.dataset.duplicated = "true";
-                }
-                
-                // Endless scroll logica: reset de scrollpositie zodra de gebruiker de breedte van de originele lijst overschrijdt.
-                container.addEventListener('scroll', function() {
-                  const listWidth = list.offsetWidth;
-                  if (container.scrollLeft >= listWidth) {
-                    container.scrollLeft = container.scrollLeft - listWidth;
-                  } else if (container.scrollLeft < 0) {
-                    container.scrollLeft = container.scrollLeft + listWidth;
-                  }
-                });
-                
-                // Pijl-functionaliteit: zoek de pijlen in de wrapper (.categorie-scroll-wrapper).
-                const wrapper = container.closest('.categorie-scroll-wrapper');
-                if (wrapper) {
-                  const leftArrow = wrapper.querySelector('.scroll-arrow-left');
-                  const rightArrow = wrapper.querySelector('.scroll-arrow-right');
-                  if (leftArrow && rightArrow) {
-                    leftArrow.addEventListener('click', function() {
-                      container.scrollBy({
-                        left: -250,  // Pas de scrollafstand aan indien nodig.
-                        behavior: 'smooth'
-                      });
-                    });
-                    rightArrow.addEventListener('click', function() {
-                      container.scrollBy({
-                        left: 250,   // Pas de scrollafstand aan indien nodig.
-                        behavior: 'smooth'
-                      });
-                    });
-                  }
-                }
-              });
-            });
-            </script>
-            <script>
-              document.addEventListener('DOMContentLoaded', function () {
-                const scrollWrappers = document.querySelectorAll('.categorie-scroll-wrapper');
-            
-                scrollWrappers.forEach(wrapper => {
-                  const scrollContainer = wrapper.querySelector('.categorie-scroll-container');
-                  const leftArrow = wrapper.querySelector('.scroll-arrow-left');
-                  const rightArrow = wrapper.querySelector('.scroll-arrow-right');
-            
-                  // Initieel: verberg linker pijl
-                  leftArrow.style.display = 'none';
-            
-                  // Voeg scroll-event toe
-                  scrollContainer.addEventListener('scroll', function () {
-                    if (scrollContainer.scrollLeft > 0) {
-                      leftArrow.style.display = 'flex';
-                    } else {
-                      leftArrow.style.display = 'none';
-                    }
-                  });
-            
-                  // Scroll gedrag bij klikken op pijlen
-                  const scrollAmount = 300; // pas aan indien gewenst
-            
-                  rightArrow.addEventListener('click', function () {
-                    scrollContainer.scrollBy({
-                      left: scrollAmount,
-                      behavior: 'smooth'
-                    });
-                  });
-            
-                  leftArrow.addEventListener('click', function () {
-                    scrollContainer.scrollBy({
-                      left: -scrollAmount,
-                      behavior: 'smooth'
-                    });
-                  });
-                });
-              });
-            </script>      
-            <script>
-              document.addEventListener('DOMContentLoaded', function () {
-                document.querySelectorAll('.categorie-scroll-container').forEach(function(container) {
-                  const list = container.querySelector('.abonnementen-lijst');
-                  if (!list) return;
-              
-                  const isMobile = window.innerWidth < 768;
-                  const tileCount = list.children.length;
-              
-                  // Alleen scroll activeren indien genoeg tegels
-                  if ((!isMobile && tileCount < 4) || (isMobile && tileCount < 2)) return;
-              
-                  // Dupliceer lijst één keer voor endless scroll
-                  if (!container.dataset.duplicated) {
-                    const clone = list.cloneNode(true);
-                    container.appendChild(clone);
-                    container.dataset.duplicated = "true";
-                  }
-              
-                  // Endless scroll effect
-                  container.addEventListener('scroll', function() {
-                    const listWidth = list.offsetWidth;
-                    if (container.scrollLeft >= listWidth) {
-                      container.scrollLeft -= listWidth;
-                    } else if (container.scrollLeft < 0) {
-                      container.scrollLeft += listWidth;
-                    }
-                  });
-              
-                  // Pijlen logica
-                  const wrapper = container.closest('.categorie-scroll-wrapper');
-                  if (wrapper) {
-                    const leftArrow = wrapper.querySelector('.scroll-arrow-left');
-                    const rightArrow = wrapper.querySelector('.scroll-arrow-right');
-              
-                    const getTileScrollWidth = () => {
-                      const tile = container.querySelector('.abonnement');
-                      const gap = 20;
-                      return tile ? tile.offsetWidth + gap : 300;
-                    };
-              
-                    if (leftArrow && rightArrow) {
-                      const scrollAmount = getTileScrollWidth();
-              
-                      leftArrow.addEventListener('click', function () {
-                        container.scrollBy({
-                          left: -scrollAmount,
-                          behavior: 'smooth'
-                        });
-                      });
-              
-                      rightArrow.addEventListener('click', function () {
-                        container.scrollBy({
-                          left: scrollAmount,
-                          behavior: 'smooth'
-                        });
-                      });
-                    }
-                  }
-                });
-              });
-              
-              </script>
-                                 
+    }
+  
+    // 2) Carousel endless scroll per categorie
+    document.querySelectorAll('.categorie-scroll-wrapper').forEach(function(wrapper) {
+      const container  = wrapper.querySelector('.categorie-scroll-container');
+      const list       = container?.querySelector('.abonnementen-lijst');
+      const leftArrow  = wrapper.querySelector('.scroll-arrow-left');
+      const rightArrow = wrapper.querySelector('.scroll-arrow-right');
+      if (!container || !list || !leftArrow || !rightArrow) return;
+  
+      const isMobile  = window.matchMedia('(max-width: 768px)').matches;
+      const tileCount = list.children.length;
+      if ((!isMobile && tileCount < 4) || (isMobile && tileCount < 2)) return;
+  
+      // dubbel klonen (origineel + 2 clones)
+      if (!container.dataset.duplicated) {
+        container.appendChild(list.cloneNode(true));
+        container.appendChild(list.cloneNode(true));
+        container.dataset.duplicated = 'true';
+      }
+  
+      // init: linkerpijl verbergen
+      leftArrow.style.display = 'none';
+  
+      // metingen
+      const gap        = 20;
+      const tile       = list.querySelector('.abonnement');
+      const tileWidth  = tile ? tile.offsetWidth : 300;
+      const scrollStep = tileWidth + gap;
+      const listWidth  = list.offsetWidth;
+      const wrapAt     = listWidth * 2; // na 2x origin
+  
+      // wrap‑around & pijl‑weergave
+      container.addEventListener('scroll', function() {
+        const pos = container.scrollLeft;
+        if (pos >= wrapAt) {
+          container.scrollLeft = pos - wrapAt;
+        } else if (pos < 0) {
+          container.scrollLeft = pos + wrapAt;
+        }
+        leftArrow.style.display = container.scrollLeft > 0 ? 'flex' : 'none';
+      });
+  
+      // klik handlers pijlen
+      rightArrow.addEventListener('click', function() {
+        container.scrollBy({ left: scrollStep, behavior: 'smooth' });
+      });
+      leftArrow.addEventListener('click', function() {
+        container.scrollBy({ left: -scrollStep, behavior: 'smooth' });
+      });
+    });
+  });
+  </script>
+                                   
             </body>
 </html>
 

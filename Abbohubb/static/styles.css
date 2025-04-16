@@ -978,7 +978,7 @@ footer {
 @media (max-width: 768px) {
   .categorie-scroll-container {
     overflow-x: auto;
-    width: 50%;
+    width: 100%;
   }
 
   .abonnementen-lijst {
@@ -995,3 +995,4 @@ footer {
     flex: 0 0 auto;
   }
 }
+
