@@ -2,7 +2,9 @@
 from flask import Flask
 import os
 import uuid
+from slugify import slugify
 from datetime import datetime
+from sqlalchemy.schema import UniqueConstraint  # zorg dat dit bovenin staat
 
 # Alleen nodig als je environment variables gebruikt
 # (Bijvoorbeeld SECRET_KEY uit .env)
@@ -36,6 +38,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, f1_score
+from slugify import slugify
 
 # Maak de Flask-app aan
 app = Flask(__name__, static_url_path='/static', static_folder='static')
@@ -87,12 +90,16 @@ class Categorie(db.Model):
     naam = db.Column(db.String(100), nullable=False, unique=True)
     volgorde = db.Column(db.Integer, nullable=False, default=0)
     subcategorieën = db.relationship('Subcategorie', backref='categorie', lazy=True)
+    slug = db.Column(db.String(100), unique=True, nullable=False)
+
 
 class Subcategorie(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     naam = db.Column(db.String(100), nullable=False)
     categorie_id = db.Column(db.Integer, db.ForeignKey('categorie.id'), nullable=False)
     abonnementen = db.relationship('Abonnement', backref='subcategorie', lazy=True)
+    slug = db.Column(db.String(100), unique=True, nullable=False)
+
 
 class Abonnement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -110,6 +117,13 @@ class Abonnement(db.Model):
     beoordelingen = db.Column(db.Float, nullable=True)
     volgorde = db.Column(db.Integer, nullable=False, default=0)
 
+    # SEO
+    slug = db.Column(db.String(255), nullable=False)  # tijdelijk!
+
+    __table_args__ = (
+        UniqueConstraint('slug', name='uq_abonnement_slug'),
+    )
+
     # Nieuwe velden
     frequentie_bezorging = db.Column(db.String(50), nullable=True)
     prijs_vanaf = db.Column(db.Float, nullable=True)
@@ -119,20 +133,18 @@ class Abonnement(db.Model):
     hoe_werkt_het = db.Column(db.Text, nullable=True)
     past_dit_bij_jou = db.Column(db.Text, nullable=True)
 
-    # Nieuwe relaties
+    # Relaties
     doelgroepen = db.relationship('Doelgroep', secondary='abonnement_doelgroep', back_populates='abonnementen')
     tags = db.relationship('Tag', secondary='abonnement_tag', back_populates='abonnementen')
-
-    # Relatie naar reviews
     reviews = db.relationship("Review", back_populates="abonnement", lazy=True)
 
     def get_average_score(self):
         """Bereken het gemiddelde van alle reviews voor dit abonnement."""
         if not self.reviews:
-            return 0.0  # Geen reviews, geen gemiddelde
+            return 0.0
         total = sum(review.score for review in self.reviews)
         return round(total / len(self.reviews), 1)
-
+    
 class Review(db.Model):
     __tablename__ = 'review'
 
@@ -317,6 +329,43 @@ def index():
         geselecteerde_subcategorie=geselecteerde_subcategorie,
         zoekterm=zoekterm
     )
+
+@app.route('/categorie/<categorie_slug>/')
+@app.route('/categorie/<categorie_slug>/<subcategorie_slug>/')
+def abonnement_overzicht(categorie_slug, subcategorie_slug=None):
+    # Zoek categorie op slug
+    categorie = Categorie.query.filter_by(slug=categorie_slug).first_or_404()
+    subcategorie = None
+
+    # Zoek subcategorie op slug (indien meegegeven)
+    if subcategorie_slug:
+        subcategorie = Subcategorie.query.filter_by(slug=subcategorie_slug, categorie_id=categorie.id).first_or_404()
+
+    # Filter op categorie of subcategorie
+    query = Abonnement.query.join(Subcategorie).filter(Subcategorie.categorie_id == categorie.id)
+    if subcategorie:
+        query = query.filter(Subcategorie.id == subcategorie.id)
+
+    abonnementen = query.order_by(Abonnement.volgorde.asc()).all()
+    categorieen = Categorie.query.order_by(Categorie.volgorde.asc()).all()
+    subcategorieen = Subcategorie.query.filter_by(categorie_id=categorie.id).all()
+
+    return render_template(
+        'index.html',
+        abonnementen=abonnementen,
+        abonnementen_per_categorie={categorie.id: abonnementen},
+        unieke_categorieën=categorieen,
+        unieke_subcategorieën=subcategorieen,
+        geselecteerde_categorie=str(categorie.id),
+        geselecteerde_subcategorie=str(subcategorie.id) if subcategorie else '',
+        zoekterm=''
+    )
+
+
+@app.template_filter('slugify')
+def slugify_filter(text):
+    return slugify(text)
+
 @app.route('/privacy-cookieverklaring.html')
 def privacy_cookieverklaring():
     return render_template('privacy-cookieverklaring.html')
@@ -325,13 +374,22 @@ def privacy_cookieverklaring():
 def over_abbohub():
     return render_template('over-abbohub.html')
 
-@app.route('/abonnement/<int:abonnement_id>/reviews', methods=['GET', 'POST'])
-def abonnement_reviews(abonnement_id):
+@app.route('/review/<path:slug>', methods=['GET', 'POST'])
+def abonnement_reviews(slug):
     """
     Toon de reviews van een specifiek abonnement en bied een formulier aan om een review toe te voegen.
     Beheerders kunnen reviews modereren (verwijderen).
     """
-    abonnement = Abonnement.query.get_or_404(abonnement_id)
+    abonnement = Abonnement.query.filter_by(slug=slug).first_or_404()
+
+    # Controleer of de gebruiker een admin is
+    is_admin = current_user.is_authenticated and current_user.is_admin
+
+    """
+    Toon de reviews van een specifiek abonnement en bied een formulier aan om een review toe te voegen.
+    Beheerders kunnen reviews modereren (verwijderen).
+    """
+    abonnement = Abonnement.query.filter_by(slug=slug).first_or_404()
 
     # Controleer of de gebruiker een admin is
     is_admin = current_user.is_authenticated and current_user.is_admin
@@ -467,7 +525,7 @@ def update_abonnementen_volgorde():
 def add_subscription():
     """Pagina voor abonnementen toevoegen (met bestaande doelgroepen, tags en extra informatie)."""
     if not current_user.is_admin:
-        return redirect(url_for('index'))  # Geen admin = geen toegang
+        return redirect(url_for('index'))
 
     if request.method == 'POST':
         # Formuliergegevens ophalen
@@ -492,21 +550,31 @@ def add_subscription():
         hoe_werkt_het = request.form.get('hoe_werkt_het', '').strip()
         past_dit_bij_jou = request.form.get('past_dit_bij_jou', '').strip()
 
-        # Geselecteerde doelgroepen en tags
         geselecteerde_doelgroepen = request.form.getlist('doelgroepen')
         geselecteerde_tags = request.form.getlist('tags')
 
-        # Verplichte velden controleren
         if not naam or not filter_optie or not subcategorie_id or not url:
             flash("Vul alle verplichte velden in!", "danger")
             return redirect(url_for('add_subscription'))
 
-        # URL-validatie
         if not url.startswith(('http://', 'https://')):
             flash("De URL moet beginnen met http:// of https://.", "danger")
             return redirect(url_for('add_subscription'))
 
-        # Logo verwerken
+        # Genereer SEO-vriendelijke slug op basis van categorie/subcategorie/naam
+        subcat = Subcategorie.query.get(int(subcategorie_id))
+        cat = Categorie.query.get(subcat.categorie_id) if subcat else None
+        categorie_slug = slugify(cat.naam) if cat else "categorie"
+        subcategorie_slug = slugify(subcat.naam) if subcat else "subcategorie"
+        naam_slug = slugify(naam)
+        full_slug = f"{categorie_slug}/{subcategorie_slug}/{naam_slug}"
+
+        # Controleer of slug al bestaat
+        slug_exists = Abonnement.query.filter_by(slug=full_slug).first()
+        if slug_exists:
+            flash("Er bestaat al een abonnement met deze naam in dezelfde categorie/subcategorie.", "danger")
+            return redirect(url_for('add_subscription'))
+
         logo_filename = None
         if 'logo' in request.files:
             logo_file = request.files['logo']
@@ -516,9 +584,9 @@ def add_subscription():
                 logo_file.save(logo_path)
                 logo_filename = filename
 
-        # Maak een nieuw abonnement
         new_abonnement = Abonnement(
             naam=naam,
+            slug=full_slug,
             beschrijving=beschrijving,
             filter_optie=filter_optie,
             prijs=prijs,
@@ -539,7 +607,6 @@ def add_subscription():
             past_dit_bij_jou=past_dit_bij_jou
         )
 
-        # Voeg doelgroepen en tags toe aan het abonnement
         for doelgroep_id in geselecteerde_doelgroepen:
             doelgroep = Doelgroep.query.get(int(doelgroep_id))
             if doelgroep:
@@ -550,14 +617,12 @@ def add_subscription():
             if tag:
                 new_abonnement.tags.append(tag)
 
-        # Abonnement opslaan in de database
         db.session.add(new_abonnement)
         db.session.commit()
 
         flash("Abonnement succesvol toegevoegd!", "success")
         return redirect(url_for('admin_dashboard'))
 
-    # Haal categorieën, subcategorieën, doelgroepen en tags op
     categorieen = Categorie.query.all()
     subcategorieen = Subcategorie.query.all()
     doelgroepen = Doelgroep.query.all()
@@ -570,6 +635,7 @@ def add_subscription():
         doelgroepen=doelgroepen,
         tags=tags
     )
+
 
 @app.route('/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -595,10 +661,7 @@ def edit_subscription(id):
         abonnement.annuleringsvoorwaarden = request.form.get('annuleringsvoorwaarden', '').strip()
         abonnement.voordelen = request.form.get('voordelen', '').strip()
 
-        # Extra velden verwerken
         abonnement.frequentie_bezorging = request.form.get('frequentie_bezorging', '').strip()
-        
-        # Voorkom lege strings in float-velden (prijs_vanaf & prijs_tot)
         prijs_vanaf = request.form.get('prijs_vanaf', '').strip()
         abonnement.prijs_vanaf = float(prijs_vanaf) if prijs_vanaf else None
 
@@ -610,7 +673,6 @@ def edit_subscription(id):
         abonnement.hoe_werkt_het = request.form.get('hoe_werkt_het', '').strip()
         abonnement.past_dit_bij_jou = request.form.get('past_dit_bij_jou', '').strip()
 
-        # Beoordelingen validatie
         beoordelingen = request.form.get('beoordelingen', '').strip()
         if beoordelingen:
             try:
@@ -622,11 +684,18 @@ def edit_subscription(id):
         abonnement.url = request.form.get('url', '').strip()
         abonnement.subcategorie_id = int(request.form.get('subcategorie_id'))
 
+        # 👉 Slug hergenereren op basis van nieuwe waarden
+        subcat = Subcategorie.query.get(abonnement.subcategorie_id)
+        cat = Categorie.query.get(subcat.categorie_id) if subcat else None
+        categorie_slug = slugify(cat.naam) if cat else "categorie"
+        subcategorie_slug = slugify(subcat.naam) if subcat else "subcategorie"
+        naam_slug = slugify(abonnement.naam)
+        abonnement.slug = f"{categorie_slug}/{subcategorie_slug}/{naam_slug}"
+
         # Doelgroepen en tags verwerken
         abonnement.doelgroepen = Doelgroep.query.filter(Doelgroep.id.in_(request.form.getlist('doelgroepen'))).all()
         abonnement.tags = Tag.query.filter(Tag.id.in_(request.form.getlist('tags'))).all()
 
-        # Opslaan in database
         db.session.commit()
         flash("Abonnement succesvol bijgewerkt!", 'success')
         return redirect(url_for('admin_dashboard'))
@@ -639,7 +708,6 @@ def edit_subscription(id):
         doelgroepen=doelgroepen,
         tags=tags
     )
-
 # Route om tags te beheren
 @app.route('/tags', methods=['GET', 'POST'])
 @login_required
@@ -1149,6 +1217,17 @@ def delete_chatbot_log(id):
 with app.app_context():
     db.create_all()
 
+@app.route('/admin/generate-category-slugs')
+def generate_category_slugs():
+    from slugify import slugify
+
+    for cat in Categorie.query.all():
+        cat.slug = slugify(cat.naam)
+    for sub in Subcategorie.query.all():
+        sub.slug = slugify(sub.naam)
+    
+    db.session.commit()
+    return "✅ Slugs gegenereerd voor categorieën en subcategorieën"
 
 # ---------------------------------------
 # Start de app (development)

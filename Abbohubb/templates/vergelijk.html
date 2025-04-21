@@ -301,7 +301,7 @@
                 <th scope="row">Reviews</th>
                 {% for abonnement in abonnementen %}
                 <td>
-                    <a href="{{ url_for('abonnement_reviews', abonnement_id=abonnement.id) }}">
+                    <a href="{{ url_for('abonnement_reviews', slug=abonnement.slug) }}">
                         Bekijk of schrijf een review
                     </a>
                 </td>
