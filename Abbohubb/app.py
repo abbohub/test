@@ -28,7 +28,7 @@ from wtforms import StringField, PasswordField
 from wtforms.validators import DataRequired
 from sqlalchemy.orm import joinedload
 from flask_wtf.csrf import CSRFProtect
-
+from flask import send_from_directory
 from flask import Flask, render_template, request, redirect, url_for, flash
 import sqlite3
 import os
@@ -478,7 +478,9 @@ def user_dashboard():
     # In een echte app zou je hier user-specifieke data tonen
     return render_template('user_dashboard.html')
 
-
+@app.route('/sitemap.xml')
+def sitemap():
+    return send_from_directory('static', 'sitemap.xml', mimetype='application/xml')
 
 # ---------------------------------------
 # Routes: Admin
