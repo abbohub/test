@@ -304,11 +304,24 @@
                 <th scope="row">Gem. Beoordeling</th>
                 {% for abonnement in abonnementen %}
                 <td>
-                    {{ abonnement.get_average_score() }}
-                    <small>({{ abonnement.reviews|length }} beoordelingen)</small>
+                  {% set score = abonnement.get_average_score() %}
+                  {% if score is not none %}
+                    {% set volle = score | int %}
+                    {% set halve = (score - volle) >= 0.25 and (score - volle) < 0.75 %}
+                    {% set leeg = 5 - volle - (1 if halve else 0) %}
+              
+                    <span class="ster-rating" aria-label="Beoordeling: {{ score }} van 5">
+                      {% for _ in range(volle) %}<span class="vol-ster">★</span>{% endfor %}
+                      {% if halve %}<span class="halve-ster">★</span>{% endif %}
+                      {% for _ in range(leeg) %}<span class="leeg-ster">☆</span>{% endfor %}
+                    </span>
+                    <span class="score-tekst">{{ score | round(1) }} ({{ abonnement.reviews|length }} beoordelingen)</span>
+                  {% else %}
+                    <em>Geen beoordelingen</em>
+                  {% endif %}
                 </td>
                 {% endfor %}
-            </tr>
+              </tr>              
             <tr>
                 <th scope="row">Reviews</th>
                 {% for abonnement in abonnementen %}

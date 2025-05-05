@@ -119,6 +119,19 @@
                               {% for abonnement in categorie_abonnementen %}
                                 <article class="abonnement">
                                   <h3>{{ abonnement.naam }}</h3>
+                                  {% if abonnement.get_average_score() is not none %}
+  {% set score = abonnement.get_average_score() %}
+  {% set volle = score | int %}
+  {% set halve = (score - volle) >= 0.25 and (score - volle) < 0.75 %}
+  {% set leeg = 5 - volle - (1 if halve else 0) %}
+
+  <div class="ster-rating" aria-label="Beoordeling: {{ score }} van 5">
+    {% for _ in range(volle) %}<span class="vol-ster">★</span>{% endfor %}
+    {% if halve %}<span class="halve-ster">★</span>{% endif %}
+    {% for _ in range(leeg) %}<span class="leeg-ster">☆</span>{% endfor %}
+    <span class="score-tekst">{{ score | round(1) }}</span>
+  </div>
+{% endif %}
                                   <div class="flip-container">
                                     <div class="flip-inner">
                                       <div class="flip-front">

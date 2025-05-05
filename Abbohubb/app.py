@@ -381,17 +381,6 @@ def abonnement_reviews(slug):
     Beheerders kunnen reviews modereren (verwijderen).
     """
     abonnement = Abonnement.query.filter_by(slug=slug).first_or_404()
-
-    # Controleer of de gebruiker een admin is
-    is_admin = current_user.is_authenticated and current_user.is_admin
-
-    """
-    Toon de reviews van een specifiek abonnement en bied een formulier aan om een review toe te voegen.
-    Beheerders kunnen reviews modereren (verwijderen).
-    """
-    abonnement = Abonnement.query.filter_by(slug=slug).first_or_404()
-
-    # Controleer of de gebruiker een admin is
     is_admin = current_user.is_authenticated and current_user.is_admin
 
     if request.method == 'POST':
@@ -405,36 +394,46 @@ def abonnement_reviews(slug):
                 flash("Review succesvol verwijderd.", "success")
             else:
                 flash("Review niet gevonden.", "danger")
-            return redirect(url_for('abonnement_reviews', abonnement_id=abonnement_id))
+            return redirect(url_for('abonnement_reviews', slug=abonnement.slug))
 
         # Gebruikeractie: nieuwe review toevoegen
         score_str = request.form.get('score', '').strip()
         comment = request.form.get('comment', '').strip()
         naam = request.form.get('naam', '').strip()
-        # Validatie
+
         if not score_str:
             flash("Geef een score op!", "danger")
-            return redirect(url_for('abonnement_reviews', abonnement_id=abonnement_id))
+            return redirect(url_for('abonnement_reviews', slug=abonnement.slug))
 
         try:
             score = float(score_str)
         except ValueError:
             flash("Score moet een numerieke waarde zijn!", "danger")
-            return redirect(url_for('abonnement_reviews', abonnement_id=abonnement_id))
+            return redirect(url_for('abonnement_reviews', slug=abonnement.slug))
 
         if score < 1 or score > 5:
             flash("Score moet tussen 1 en 5 liggen!", "danger")
-            return redirect(url_for('abonnement_reviews', abonnement_id=abonnement_id))
+            return redirect(url_for('abonnement_reviews', slug=abonnement.slug))
 
-        # Nieuwe review opslaan
         new_review = Review(abonnement_id=abonnement.id, naam=naam, score=score, comment=comment)
         db.session.add(new_review)
         db.session.commit()
 
         flash("Bedankt voor je review!", "success")
-        return redirect(url_for('abonnement_reviews', abonnement_id=abonnement_id))
+        return redirect(url_for('abonnement_reviews', slug=abonnement.slug))
 
-    return render_template('abonnement_reviews.html', abonnement=abonnement, is_admin=is_admin)
+    # ✅ Bereken gemiddelde_score hier
+    reviews = abonnement.reviews
+    scores = [review.score for review in reviews]
+    gemiddelde_score = round(sum(scores) / len(scores), 1) if scores else None
+
+    return render_template(
+        'abonnement_reviews.html',
+        abonnement=abonnement,
+        is_admin=is_admin,
+        gemiddelde_score=gemiddelde_score  # 🔥 hier geef je hem door
+    )
+
 
 @app.route('/abonnement/<int:id>', methods=['GET', 'POST'])
 def abonnement_detail(id):
