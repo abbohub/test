@@ -338,6 +338,7 @@ header p {
   flex-direction: column;
   align-items: center;
   padding: 15px;
+  scroll-snap-align: start;
 }
 
 /* Zorg dat het logo op gelijke grootte blijft */
@@ -713,6 +714,7 @@ footer {
   overflow-x: auto;
   padding: 0 10px; /* Ruimte zodat de pijlen niet over de inhoud vallen */
   scrollbar-width: none; /* Firefox */
+  scroll-snap-type: x mandatory;
 }
 
 .categorie-scroll-container::-webkit-scrollbar {
