@@ -5,6 +5,7 @@ import uuid
 from slugify import slugify
 from datetime import datetime
 from sqlalchemy.schema import UniqueConstraint  # zorg dat dit bovenin staat
+from flask import Response
 
 # Alleen nodig als je environment variables gebruikt
 # (Bijvoorbeeld SECRET_KEY uit .env)
@@ -39,6 +40,7 @@ from sklearn.naive_bayes import MultinomialNB
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, f1_score
 from slugify import slugify
+from flask import redirect, url_for, abort
 
 # Maak de Flask-app aan
 app = Flask(__name__, static_url_path='/static', static_folder='static')
@@ -277,7 +279,28 @@ def index():
     geselecteerde_categorie = request.args.get('categorie', '').strip()
     geselecteerde_subcategorie = request.args.get('subcategorie', '').strip()
 
-    # Start de basisquery met een join voor subcategorieën en categorieën
+    # 🔁 Redirect op basis van categorie- en/of subcategorie-ID
+    if geselecteerde_categorie:
+        categorie = Categorie.query.get(int(geselecteerde_categorie))
+        if not categorie:
+            abort(404)
+
+        if geselecteerde_subcategorie:
+            subcategorie = Subcategorie.query.get(int(geselecteerde_subcategorie))
+            if not subcategorie or subcategorie.categorie_id != categorie.id:
+                abort(404)
+
+            return redirect(
+                url_for('abonnement_overzicht', categorie_slug=categorie.slug, subcategorie_slug=subcategorie.slug),
+                code=301
+            )
+        else:
+            return redirect(
+                url_for('abonnement_overzicht', categorie_slug=categorie.slug),
+                code=301
+            )
+
+    # 🔍 Zoekfunctionaliteit blijft op de homepage werken
     abonnementen_query = Abonnement.query.join(
         Subcategorie, Abonnement.subcategorie_id == Subcategorie.id
     ).join(
@@ -286,33 +309,20 @@ def index():
         db.contains_eager(Abonnement.subcategorie).contains_eager(Subcategorie.categorie)
     )
 
-    # Filter op zoekterm
     if zoekterm:
         abonnementen_query = abonnementen_query.filter(Abonnement.naam.ilike(f'%{zoekterm}%'))
 
-    # Filter op categorie
-    if geselecteerde_categorie:
-        abonnementen_query = abonnementen_query.filter(Categorie.id == int(geselecteerde_categorie))
-
-    # Filter op subcategorie
-    if geselecteerde_subcategorie:
-        abonnementen_query = abonnementen_query.filter(Subcategorie.id == int(geselecteerde_subcategorie))
-
-    # Sorteer abonnementen op volgorde
     abonnementen = abonnementen_query.order_by(Abonnement.volgorde.asc()).all()
 
-    # Haal alleen de relevante categorieën en subcategorieën op
-    if geselecteerde_categorie:
-        categorieën = Categorie.query.filter(Categorie.id == int(geselecteerde_categorie)).all()
-        subcategorieën = Subcategorie.query.filter(Subcategorie.categorie_id == int(geselecteerde_categorie)).all()
-    elif zoekterm:
+    # Dynamisch de juiste categorieën ophalen
+    if zoekterm:
         categorieën = list(set([ab.subcategorie.categorie for ab in abonnementen]))
         subcategorieën = list(set([ab.subcategorie for ab in abonnementen]))
     else:
         categorieën = Categorie.query.order_by(Categorie.volgorde.asc()).all()
         subcategorieën = Subcategorie.query.all()
 
-    # Maak abonnementen_per_categorie (indien nodig in de template)
+    # Opbouw voor template: abonnementen per categorie
     abonnementen_per_categorie = {}
     for categorie in categorieën:
         abonnementen_per_categorie[categorie.id] = [
@@ -325,8 +335,8 @@ def index():
         abonnementen_per_categorie=abonnementen_per_categorie,
         unieke_categorieën=categorieën,
         unieke_subcategorieën=subcategorieën,
-        geselecteerde_categorie=geselecteerde_categorie,
-        geselecteerde_subcategorie=geselecteerde_subcategorie,
+        geselecteerde_categorie='',
+        geselecteerde_subcategorie='',
         zoekterm=zoekterm
     )
 
@@ -476,10 +486,6 @@ def user_dashboard():
     """Voorbeeld van een user-dashboard, na inloggen."""
     # In een echte app zou je hier user-specifieke data tonen
     return render_template('user_dashboard.html')
-
-@app.route('/sitemap.xml')
-def sitemap():
-    return send_from_directory('static', 'sitemap.xml', mimetype='application/xml')
 
 # ---------------------------------------
 # Routes: Admin
@@ -1230,6 +1236,60 @@ def generate_category_slugs():
     db.session.commit()
     return "✅ Slugs gegenereerd voor categorieën en subcategorieën"
 
+@app.route('/sitemap.xml', methods=['GET'])
+def sitemap():
+    pages = []
+    base_url = 'https://abbohub.nl'
+
+    # 1. Homepage
+    pages.append({
+        'loc': f"{base_url}/",
+        'changefreq': 'weekly',
+        'priority': '1.0'
+    })
+
+    # 2. Categorieën en subcategorieën
+    categorieën = Categorie.query.all()
+    for cat in categorieën:
+        pages.append({
+            'loc': f"{base_url}/{cat.slug}/",
+            'changefreq': 'weekly',
+            'priority': '0.8'
+        })
+        for sub in cat.subcategorieen:
+            pages.append({
+                'loc': f"{base_url}/{cat.slug}/{sub.slug}/",
+                'changefreq': 'weekly',
+                'priority': '0.7'
+            })
+
+    # 3. Abonnement-detailpagina’s (indien je slug-URL gebruikt)
+    abonnementen = Abonnement.query.all()
+    for ab in abonnementen:
+        if ab.subcategorie and ab.subcategorie.slug and ab.subcategorie.categorie.slug:
+            url = f"{base_url}/{ab.subcategorie.categorie.slug}/{ab.subcategorie.slug}/{ab.slug}/"
+            pages.append({
+                'loc': url,
+                'changefreq': 'monthly',
+                'priority': '0.6'
+            })
+
+    # XML-generatie
+    sitemap_xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    sitemap_xml += '<urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    for page in pages:
+        sitemap_xml += '  <url>\n'
+        sitemap_xml += f"    <loc>{page['loc']}</loc>\n"
+        sitemap_xml += f"    <changefreq>{page['changefreq']}</changefreq>\n"
+        sitemap_xml += f"    <priority>{page['priority']}</priority>\n"
+        sitemap_xml += '  </url>\n'
+    sitemap_xml += '</urlset>'
+
+    return Response(sitemap_xml, mimetype='application/xml')
+
+@app.route('/robots.txt')
+def robots():
+    return app.send_static_file('robots.txt')
 # ---------------------------------------
 # Start de app (development)
 # ---------------------------------------
