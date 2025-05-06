@@ -1247,13 +1247,13 @@ def sitemap():
         'priority': '1.0'
     })
 
-    # 2. Categorieën en subcategorieën
+    # 2. Categorieën en subcategorieën met juiste prefix
     categorieën = Categorie.query.all()
     for cat in categorieën:
         if not cat.slug:
             continue
         pages.append({
-            'loc': f"{base_url}/{cat.slug}/",
+            'loc': f"{base_url}/categorie/{cat.slug}/",
             'changefreq': 'weekly',
             'priority': '0.8'
         })
@@ -1263,12 +1263,12 @@ def sitemap():
             if not sub.slug:
                 continue
             pages.append({
-                'loc': f"{base_url}/{cat.slug}/{sub.slug}/",
+                'loc': f"{base_url}/categorie/{cat.slug}/{sub.slug}/",
                 'changefreq': 'weekly',
                 'priority': '0.7'
             })
 
-    # 3. Abonnement-detailpagina's met slug-URL + /review prefix
+    # 3. Abonnement-detailpagina's onder /review/ + volledige slug
     abonnementen = Abonnement.query.all()
     for ab in abonnementen:
         if ab.slug:
