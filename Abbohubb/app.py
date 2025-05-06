@@ -2,7 +2,6 @@
 from flask import Flask
 import os
 import uuid
-from slugify import slugify
 from datetime import datetime
 from sqlalchemy.schema import UniqueConstraint  # zorg dat dit bovenin staat
 from flask import Response
@@ -1248,7 +1247,7 @@ def sitemap():
         'priority': '1.0'
     })
 
-    # 2. Categorieën en subcategorieën (via expliciete queries, veilig)
+    # 2. Categorieën en subcategorieën
     categorieën = Categorie.query.all()
     for cat in categorieën:
         if not cat.slug:
@@ -1269,25 +1268,18 @@ def sitemap():
                 'priority': '0.7'
             })
 
-    # 3. Detailpagina's van abonnementen op basis van slugstructuur
+    # 3. Abonnement-detailpagina’s (slug bevat al het hele pad)
     abonnementen = Abonnement.query.all()
     for ab in abonnementen:
-        # Controleer of alles aanwezig is
-        if not ab.subcategorie:
-            continue
-        sub = ab.subcategorie
-        cat = sub.categorie if hasattr(sub, 'categorie') else None
-        if not (sub.slug and cat and cat.slug and hasattr(ab, 'slug') and ab.slug):
-            continue
+        if ab.slug:
+            url = f"{base_url}/{ab.slug}/"
+            pages.append({
+                'loc': url,
+                'changefreq': 'monthly',
+                'priority': '0.6'
+            })
 
-        url = f"{base_url}/{cat.slug}/{sub.slug}/{ab.slug}/"
-        pages.append({
-            'loc': url,
-            'changefreq': 'monthly',
-            'priority': '0.6'
-        })
-
-    # 4. Sitemap XML bouwen
+    # XML bouwen
     sitemap_xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
     sitemap_xml += '<urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">\n'
     for page in pages:
