@@ -1268,11 +1268,11 @@ def sitemap():
                 'priority': '0.7'
             })
 
-    # 3. Abonnement-detailpagina’s (slug bevat al het hele pad)
+    # 3. Abonnement-detailpagina's met slug-URL + /review prefix
     abonnementen = Abonnement.query.all()
     for ab in abonnementen:
         if ab.slug:
-            url = f"{base_url}/{ab.slug}/"
+            url = f"{base_url}/review/{ab.slug}"
             pages.append({
                 'loc': url,
                 'changefreq': 'monthly',
