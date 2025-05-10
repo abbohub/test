@@ -2,6 +2,7 @@
 <html lang="nl">
 <head>
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
   new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -23,6 +24,12 @@
     <meta name="description" content="Bij AbboHub vind je snel en eenvoudig alle abonnementen in diverse categorieën. Vergelijk, filter en vind het abonnement dat bij jou past!">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta property="og:title" content="AbboHub - Vergelijk abonnementen eenvoudig" />
+<meta property="og:description" content="Vind het abonnement dat bij jou past." />
+<meta property="og:image" content="https://abbohub.nl/static/logo.png" />
+<meta property="og:url" content="https://abbohub.nl" />
+<meta name="twitter:card" content="summary_large_image">
+
     <title>AbboHub - Vind en vergelijk abonnementen</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
@@ -211,49 +218,16 @@
     <p>&copy; 2025 AbboHub. Alle rechten voorbehouden.</p>
     <nav class="footer-nav">
       <ul>
-        <li><a href="privacy-cookieverklaring.html">Privacy en Cookieverklaring</a></li>
-        <li><a href="over-abbohub.html">Over AbboHub</a></li>
+        <li><a href="{{ url_for('privacy_cookieverklaring') }}">Privacy en Cookieverklaring</a></li>
+        <li><a href="{{ url_for('over_abbohub') }}">Over AbboHub</a></li>
         <li><a href="#" onclick="openSettings()">Cookievoorkeuren aanpassen</a></li>
       </ul>
     </nav>
   </footer>
-
+  
+  <!-- Cookiebanner insluiten -->
   {% include 'cookie-banner.html' %}
-<script src="{{ url_for('static', filename='cookie-script.js') }}" defer></script>
-
-
-<!-- cookie-script -->
-<script>
-    fetch("cookie-banner.html")
-        .then(response => response.text())
-        .then(html => {
-            // Voeg de cookie-banner alleen toe op de indexpagina
-            if (window.location.pathname === "/") {
-                document.getElementById("cookie-placeholder").innerHTML = html;
-
-                // Controleer of de gebruiker al cookie toestemming heeft gegeven
-                if (localStorage.getItem("cookieConsent") === null) {
-                    document.getElementById("cookie-banner").style.display = "block";
-                }
-
-                // Voeg het script toe
-                const script = document.createElement("script");
-                script.src = "cookie-script.js";
-                script.defer = true;
-                document.body.appendChild(script);
-            }
-        });
-
-    function setCookieConsent(consent) {
-        localStorage.setItem("cookieConsent", consent);
-        document.getElementById("cookie-banner").style.display = "none";
-        document.getElementById("cookie-settings").style.display = "none";
-        if (consent) {
-            enableCookies();
-        }
-    }
-</script>
- 
+  
   <!-- Vergelijk-script -->
   <script>
       document.getElementById("send-btn").addEventListener("click", function() {

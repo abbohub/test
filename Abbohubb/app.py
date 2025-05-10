@@ -1235,6 +1235,10 @@ def generate_category_slugs():
     db.session.commit()
     return "✅ Slugs gegenereerd voor categorieën en subcategorieën"
 
+# ---------------------------------------
+# Google optimalisatie
+# ---------------------------------------
+
 @app.route('/sitemap.xml', methods=['GET'])
 def sitemap():
     base_url = 'https://abbohub.nl'
@@ -1295,6 +1299,11 @@ def sitemap():
 @app.route('/robots.txt')
 def robots():
     return app.send_static_file('robots.txt')
+
+@app.route('/favicon.ico')
+def favicon():
+    return app.send_static_file('favicon.ico')
+
 # ---------------------------------------
 # Start de app (development)
 # ---------------------------------------

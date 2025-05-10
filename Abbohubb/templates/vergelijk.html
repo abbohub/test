@@ -348,6 +348,7 @@
         </tbody>
     </table>
 </div>
+
 <script>
     document.getElementById('clear-comparison').addEventListener('click', () => {
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
@@ -373,3 +374,5 @@
 <footer>
     <p>&copy; 2025 AbboHub. Alle rechten voorbehouden.</p>
 </footer>
+  <!-- Cookiebanner insluiten -->
+  {% include 'cookie-banner.html' %}
