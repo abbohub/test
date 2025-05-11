@@ -1,26 +1,43 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-        <!-- Google Tag Manager -->
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-  })(window,document,'script','dataLayer','GTM-NRGH8P6W');</script>
-  <!-- End Google Tag Manager -->  
+  <!-- Google Tag Manager -->
+  <script>
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+      'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-NRGH8P6W');
+  </script>
+  <!-- End Google Tag Manager -->
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Bij AbboHub vind je snel en eenvoudig alle abonnementen in diverse categorieën. Vergelijk, filter en vind het abonnement dat bij jou past!">
-  <meta property="og:title" content="AbboHub - Vergelijk abonnementen eenvoudig" />
-  <meta property="og:description" content="Vind het abonnement dat bij jou past." />
-  <meta property="og:image" content="https://abbohub.nl/static/logo.png" />
-  <meta property="og:url" content="https://abbohub.nl" />
+
+  <!-- Canonical -->
+  <link rel="canonical" href="{{ request.url }}">
+
+  <!-- Dynamische SEO -->
+  <title>{{ page_title or abonnement.naam ~ ' - Abonnementsinformatie | AbboHub' }}</title>
+  <meta name="description" content="{{ page_description or 'Bekijk alles over het ' ~ abonnement.naam ~ ' abonnement, inclusief voordelen, prijzen en gebruikerservaringen.' }}">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="{{ page_title or abonnement.naam }}">
+  <meta property="og:description" content="{{ page_description or 'Lees reviews en informatie over ' ~ abonnement.naam ~ ' op AbboHub.' }}">
+  <meta property="og:image" content="{{ url_for('static', filename='logo.png', _external=True) }}">
+  <meta property="og:url" content="{{ request.url }}">
+  <meta property="og:type" content="article">
+
+  <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">
-  
-  <title>{{ abonnement.naam }} - Abonnementsinformatie</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <meta name="twitter:title" content="{{ page_title or abonnement.naam }}">
+  <meta name="twitter:description" content="{{ page_description or 'Vergelijk ' ~ abonnement.naam ~ ' en lees ervaringen van andere gebruikers.' }}">
+  <meta name="twitter:image" content="{{ url_for('static', filename='logo.png', _external=True) }}">
+
+  <!-- Favicon & styles -->
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
-  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <style>
     /* Reset & basisstijlen */
     *, *::before, *::after {

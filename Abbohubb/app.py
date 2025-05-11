@@ -359,6 +359,14 @@ def abonnement_overzicht(categorie_slug, subcategorie_slug=None):
     categorieen = Categorie.query.order_by(Categorie.volgorde.asc()).all()
     subcategorieen = Subcategorie.query.filter_by(categorie_id=categorie.id).all()
 
+    # SEO-titel & beschrijving dynamisch bepalen
+    if subcategorie:
+        page_title = f"{subcategorie.naam} abonnementen vergelijken | {categorie.naam} | AbboHub"
+        page_description = f"Bekijk en vergelijk eenvoudig {subcategorie.naam}-abonnementen binnen de categorie {categorie.naam} op AbboHub."
+    else:
+        page_title = f"Abonnementen in {categorie.naam} vergelijken | AbboHub"
+        page_description = f"Ontdek alle abonnementen binnen de categorie {categorie.naam} en vergelijk eenvoudig prijzen en voordelen."
+
     return render_template(
         'index.html',
         abonnementen=abonnementen,
@@ -367,7 +375,9 @@ def abonnement_overzicht(categorie_slug, subcategorie_slug=None):
         unieke_subcategorieën=subcategorieen,
         geselecteerde_categorie=str(categorie.id),
         geselecteerde_subcategorie=str(subcategorie.id) if subcategorie else '',
-        zoekterm=''
+        zoekterm='',
+        page_title=page_title,
+        page_description=page_description
     )
 
 
@@ -431,16 +441,22 @@ def abonnement_reviews(slug):
         flash("Bedankt voor je review!", "success")
         return redirect(url_for('abonnement_reviews', slug=abonnement.slug))
 
-    # ✅ Bereken gemiddelde_score hier
+    # Bereken gemiddelde_score
     reviews = abonnement.reviews
     scores = [review.score for review in reviews]
     gemiddelde_score = round(sum(scores) / len(scores), 1) if scores else None
+
+    # 🔥 Dynamische SEO-gegevens
+    page_title = f"{abonnement.naam} abonnement review & ervaringen | AbboHub"
+    page_description = f"Lees gebruikerservaringen en ontdek wat {abonnement.naam} jou te bieden heeft. Vergelijk nu prijzen, voordelen en meer."
 
     return render_template(
         'abonnement_reviews.html',
         abonnement=abonnement,
         is_admin=is_admin,
-        gemiddelde_score=gemiddelde_score  # 🔥 hier geef je hem door
+        gemiddelde_score=gemiddelde_score,
+        page_title=page_title,
+        page_description=page_description
     )
 
 
