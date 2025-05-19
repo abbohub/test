@@ -210,8 +210,10 @@
                 <li>
                     <span>{{ subcategorie.naam }}</span>
                     <div>
-                        <a href="{{ url_for('bewerk_subcategorie', id=subcategorie.id) }}">[Bewerk]</a>
-                        <a href="{{ url_for('verwijder_subcategorie', id=subcategorie.id) }}" onclick="return confirm('Weet je zeker dat je deze subcategorie wilt verwijderen?')">[Verwijder]</a>
+                        <form method="POST" action="{{ url_for('verwijder_subcategorie', id=subcategorie.id) }}" style="display:inline;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" onclick="return confirm('Weet je zeker dat je deze subcategorie wilt verwijderen?')">[Verwijder]</button>
+</form>
                     </div>
                 </li>
                 {% endfor %}

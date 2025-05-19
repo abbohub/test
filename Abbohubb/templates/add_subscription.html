@@ -233,15 +233,24 @@
         placeholder="Bijv. '4.5'"
       >
 
-      <!-- Logo uploaden -->
-      <label for="logo">Logo uploaden (optioneel):</label>
-      <input 
-        type="file" 
-        name="logo" 
-        id="logo" 
-        accept=".png, .jpg, .jpeg, .gif"
-      >
-
+<!-- Logo uploaden -->
+<label for="logo">Logo uploaden (optioneel):</label>
+<input
+  type="file"
+  name="logo"
+  id="logo"
+  accept=".png, .jpg, .jpeg, .gif"
+/>
+<div class="logo-preview-container" style="margin-top: 10px;">
+  <img
+    id="logo-preview"
+    src="#"
+    alt="Logo preview"
+    width="200"
+    height="200"
+    loading="lazy"
+    style="display: none; border: 1px solid #ccc; border-radius: 4px;"
+  >
       <!-- Website URL -->
       <label for="url">Website URL:</label>
       <input 
@@ -293,5 +302,14 @@
       <button type="submit">Toevoegen</button>
     </form>
   </div>
+  <script>
+  document.getElementById('logo').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    const preview = document.getElementById('logo-preview');
+    preview.src = URL.createObjectURL(file);
+    preview.style.display = 'block';
+  });
+</script>
 </body>
 </html>

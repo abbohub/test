@@ -5,14 +5,15 @@ import uuid
 from datetime import datetime
 from sqlalchemy.schema import UniqueConstraint  # zorg dat dit bovenin staat
 from flask import Response
+from PIL import Image
+from flask import current_app
 
 # Alleen nodig als je environment variables gebruikt
 # (Bijvoorbeeld SECRET_KEY uit .env)
 from dotenv import load_dotenv
 
 from flask import (
-    Flask, render_template, request,
-    redirect, url_for, flash
+    render_template, request, redirect, url_for, flash, current_app
 )
 from flask import jsonify, request, redirect, url_for, flash, render_template
 from flask_sqlalchemy import SQLAlchemy
@@ -575,6 +576,7 @@ def add_subscription():
         geselecteerde_doelgroepen = request.form.getlist('doelgroepen')
         geselecteerde_tags = request.form.getlist('tags')
 
+        # Validatie verplichte velden
         if not naam or not filter_optie or not subcategorie_id or not url:
             flash("Vul alle verplichte velden in!", "danger")
             return redirect(url_for('add_subscription'))
@@ -583,7 +585,7 @@ def add_subscription():
             flash("De URL moet beginnen met http:// of https://.", "danger")
             return redirect(url_for('add_subscription'))
 
-        # Genereer SEO-vriendelijke slug op basis van categorie/subcategorie/naam
+        # SEO-vriendelijke slug
         subcat = Subcategorie.query.get(int(subcategorie_id))
         cat = Categorie.query.get(subcat.categorie_id) if subcat else None
         categorie_slug = slugify(cat.naam) if cat else "categorie"
@@ -591,21 +593,29 @@ def add_subscription():
         naam_slug = slugify(naam)
         full_slug = f"{categorie_slug}/{subcategorie_slug}/{naam_slug}"
 
-        # Controleer of slug al bestaat
-        slug_exists = Abonnement.query.filter_by(slug=full_slug).first()
-        if slug_exists:
+        if Abonnement.query.filter_by(slug=full_slug).first():
             flash("Er bestaat al een abonnement met deze naam in dezelfde categorie/subcategorie.", "danger")
             return redirect(url_for('add_subscription'))
 
+        # Logo upload & verwerking
         logo_filename = None
         if 'logo' in request.files:
             logo_file = request.files['logo']
             if logo_file and allowed_file(logo_file.filename):
+                # Veilige bestandsnaam
                 filename = secure_filename(logo_file.filename)
                 logo_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                logo_file.save(logo_path)
+
+                # Openen en converteren naar RGB
+                img = Image.open(logo_file).convert('RGB')
+                # Schaal naar max 200×200 px, behoud aspect ratio
+                img.thumbnail((200, 200), Image.ANTIALIAS)
+                # Opslaan als JPEG met compressie en optimalisatie
+                img.save(logo_path, format='JPEG', optimize=True, quality=85)
+
                 logo_filename = filename
 
+        # Nieuw Abonnement-object
         new_abonnement = Abonnement(
             naam=naam,
             slug=full_slug,
@@ -629,27 +639,28 @@ def add_subscription():
             past_dit_bij_jou=past_dit_bij_jou
         )
 
-        for doelgroep_id in geselecteerde_doelgroepen:
-            doelgroep = Doelgroep.query.get(int(doelgroep_id))
-            if doelgroep:
-                new_abonnement.doelgroepen.append(doelgroep)
-
+        # Relaties Doelgroepen en Tags
+        for dg_id in geselecteerde_doelgroepen:
+            dg = Doelgroep.query.get(int(dg_id))
+            if dg:
+                new_abonnement.doelgroepen.append(dg)
         for tag_id in geselecteerde_tags:
-            tag = Tag.query.get(int(tag_id))
-            if tag:
-                new_abonnement.tags.append(tag)
+            tg = Tag.query.get(int(tag_id))
+            if tg:
+                new_abonnement.tags.append(tg)
 
+        # Opslaan in DB
         db.session.add(new_abonnement)
         db.session.commit()
 
         flash("Abonnement succesvol toegevoegd!", "success")
         return redirect(url_for('admin_dashboard'))
 
+    # GET: form weergeven
     categorieen = Categorie.query.all()
     subcategorieen = Subcategorie.query.all()
     doelgroepen = Doelgroep.query.all()
     tags = Tag.query.all()
-
     return render_template(
         'add_subscription.html',
         categorieen=categorieen,
@@ -658,7 +669,6 @@ def add_subscription():
         tags=tags
     )
 
-
 @app.route('/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_subscription(id):
@@ -666,24 +676,31 @@ def edit_subscription(id):
     if not current_user.is_admin:
         return redirect(url_for('index'))
 
+    # Haal bestaand abonnement op
     abonnement = Abonnement.query.get_or_404(id)
-    categorieen = Categorie.query.all()
-    subcategorieen = Subcategorie.query.filter_by(categorie_id=abonnement.subcategorie.categorie_id).all()
-    doelgroepen = Doelgroep.query.all()
-    tags = Tag.query.all()
+
+    # Voor de dropdowns en checkboxes
+    categorieen    = Categorie.query.all()
+    subcategorieen = Subcategorie.query.filter_by(
+        categorie_id=abonnement.subcategorie.categorie_id
+    ).all()
+    doelgroepen    = Doelgroep.query.all()
+    tags           = Tag.query.all()
 
     if request.method == 'POST':
-        # Haal form-data op
-        abonnement.naam = request.form.get('naam', '').strip()
-        abonnement.beschrijving = request.form.get('beschrijving', '').strip()
-        abonnement.filter_optie = request.form.get('filter_optie', '').strip()
-        abonnement.prijs = request.form.get('prijs', '').strip()
-        abonnement.contractduur = request.form.get('contractduur', '').strip()
-        abonnement.aanbiedingen = request.form.get('aanbiedingen', '').strip()
+        # 1) Algemene velden
+        abonnement.naam                   = request.form.get('naam', '').strip()
+        abonnement.beschrijving          = request.form.get('beschrijving', '').strip()
+        abonnement.filter_optie          = request.form.get('filter_optie', '').strip()
+        abonnement.prijs                 = request.form.get('prijs', '').strip()
+        abonnement.contractduur          = request.form.get('contractduur', '').strip()
+        abonnement.aanbiedingen          = request.form.get('aanbiedingen', '').strip()
         abonnement.annuleringsvoorwaarden = request.form.get('annuleringsvoorwaarden', '').strip()
-        abonnement.voordelen = request.form.get('voordelen', '').strip()
+        abonnement.voordelen             = request.form.get('voordelen', '').strip()
 
+        # 2) Extra velden
         abonnement.frequentie_bezorging = request.form.get('frequentie_bezorging', '').strip()
+
         prijs_vanaf = request.form.get('prijs_vanaf', '').strip()
         abonnement.prijs_vanaf = float(prijs_vanaf) if prijs_vanaf else None
 
@@ -691,10 +708,11 @@ def edit_subscription(id):
         abonnement.prijs_tot = float(prijs_tot) if prijs_tot else None
 
         abonnement.wat_is_het_abonnement = request.form.get('wat_is_het_abonnement', '').strip()
-        abonnement.waarom_kiezen = request.form.get('waarom_kiezen', '').strip()
-        abonnement.hoe_werkt_het = request.form.get('hoe_werkt_het', '').strip()
-        abonnement.past_dit_bij_jou = request.form.get('past_dit_bij_jou', '').strip()
+        abonnement.waarom_kiezen          = request.form.get('waarom_kiezen', '').strip()
+        abonnement.hoe_werkt_het         = request.form.get('hoe_werkt_het', '').strip()
+        abonnement.past_dit_bij_jou      = request.form.get('past_dit_bij_jou', '').strip()
 
+        # 3) Beoordelingen validatie
         beoordelingen = request.form.get('beoordelingen', '').strip()
         if beoordelingen:
             try:
@@ -703,25 +721,63 @@ def edit_subscription(id):
                 flash("Beoordelingen moet een numerieke waarde zijn!", "danger")
                 return redirect(url_for('edit_subscription', id=abonnement.id))
 
+        # 4) URL en subcategorie
         abonnement.url = request.form.get('url', '').strip()
         abonnement.subcategorie_id = int(request.form.get('subcategorie_id'))
 
-        # 👉 Slug hergenereren op basis van nieuwe waarden
+        # 5) Slug her-genereren
         subcat = Subcategorie.query.get(abonnement.subcategorie_id)
-        cat = Categorie.query.get(subcat.categorie_id) if subcat else None
-        categorie_slug = slugify(cat.naam) if cat else "categorie"
+        cat    = Categorie.query.get(subcat.categorie_id) if subcat else None
+        categorie_slug    = slugify(cat.naam) if cat else "categorie"
         subcategorie_slug = slugify(subcat.naam) if subcat else "subcategorie"
-        naam_slug = slugify(abonnement.naam)
-        abonnement.slug = f"{categorie_slug}/{subcategorie_slug}/{naam_slug}"
+        naam_slug         = slugify(abonnement.naam)
+        abonnement.slug   = f"{categorie_slug}/{subcategorie_slug}/{naam_slug}"
 
-        # Doelgroepen en tags verwerken
-        abonnement.doelgroepen = Doelgroep.query.filter(Doelgroep.id.in_(request.form.getlist('doelgroepen'))).all()
-        abonnement.tags = Tag.query.filter(Tag.id.in_(request.form.getlist('tags'))).all()
+        # 6) Doelgroepen & tags bijwerken
+        abonnement.doelgroepen = Doelgroep.query.filter(
+            Doelgroep.id.in_(request.form.getlist('doelgroepen'))
+        ).all()
+        abonnement.tags = Tag.query.filter(
+            Tag.id.in_(request.form.getlist('tags'))
+        ).all()
 
+        # 7) Logo upload & verwerking
+        if 'logo' in request.files:
+            logo_file = request.files['logo']
+            if logo_file and allowed_file(logo_file.filename):
+                filename = secure_filename(logo_file.filename)
+                upload_folder = current_app.config['UPLOAD_FOLDER']
+                logo_path = os.path.join(upload_folder, filename)
+
+                # Verwijder oud logo (indien aanwezig)
+                if abonnement.logo:
+                    old_path = os.path.join(upload_folder, abonnement.logo)
+                    if os.path.exists(old_path):
+                        os.remove(old_path)
+
+                # Open en converteer naar RGB
+                img = Image.open(logo_file).convert('RGB')
+
+                # Kies resample-filter afhankelijk van Pillow-versie
+                if hasattr(Image, "Resampling"):
+                    resample_filter = Image.Resampling.LANCZOS
+                else:
+                    resample_filter = Image.LANCZOS
+
+                # Schaal naar max 200×200 px
+                img.thumbnail((200, 200), resample_filter)
+
+                # Opslaan als JPEG met compressie
+                img.save(logo_path, format='JPEG', optimize=True, quality=85)
+
+                abonnement.logo = filename
+
+        # 8) Opslaan in database & redirect
         db.session.commit()
         flash("Abonnement succesvol bijgewerkt!", 'success')
         return redirect(url_for('admin_dashboard'))
 
+    # GET: toon formulier met bestaande waarden
     return render_template(
         'edit_subscription.html',
         abonnement=abonnement,
@@ -729,8 +785,7 @@ def edit_subscription(id):
         subcategorieen=subcategorieen,
         doelgroepen=doelgroepen,
         tags=tags
-    )
-# Route om tags te beheren
+    )# Route om tags te beheren
 @app.route('/tags', methods=['GET', 'POST'])
 @login_required
 def manage_tags():

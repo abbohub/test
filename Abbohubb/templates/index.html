@@ -15,7 +15,7 @@
   <!-- Favicon -->
   <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
-  
+
 
   <!-- Open Graph -->
   <meta property="og:title" content="{{ page_title or 'AbboHub - Vergelijk abonnementen eenvoudig' }}">
@@ -124,12 +124,20 @@
   <a href="{{ url_for('vergelijk') }}" class="btn btn-compare" id="vergelijk-knop">
     Vergelijk
   </a>
-</div>
-       
+</div>      
     </header>
-
     <!-- HOOFDCONTENT: Abonnementen per categorie -->
-    <main>
+<main>
+  {% if categorie or subcategorie %}
+    <section class="pagina-intro">
+      <h1>{{ subcategorie.naam if subcategorie else categorie.naam }}</h1>
+      <p>
+        Vergelijk eenvoudig {{ subcategorie.naam if subcategorie else categorie.naam }}-abonnementen 
+        van populaire aanbieders zoals {{ abonnementen[0].naam if abonnementen }} en meer. 
+        Bekijk prijzen, beoordelingen en unieke voordelen op AbboHub.
+      </p>
+    </section>
+  {% endif %}
         <div class="abonnementen-container">
             {% if abonnementen %}
                 {% for categorie in unieke_categorieën %}

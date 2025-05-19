@@ -120,24 +120,6 @@
             }
         }
     </style>
-
-    <script>
-        // Dynamisch subcategorieën laden bij selectie van een categorie
-        function laadSubcategorieen(categorieId) {
-            fetch(`/api/subcategorieen/${categorieId}`)
-                .then(response => response.json())
-                .then(data => {
-                    const subcategorieSelect = document.getElementById('subcategorie_id');
-                    subcategorieSelect.innerHTML = ''; // Verwijder bestaande opties
-                    data.forEach(subcategorie => {
-                        const option = document.createElement('option');
-                        option.value = subcategorie.id;
-                        option.textContent = subcategorie.naam;
-                        subcategorieSelect.appendChild(option);
-                    });
-                });
-        }
-    </script>
 </head>
 <body>
     <div class="container">
@@ -156,146 +138,170 @@
 
         <!-- Het formulier -->
         <form method="POST" enctype="multipart/form-data">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-            <label for="naam">Naam</label>
-            <input type="text" id="naam" name="naam" value="{{ abonnement.naam }}" required>
+  <!-- Naam -->
+  <label for="naam">Naam</label>
+  <input type="text" id="naam" name="naam" value="{{ abonnement.naam }}" required>
 
-            <label for="beschrijving">Beschrijving</label>
-            <textarea id="beschrijving" name="beschrijving">{{ abonnement.beschrijving }}</textarea>
+  <!-- Beschrijving -->
+  <label for="beschrijving">Beschrijving</label>
+  <textarea id="beschrijving" name="beschrijving">{{ abonnement.beschrijving }}</textarea>
 
-            <label for="prijs">Prijs</label>
-            <input type="text" id="prijs" name="prijs" value="{{ abonnement.prijs }}">
+  <!-- Prijs -->
+  <label for="prijs">Prijs</label>
+  <input type="text" id="prijs" name="prijs" value="{{ abonnement.prijs }}">
 
-            <label for="contractduur">Contractduur</label>
-            <input type="text" id="contractduur" name="contractduur" value="{{ abonnement.contractduur }}">
+  <!-- Contractduur -->
+  <label for="contractduur">Contractduur</label>
+  <input type="text" id="contractduur" name="contractduur" value="{{ abonnement.contractduur }}">
 
-            <label for="filter_optie">Filter Optie</label>
-            <input type="text" id="filter_optie" name="filter_optie" value="{{ abonnement.filter_optie }}">
+  <!-- Filter Optie -->
+  <label for="filter_optie">Filter Optie</label>
+  <input type="text" id="filter_optie" name="filter_optie" value="{{ abonnement.filter_optie }}">
 
-            <label for="categorie_id">Categorie</label>
-            <select id="categorie_id" name="categorie_id" required>
-                {% for categorie in categorieen %}
-                    <option value="{{ categorie.id }}" {% if abonnement.subcategorie.categorie_id == categorie.id %}selected{% endif %}>{{ categorie.naam }}</option>
-                {% endfor %}
-            </select>
+  <!-- Categorie -->
+  <div class="form-group">
+    <label for="categorie_id">Categorie</label>
+    <select id="categorie_id" name="categorie_id" onchange="laadSubcategorieen(this.value)" required>
+      <option value="">Selecteer een categorie</option>
+      {% for categorie in categorieen %}
+      <option value="{{ categorie.id }}"
+              {% if abonnement.subcategorie and abonnement.subcategorie.categorie_id == categorie.id %}selected{% endif %}>
+        {{ categorie.naam }}
+      </option>
+      {% endfor %}
+    </select>
+  </div>
 
-            <label for="subcategorie_id">Subcategorie</label>
-            <select id="subcategorie_id" name="subcategorie_id" required>
-                {% for subcategorie in subcategorieen %}
-                    <option value="{{ subcategorie.id }}" {% if abonnement.subcategorie_id == subcategorie.id %}selected{% endif %}>{{ subcategorie.naam }}</option>
-                {% endfor %}
-            </select>
+  <!-- Subcategorie -->
+  <div class="form-group">
+    <label for="subcategorie_id">Subcategorie</label>
+    <select id="subcategorie_id" name="subcategorie_id" required>
+      <option value="">Selecteer een subcategorie</option>
+      {% for subcategorie in subcategorieen %}
+      <option value="{{ subcategorie.id }}"
+              {% if abonnement.subcategorie_id == subcategorie.id %}selected{% endif %}>
+        {{ subcategorie.naam }}
+      </option>
+      {% endfor %}
+    </select>
+  </div>
 
-            <label for="logo">Logo</label>
-            <input type="file" id="logo" name="logo">
-            {% if abonnement.logo %}
-                <img src="{{ url_for('static', filename='uploads/' + abonnement.logo) }}" alt="Logo" class="logo-preview">
-            {% endif %}
+  <!-- Website URL -->
+  <div class="form-group">
+    <label for="url">Website URL</label>
+    <input type="url" id="url" name="url" value="{{ abonnement.url }}">
+  </div>
 
-            <label for="aanbiedingen">Aanbiedingen</label>
-            <textarea id="aanbiedingen" name="aanbiedingen">{{ abonnement.aanbiedingen }}</textarea>
-
-            <label for="frequentie_bezorging">Frequentie Bezorging</label>
-            <input type="text" id="frequentie_bezorging" name="frequentie_bezorging" value="{{ abonnement.frequentie_bezorging }}">
-
-            <label for="prijs_vanaf">Prijs Vanaf (€)</label>
-            <input type="number" id="prijs_vanaf" name="prijs_vanaf" step="0.01" value="{{ abonnement.prijs_vanaf }}">
-
-            <label for="prijs_tot">Prijs Tot (€)</label>
-            <input type="number" id="prijs_tot" name="prijs_tot" step="0.01" value="{{ abonnement.prijs_tot }}">
-
-            <label for="wat_is_het_abonnement">Wat is het abonnement?</label>
-            <textarea id="wat_is_het_abonnement" name="wat_is_het_abonnement">{{ abonnement.wat_is_het_abonnement }}</textarea>
-
-            <label for="waarom_kiezen">Waarom kiezen voor dit abonnement?</label>
-            <textarea id="waarom_kiezen" name="waarom_kiezen">{{ abonnement.waarom_kiezen }}</textarea>
-
-            <label for="hoe_werkt_het">Hoe werkt het?</label>
-            <textarea id="hoe_werkt_het" name="hoe_werkt_het">{{ abonnement.hoe_werkt_het }}</textarea>
-
-            <label for="past_dit_bij_jou">Past dit abonnement bij jou?</label>
-            <textarea id="past_dit_bij_jou" name="past_dit_bij_jou">{{ abonnement.past_dit_bij_jou }}</textarea>
-
-
-            <!-- Annuleringsvoorwaarden -->
-            <label for="annuleringsvoorwaarden">Annuleringsvoorwaarden:</label>
-            <textarea 
-                name="annuleringsvoorwaarden" 
-                id="annuleringsvoorwaarden"
-                placeholder="Hoe en wanneer kun je opzeggen?"
-            >{{ abonnement.annuleringsvoorwaarden }}</textarea>
-
-            <!-- Voordelen -->
-            <label for="voordelen">Voordelen:</label>
-            <textarea 
-                name="voordelen" 
-                id="voordelen"
-                placeholder="Wat zijn de belangrijkste pluspunten?"
-            >{{ abonnement.voordelen }}</textarea>
-
-            <div class="form-group">
-                <label for="categorie_id">Categorie</label>
-                <select id="categorie_id" name="categorie_id" onchange="laadSubcategorieen(this.value)" required>
-                    <option value="">Selecteer een categorie</option>
-                    {% for categorie in categorieen %}
-                    <option value="{{ categorie.id }}"
-                        {% if abonnement.subcategorie and abonnement.subcategorie.categorie_id == categorie.id %}selected{% endif %}>
-                        {{ categorie.naam }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="subcategorie_id">Subcategorie</label>
-                <select id="subcategorie_id" name="subcategorie_id" required>
-                    <option value="">Selecteer een subcategorie</option>
-                    {% for subcategorie in subcategorieen %}
-                    <option value="{{ subcategorie.id }}"
-                        {% if abonnement.subcategorie_id == subcategorie.id %}selected{% endif %}>
-                        {{ subcategorie.naam }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="url">Website URL</label>
-                <input type="url" id="url" name="url" value="{{ abonnement.url }}">
-            </div>
-
-            <div class="form-group">
-                <label for="logo">Logo</label>
-                <input type="file" id="logo" name="logo">
-                {% if abonnement.logo %}
-                <div class="logo-preview">
-                    <p>Huidig logo:</p>
-                    <img src="{{ url_for('static', filename='uploads/' + abonnement.logo) }}" alt="Logo">
-                </div>
-                {% endif %}
-            </div>
-
-            <label for="doelgroepen">Doelgroepen:</label>
-            <select id="doelgroepen" name="doelgroepen" multiple>
-                {% for doelgroep in doelgroepen %}
-                <option value="{{ doelgroep.id }}" {% if doelgroep in abonnement.doelgroepen %}selected{% endif %}>
-                    {{ doelgroep.naam }}
-                </option>
-                {% endfor %}
-            </select>
-            
-            <label for="tags">Tags:</label>
-            <select id="tags" name="tags" multiple>
-                {% for tag in tags %}
-                <option value="{{ tag.id }}" {% if tag in abonnement.tags %}selected{% endif %}>
-                    {{ tag.naam }}
-                </option>
-                {% endfor %}
-            </select>
-
-            <button type="submit">Opslaan</button>
-        </form>
+  <!-- Logo upload -->
+  <div class="form-group">
+    <label for="logo">Logo (max 200×200)</label>
+    <input type="file" id="logo" name="logo" accept="image/*">
+    {% if abonnement.logo %}
+    <div class="logo-preview">
+      <p>Huidig logo:</p>
+      <img
+        src="{{ url_for('static', filename='uploads/' + abonnement.logo) }}"
+        width="200" height="200"
+        loading="lazy"
+        alt="Logo van {{ abonnement.naam }}"
+        class="logo-preview-img"
+      >
     </div>
+    {% endif %}
+  </div>
+
+  <!-- Aanbiedingen -->
+  <label for="aanbiedingen">Aanbiedingen</label>
+  <textarea id="aanbiedingen" name="aanbiedingen">{{ abonnement.aanbiedingen }}</textarea>
+
+  <!-- Frequentie Bezorging -->
+  <label for="frequentie_bezorging">Frequentie Bezorging</label>
+  <input type="text" id="frequentie_bezorging" name="frequentie_bezorging" value="{{ abonnement.frequentie_bezorging }}">
+
+  <!-- Prijs Vanaf / Tot -->
+  <div class="form-group">
+    <label for="prijs_vanaf">Prijs Vanaf (€)</label>
+    <input type="number" id="prijs_vanaf" name="prijs_vanaf" step="0.01" value="{{ abonnement.prijs_vanaf }}">
+  </div>
+  <div class="form-group">
+    <label for="prijs_tot">Prijs Tot (€)</label>
+    <input type="number" id="prijs_tot" name="prijs_tot" step="0.01" value="{{ abonnement.prijs_tot }}">
+  </div>
+
+  <!-- Wat is het abonnement? -->
+  <label for="wat_is_het_abonnement">Wat is het abonnement?</label>
+  <textarea id="wat_is_het_abonnement" name="wat_is_het_abonnement">{{ abonnement.wat_is_het_abonnement }}</textarea>
+
+  <!-- Waarom kiezen? -->
+  <label for="waarom_kiezen">Waarom kiezen voor dit abonnement?</label>
+  <textarea id="waarom_kiezen" name="waarom_kiezen">{{ abonnement.waarom_kiezen }}</textarea>
+
+  <!-- Hoe werkt het? -->
+  <label for="hoe_werkt_het">Hoe werkt het?</label>
+  <textarea id="hoe_werkt_het" name="hoe_werkt_het">{{ abonnement.hoe_werkt_het }}</textarea>
+
+  <!-- Past dit bij jou? -->
+  <label for="past_dit_bij_jou">Past dit abonnement bij jou?</label>
+  <textarea id="past_dit_bij_jou" name="past_dit_bij_jou">{{ abonnement.past_dit_bij_jou }}</textarea>
+
+  <!-- Annuleringsvoorwaarden -->
+  <label for="annuleringsvoorwaarden">Annuleringsvoorwaarden</label>
+  <textarea id="annuleringsvoorwaarden" name="annuleringsvoorwaarden"
+            placeholder="Hoe en wanneer kun je opzeggen?">{{ abonnement.annuleringsvoorwaarden }}</textarea>
+
+  <!-- Voordelen -->
+  <label for="voordelen">Voordelen</label>
+  <textarea id="voordelen" name="voordelen" placeholder="Wat zijn de belangrijkste pluspunten?">{{ abonnement.voordelen }}</textarea>
+
+  <!-- Beoordelingen -->
+  <div class="form-group">
+    <label for="beoordelingen">Beoordelingen (0–5)</label>
+    <input type="number" id="beoordelingen" name="beoordelingen" step="0.1" min="0" max="5" value="{{ abonnement.beoordelingen }}">
+  </div>
+
+  <!-- Doelgroepen -->
+  <label for="doelgroepen">Doelgroepen</label>
+  <select id="doelgroepen" name="doelgroepen" multiple>
+    {% for doelgroep in doelgroepen %}
+    <option value="{{ doelgroep.id }}" {% if doelgroep in abonnement.doelgroepen %}selected{% endif %}>
+      {{ doelgroep.naam }}
+    </option>
+    {% endfor %}
+  </select>
+
+  <!-- Tags -->
+  <label for="tags">Tags</label>
+  <select id="tags" name="tags" multiple>
+    {% for tag in tags %}
+    <option value="{{ tag.id }}" {% if tag in abonnement.tags %}selected{% endif %}>
+      {{ tag.naam }}
+    </option>
+    {% endfor %}
+  </select>
+
+  <!-- Opslaan -->
+  <button type="submit">Opslaan</button>
+</form>
+    </div>
+    
+    <script>
+        // Dynamisch subcategorieën laden bij selectie van een categorie
+        function laadSubcategorieen(categorieId) {
+            fetch(`/api/subcategorieen/${categorieId}`)
+                .then(response => response.json())
+                .then(data => {
+                    const subcategorieSelect = document.getElementById('subcategorie_id');
+                    subcategorieSelect.innerHTML = ''; // Verwijder bestaande opties
+                    data.forEach(subcategorie => {
+                        const option = document.createElement('option');
+                        option.value = subcategorie.id;
+                        option.textContent = subcategorie.naam;
+                        subcategorieSelect.appendChild(option);
+                    });
+                });
+        }
+    </script>
 </body>
 </html>
