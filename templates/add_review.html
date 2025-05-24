@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+      <!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-NRGH8P6W');</script>
+    <!-- End Google Tag Manager -->  
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reviews voor {{ abonnement.naam }}</title>
+</head>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NRGH8P6W"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+<body>
+    <h1>Reviews voor {{ abonnement.naam }}</h1>
+    <p>{{ abonnement.beschrijving }}</p>
+
+    <h2>Schrijf een review</h2>
+    <form method="POST">
+        <label for="score">Score (1-5):</label>
+        <input type="number" name="score" id="score" min="1" max="5" step="0.1" required>
+
+        <label for="comment">Opmerking (optioneel):</label>
+        <textarea name="comment" id="comment"></textarea>
+
+        <button type="submit">Review toevoegen</button>
+    </form>
+
+    <h2>Reviews</h2>
+    {% for review in abonnement.reviews %}
+        <div>
+            <p><strong>Score:</strong> {{ review.score }} / 5</p>
+            <p>{{ review.comment }}</p>
+            <p><small>Geplaatst op: {{ review.created_at.strftime('%d-%m-%Y %H:%M') }}</small></p>
+        </div>
+    {% else %}
+        <p>Er zijn nog geen reviews voor dit abonnement.</p>
+    {% endfor %}
+
+    <a href="{{ url_for('index') }}">Terug naar overzicht</a>
+</body>
+</html>

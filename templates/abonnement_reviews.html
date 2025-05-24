@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <!-- Google Tag Manager -->
+  <script>
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+      'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-NRGH8P6W');
+  </script>
+  <!-- End Google Tag Manager -->
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Canonical -->
+  <link rel="canonical" href="{{ request.url }}">
+
+  <!-- Dynamische SEO -->
+  <title>{{ page_title or abonnement.naam ~ ' - Abonnementsinformatie | AbboHub' }}</title>
+  <meta name="description" content="{{ page_description or 'Bekijk alles over het ' ~ abonnement.naam ~ ' abonnement, inclusief voordelen, prijzen en gebruikerservaringen.' }}">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="{{ page_title or abonnement.naam }}">
+  <meta property="og:description" content="{{ page_description or 'Lees reviews en informatie over ' ~ abonnement.naam ~ ' op AbboHub.' }}">
+  <meta property="og:image" content="{{ url_for('static', filename='logo.png', _external=True) }}">
+  <meta property="og:url" content="{{ request.url }}">
+  <meta property="og:type" content="article">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ page_title or abonnement.naam }}">
+  <meta name="twitter:description" content="{{ page_description or 'Vergelijk ' ~ abonnement.naam ~ ' en lees ervaringen van andere gebruikers.' }}">
+  <meta name="twitter:image" content="{{ url_for('static', filename='logo.png', _external=True) }}">
+
+  <!-- Favicon & styles -->
+  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <style>
+    /* Reset & basisstijlen */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f3e6cc;
+      color: #333;
+      line-height: 1.6;
+    }
+    header {
+      background-color:#8968cd;
+      color: #fff;
+      padding: 40px 20px;
+      text-align: center;
+    }
+    header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+    header p {
+      font-size: 1.2rem;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 20px;
+    }
+    .card {
+      background-color: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .card h2, .card h3 {
+      color: #8968cd;
+      margin-bottom: 15px;
+    }
+    /* Tabel met abonnementsgegevens */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    table th, table td {
+      text-align: left;
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    /* Tekstuele secties */
+    .text-section {
+      margin-bottom: 30px;
+    }
+    .text-section p {
+      margin-bottom: 10px;
+    }
+    /* Review formulier */
+    .review-form {
+      margin-top: 20px;
+    }
+    form label {
+      display: block;
+      margin: 10px 0 5px;
+      font-weight: bold;
+    }
+    form input, form textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    form button {
+      background-color: #8968cd;
+      color: #fff;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    form button:hover {
+      background-color: #8968cd;
+    }
+    /* Review lijst */
+    .review {
+      border-bottom: 1px solid #ddd;
+      padding: 15px 0;
+    }
+    .review:last-child {
+      border-bottom: none;
+    }
+    .review p {
+      margin: 5px 0;
+    }
+    .review small {
+      color: #888;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      color: #8968cd;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+a.visit-website {
+  background-color: #f4cd00;
+  color: white;
+  font-weight: bold;
+  text-decoration: none;
+  padding: 8px 12px;           /* iets minder hoog en breed */
+  font-size: 0.9rem;           /* iets kleinere tekst */
+  border-radius: 6px;          /* iets minder rond */
+  display: inline-block;
+  transition: background-color 0.2s ease;
+}
+
+a.visit-website:hover,
+a.visit-website:focus {
+  background-color: #e0ba00;
+  text-decoration: none;
+}
+
+
+    /* vergelijk en meer info knoppen */
+.actieknoppen {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.btn-compare {
+  flex: 1 1 48%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 0.85rem;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  transition: background 0.2s ease;
+  background-color: #f4cd00;
+  color: white;
+  white-space: nowrap;
+}
+
+.btn-compare:hover {
+  background-color: #e0ba00;
+}
+footer {
+  width: 100%;
+  background-color: #2e2e2e;
+  color: white;
+  padding: 24px 20px;
+  text-align: center;
+  position: relative;
+  box-sizing: border-box;
+}
+
+footer .footer-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 15px 0 0;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 25px;
+}
+
+footer .footer-nav a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+footer .footer-nav a:hover {
+  text-decoration: underline;
+}
+
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      header h1 {
+        font-size: 2rem;
+      }
+      header p {
+        font-size: 1rem;
+      }
+      .container {
+        padding: 10px;
+      }
+    }
+    @media (max-width: 768px) {
+  .page-layout {
+    flex-direction: column;
+  }
+  .sidebar {
+    max-width: 100%;
+    margin-top: 30px;
+  }
+}
+
+  </style>
+</head>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NRGH8P6W"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+<body>
+  <!-- Header met de abonnementsnaam -->
+  <header>
+    <h1>{{ abonnement.naam }}</h1>
+    <p>Ontdek alles wat dit abonnement te bieden heeft</p>
+  </header>
+  </div>
+    <!-- Terug naar overzicht link -->
+    <a href="{{ url_for('index') }}" class="back-link">&larr; Terug naar overzicht</a>
+<div class="page-wrapper" style="max-width: 1200px; margin: 0 auto; padding: 40px 20px;">
+
+  <div class="page-layout" style="display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start; justify-content: space-between;">
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content" style="flex: 1 1 65%; min-width: 320px;">
+      <section class="card">
+        <h2>Abonnementsgegevens</h2>
+        <table>
+          <tr><th>Frequentie Bezorging</th><td>{{ abonnement.frequentie_bezorging }}</td></tr>
+          <tr><th>Contractduur</th><td>{{ abonnement.contractduur }}</td></tr>
+          <tr><th>Prijs vanaf</th><td>€{{ abonnement.prijs_vanaf }}</td></tr>
+          {% if abonnement.prijs_tot %}
+          <tr><th>Prijs tot</th><td>€{{ abonnement.prijs_tot }}</td></tr>
+          {% endif %}
+          <tr><th>Doelgroep</th>
+            <td>{% for doelgroep in abonnement.doelgroepen %}<span class="badge">{{ doelgroep.naam }}</span>{% endfor %}</td>
+          </tr>
+          <tr><th>Tags</th>
+            <td>{% for tag in abonnement.tags %}<span class="badge">{{ tag.naam }}</span>{% endfor %}</td>
+          </tr>
+          <tr>
+            <th>Gemiddelde Beoordeling</th>
+            <td>
+              {% set score = abonnement.get_average_score() %}
+              {% set volle = score | int %}
+              {% set halve = (score - volle) >= 0.25 and (score - volle) < 0.75 %}
+              {% set leeg = 5 - volle - (1 if halve else 0) %}
+              <span class="ster-rating">
+                {% for _ in range(volle) %}<span class="vol-ster">★</span>{% endfor %}
+                {% if halve %}<span class="halve-ster">★</span>{% endif %}
+                {% for _ in range(leeg) %}<span class="leeg-ster">☆</span>{% endfor %}
+              </span>
+              <span class="score-tekst">{{ score }} ({{ abonnement.reviews|length }} beoordelingen)</span>
+            </td>
+          </tr>
+          <tr>
+            <th>Bezoek Website</th>
+            <td><a href="{{ abonnement.url }}" target="_blank" rel="noopener noreferrer" class="visit-website">Bezoek website</a></td>
+          </tr>
+        </table>
+      </section>
+
+      <section class="card text-section"><h3>Wat is {{ abonnement.naam }}?</h3><p>{{ abonnement.wat_is_het_abonnement }}</p></section>
+      <section class="card text-section"><h3>Waarom kiezen voor {{ abonnement.naam }}?</h3><p>{{ abonnement.waarom_kiezen }}</p></section>
+      <section class="card text-section"><h3>Hoe werkt het?</h3><p>{{ abonnement.hoe_werkt_het }}</p></section>
+      <section class="card text-section"><h3>Past {{ abonnement.naam }} bij jou?</h3><p>{{ abonnement.past_dit_bij_jou }}</p></section>
+   
+    <!-- Reviews sectie -->
+<section class="card" aria-labelledby="reviews-heading">
+  <h2 id="reviews-heading">Reviews</h2>
+
+    <th>Gemiddelde Beoordeling</th>
+    <td>
+      {% set score = abonnement.get_average_score() %}
+      {% set volle_sterren = score | int %}
+      {% set halve_ster = (score - volle_sterren) >= 0.25 and (score - volle_sterren) < 0.75 %}
+      {% set lege_sterren = 5 - volle_sterren - (1 if halve_ster else 0) %}
+  
+      <span class="ster-rating" aria-label="Gemiddelde beoordeling: {{ score }} van 5">
+        {% for i in range(volle_sterren) %}
+          <span class="vol-ster">★</span>
+        {% endfor %}
+        {% if halve_ster %}
+          <span class="halve-ster">★</span>
+        {% endif %}
+        {% for i in range(lege_sterren) %}
+          <span class="leeg-ster">☆</span>
+        {% endfor %}
+      </span>
+      <span class="score-tekst">{{ score }} ({{ abonnement.reviews|length }} beoordelingen)</span>
+    </td>
+  </tr>  
+
+  <!-- Structured data voor SEO -->
+  {% if gemiddelde_score is not none and abonnement.reviews %}
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": "{{ abonnement.naam | e }}",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "{{ gemiddelde_score }}",
+        "reviewCount": "{{ abonnement.reviews | length }}"
+      },
+      "review": [
+        {% for review in abonnement.reviews %}
+        {
+          "@type": "Review",
+          "author": {
+            "@type": "Person",
+            "name": "{{ review.naam | e }}"
+          },
+          "datePublished": "{{ review.created_at.strftime('%Y-%m-%d') }}",
+          "reviewBody": "{{ review.comment | e }}",
+          "reviewRating": {
+            "@type": "Rating",
+            "ratingValue": "{{ review.score }}",
+            "bestRating": "5",
+            "worstRating": "1"
+          }
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+      ]
+    }
+    </script>
+  {% endif %}
+
+  <!-- Formulier om een review toe te voegen -->
+  <div class="review-form">
+    <h3>Schrijf een review</h3>
+    <form method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      
+      <label for="naam">Uw naam:</label>
+      <input type="text" name="naam" id="naam" placeholder="Vul hier uw naam in" required>
+
+      <label>Score:</label>
+      <div class="star-rating" id="rating-stars">
+        {% for i in range(1, 6) %}
+          <span class="star">
+            <span class="half left" data-value="{{ i - 0.5 }}"></span>
+            <span class="half right" data-value="{{ i }}"></span>
+          </span>
+        {% endfor %}
+      </div>
+      <input type="hidden" name="score" id="score" required>
+      
+
+      <label for="comment">Opmerking (optioneel):</label>
+      <textarea name="comment" id="comment" placeholder="Deel uw mening over het abonnement..."></textarea>
+
+      <button type="submit">Review toevoegen</button>
+    </form>
+  </div>
+
+  <!-- Overzicht van reeds ingediende reviews -->
+  <div class="reviews">
+    {% if abonnement.reviews %}
+      {% for review in abonnement.reviews %}
+        <div class="review">
+          <p><strong>{{ review.naam }}</strong></p>
+          <p><strong>Score:</strong> {{ review.score }} / 5</p>
+          <p>{{ review.comment }}</p>
+          <p><small>Geplaatst op: {{ review.created_at.strftime('%d-%m-%Y %H:%M') }}</small></p>
+
+          {% if is_admin %}
+            <form method="POST" style="display:inline;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="delete_review_id" value="{{ review.id }}">
+              <button type="submit" class="btn-delete">Verwijderen</button>
+            </form>
+          {% endif %}
+        </div>
+      {% endfor %}
+    {% else %}
+      <p>Er zijn nog geen reviews voor dit abonnement.</p>
+    {% endif %}
+  </div>
+</section> 
+    </main>
+<!-- SIDEBAR -->
+<aside class="sidebar" style="flex: 1 1 30%; max-width: 360px;">
+  <section class="card">
+    <h2>Vergelijk {{ abonnement.naam }} met:</h2>
+
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+      {% for ab in andere_abonnementen %}
+      <article style="background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 12px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <h3 style="font-size: 1rem; margin-bottom: 8px;">{{ ab.naam }}</h3>
+
+        {% if ab.logo %}
+          <img src="{{ url_for('static', filename='uploads/' + ab.logo) }}" alt="Logo van {{ ab.naam }}" style="max-width: 100px; margin-bottom: 10px;">
+        {% endif %}
+
+        <p style="font-size: 0.85rem; min-height: 50px;">{{ ab.beschrijving or 'Geen beschrijving.' }}</p>
+
+        <!-- ACTIEKNOPPEN naast elkaar -->
+        <div class="actieknoppen">
+          <a href="{{ url_for('abonnement_reviews', slug=ab.slug) }}" class="btn-compare geel">
+            Meer info
+          </a>
+          <a href="javascript:void(0);" onclick="vergelijkSlugs('{{ abonnement.slug }}', '{{ ab.slug }}')" class="btn-compare grijs">
+            Vergelijk
+          </a>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+
+  </section>
+</aside>
+  </div></div>
+  <footer>
+  <p>&copy; 2025 AbboHub. Alle rechten voorbehouden.</p>
+  <nav class="footer-nav">
+    <ul>
+      <li><a href="{{ url_for('privacy_cookieverklaring') }}">Privacy en Cookieverklaring</a></li>
+      <li><a href="{{ url_for('over_abbohub') }}">Over AbboHub</a></li>
+      <li><a href="#" onclick="openSettings()">Cookievoorkeuren aanpassen</a></li>
+    </ul>
+  </nav>
+</footer>
+
+  <!-- Cookiebanner insluiten -->
+  {% include 'cookie-banner.html' %}
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      document.querySelectorAll(".visit-website").forEach(function (link) {
+        link.addEventListener("click", function () {
+          const abonnement = link.dataset.abonnement || "onbekend";
+  
+          gtag('event', 'klik_naar_aanbieder', {
+            'event_category': 'Uitgaande klik',
+            'event_label': abonnement,
+            'pagina': window.location.pathname
+          });
+        });
+      });
+    });
+  </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const scoreInput = document.getElementById('score');
+      const stars = document.querySelectorAll('.star');
+  
+      function updateStars(value) {
+        stars.forEach((star, index) => {
+          const starValue = index + 1;
+          if (value >= starValue) {
+            star.classList.add('filled');
+            star.classList.remove('half-filled');
+          } else if (value >= starValue - 0.5) {
+            star.classList.add('half-filled');
+            star.classList.remove('filled');
+          } else {
+            star.classList.remove('filled', 'half-filled');
+          }
+        });
+      }
+  
+      // Hover
+      document.querySelectorAll('.half').forEach(half => {
+        half.addEventListener('mouseenter', () => {
+          const val = parseFloat(half.getAttribute('data-value'));
+          updateStars(val);
+        });
+        half.addEventListener('click', () => {
+          const val = parseFloat(half.getAttribute('data-value'));
+          scoreInput.value = val;
+          updateStars(val);
+        });
+      });
+  
+      // Mouse leave – reset naar geselecteerde waarde
+      document.getElementById('rating-stars').addEventListener('mouseleave', () => {
+        const val = parseFloat(scoreInput.value) || 0;
+        updateStars(val);
+      });
+    });
+  </script>
+  <script>
+function vergelijkSlugs(slug1, slug2) {
+  const slugs = [slug1, slug2];
+  document.cookie = "comparison_slugs=" + slugs.join(",") + "; path=/; max-age=604800";
+  window.location.href = "/vergelijk?abonnementen=" + slugs.join(",");
+}
+</script>
+  
+</body>
+</html>
+

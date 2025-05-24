@@ -1,0 +1,1081 @@
+/* Algemene font-instelling voor de hele website */
+body {
+  font-family: 'Roboto', sans-serif; /* Kies een consistent lettertype */
+}
+
+/* Hoofdnavigatie */
+nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+}
+nav li {
+    margin: 0 1rem;
+}
+nav a {
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+}
+main {
+  background: #f3e6cc;
+}
+
+
+/* ========== HEADER ========== */
+
+header {
+    background: #8968cd; /* Aangepast: header achtergrond naar #9133bb */
+    color: white;
+    padding: 15px 10px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    font-family: inherit;
+    animation: fadeIn 1s ease-in-out;
+}
+
+header p {
+    margin: 5px 0 0;
+    font-size: 1.2rem;
+    font-family: inherit;
+    opacity: 0.9;
+}
+
+/* ========== NAVIGATION ========== */
+.header-nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    margin: 20px 0 0;
+    padding: 0;
+}
+
+.header-nav ul li {
+    display: inline-block;
+}
+
+.header-nav ul li a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.1rem;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.header-nav ul li a:hover {
+    background-color: #f6ae86; /* Aangepast: hover kleur naar #f6ae86 */
+    color: #e6ffe6;
+    transform: scale(1.1);
+}
+
+/* ========== SEARCH & FILTER ========== */
+.zoek-filter-container {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr; /* Links, midden, rechts */
+  align-items: center;
+  gap: 1rem;
+  margin-top: 15px;
+  padding: 20px;
+  background: rgba(246, 243, 243, 0.2);
+  border-radius: 8px;
+}
+
+/* Linkeruitlijning voor H1 */
+.zoek-filter-container h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: #ebeeeb; /* Primaire kleur */
+  text-align: left;
+  justify-self: start; /* Links uitlijnen */
+}
+
+/* Centraal uitgelijnde zoekbalk */
+.zoek-filter-form {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  justify-self: center; /* Centraal uitlijnen */
+}
+
+/* Zoekvelden en dropdowns */
+.zoek-filter-form input[type="text"],
+.zoek-filter-form select {
+  padding: 0.7rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  min-width: 200px;
+  font-size: 1rem;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.zoek-filter-form input[type="text"]:focus,
+.zoek-filter-form select:focus {
+  border-color: #f6ae86; /* Aangepast: focus kleur naar #f6ae86 */
+  box-shadow: 0 0 5px rgba(246,174,134,0.5);
+  outline: none;
+}
+
+/* Zoekknop */
+.zoek-filter-form button.btn {
+  background-color: #f4cd00; /* Aangepast: knop kleur naar #f4cd00 */
+  color: #fff;
+  padding: 0.7rem 1.2rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1rem;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.zoek-filter-form button.btn:hover {
+  background-color: #1bd3c6; /* Aangepast: hover knop kleur naar #1bd3c6 */
+  transform: scale(1.05);
+}
+
+/* Rechteruitlijning voor vergelijk-knop */
+.btn-compare {
+  background-color: #f4cd00; /* Aangepast */
+  color: #fff;
+  padding: 0.7rem 1.2rem; /* Consistente padding met zoekknop */
+  border-radius: 4px;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 1rem;
+  transition: background-color 0.3s, transform 0.2s;
+  text-align: center; /* Knoptekst gecentreerd */
+  justify-self: end; /* Rechts uitlijnen */
+}
+
+.btn-compare:hover {
+  background-color: #1bd3c6; /* Aangepast */
+  transform: scale(1.05);
+}
+
+/* Dropdown-container */
+.dropdown-container {
+  position: relative;
+  display: inline-block;
+}
+
+
+/* Dropdown-knop */
+.dropdown-button {
+  padding: 0.7rem 1.2rem;
+  background-color: #f4cd00; /* Aangepast */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  width: 130px;
+  text-align: center; /* Zorgt ervoor dat de tekst gecentreerd is */
+  display: flex; /* Flexbox gebruiken */
+  align-items: center; /* Tekst verticaal centreren */
+  justify-content: center; /* Tekst horizontaal centreren */
+}
+
+.dropdown-button:hover {
+  background-color: #1bd3c6; /* Aangepast */
+}
+
+/* Dropdown-menu */
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #f3e6cc; /* Aangepast: dropdown achtergrond naar #f3e6cc */
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  padding: 10px;
+  min-width: 200px;
+}
+
+.dropdown-container:hover .dropdown-menu {
+  display: block;
+}
+
+/* Sub-dropdown (rechts uitgelijnd) */
+.sub-dropdown {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 100%;
+  background-color: #f3e6cc; /* Aangepast */
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+  min-width: 200px;
+}
+
+.dropdown-item:hover .sub-dropdown {
+  display: block;
+}
+
+.dropdown-item {
+  position: relative;
+  cursor: default; /* Voorkomt dat het eruitziet als een klikbare link */
+}
+
+/* Links styling */
+.dropdown-item a {
+  display: block;
+  padding: 8px 12px;
+  font-size: 1rem;
+  text-decoration: none;
+  color: #333;
+}
+
+.dropdown-item a:hover {
+  background-color: #f9f9f9;
+  border-radius: 4px;
+  color: #4CAF50;
+}
+
+.category-button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  color: #333;
+  
+}
+
+.category-button:hover {
+  background-color: #f9f9f9;
+  border-radius: 4px;
+  color: #4CAF50;
+}
+
+
+/* ========== ANIMATIONS ========== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========== RESPONSIVENESS ========== */
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 2rem;
+    }
+
+    header p {
+        font-size: 1rem;
+    }
+
+    .header-nav ul {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .zoek-filter-form {
+        flex-direction: column;
+        gap: 1rem;
+        width: 100%;
+    }
+}
+
+/* Bestaande abonnement stijlen */
+.abonnementen-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 10px;
+}
+
+.categorie {
+  margin-bottom: 30px;
+}
+.categorie h2 {
+  margin-bottom: 15px;
+}
+.abonnementen-lijst {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 20px;
+}
+
+/* Stijlen voor de abonnement tegel */
+.abonnement {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  width: 250px;       /* vaste breedte */
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 15px;
+  scroll-snap-align: start;
+}
+
+/* Zorg dat het logo op gelijke grootte blijft */
+.abonnement-logo {
+  width: 200px;
+  height: 200px;
+  object-fit: contain;
+  margin-bottom: 5px;
+}
+
+/* Stijlen voor subcategorie, naam, tags, acties etc. blijven zoals eerder */
+.subcategorie {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #555;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  display: block;
+  text-align: center;
+}
+.abonnement h3 {
+  margin: 10px 0 5px;
+  text-align: center;
+}
+.abonnement p {
+  margin: 0 0 10px;
+  text-align: center;
+  flex: 1;
+}
+.abonnement-tags {
+  margin: 10px 0;
+}
+.vergelijk-checkbox {
+  margin-right: 5px;
+}
+.abonnement-acties {
+  margin-top: auto;
+  text-align: center;
+}
+.badge {
+  display: inline-block;
+  background-color:#cd95ccbd;
+  color: white;
+  padding: 5px 10px;
+  font-size: 0.85rem;
+  border-radius: 12px;
+  margin: 2px;
+  text-align: center;
+}
+
+/* ========== FLIP EFFECT (alleen voor de logo/beschrijving bovenaan) ========== */
+.flip-container {
+  perspective: 1000px;
+  width: 95%;
+  height: 220px; /* Pas de hoogte aan naar behoefte */
+  margin-bottom: 10px;
+}
+
+.flip-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+.flip-container:hover .flip-inner {
+  transform: rotateY(180deg);
+}
+
+.flip-front,
+.flip-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 3px;
+}
+
+/* Voorkant: logo */
+.flip-front {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Achterkant: beschrijving */
+.flip-back {
+  transform: rotateY(180deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  text-align: center;
+  background-color: #fff;
+}
+
+/*
+  Plaats de checkbox-acties onderaan de tegel.
+  We hebben in .abonnement "flex-direction: column", 
+  dus margin-top: auto plaatst dit blokje aan de onderzijde.
+*/
+.abonnement-acties {
+  margin-top: auto;
+  text-align: center;
+}
+.vergelijk-checkbox {
+  margin-right: 5px;
+}
+
+/* review knop */
+.btn-review {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 8px 15px;
+  background-color: #f4cd00; /* Aangepast */
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  text-align: center;
+  transition: background-color 0.3s;
+}
+
+.btn-review:hover {
+  background-color: #1bd3c6; /* Aangepast */
+}
+
+/* delete knop review */
+.btn-delete {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-delete:hover {
+  background-color: #c0392b;
+}
+
+/* chatbot */
+/* Chatknop */
+.chat-toggle-btn {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #f4cd00; /* Aangepast */
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 16px;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.chat-toggle-btn:hover {
+  background: #1bd3c6; /* Toegevoegd hover */
+}
+
+/* Chatbox */
+#chatbox {
+  position: fixed;
+  bottom: 70px;
+  right: 20px;
+  width: 250px;
+  height: 350px;
+  background: white;
+  border: 1px solid #ccc;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+  display: none; /* Standaard verborgen */
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+/* Chatkop */
+#chat-header {
+  display: flex;
+  justify-content: space-between;
+  background: #f4cd00; /* Aangepast */
+  color: white;
+  padding: 8px;
+  font-size: 14px;
+  border-radius: 10px 10px 0 0;
+}
+
+#chat-header button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+/* Chatlog */
+#chatlog {
+  flex: 1;
+  overflow-y: auto;
+  padding: 5px;
+  background: #f9f9f9;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Inputbalk */
+#user-input {
+  display: flex;
+  padding: 5px;
+}
+
+#user-message {
+  flex: 1;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+#send-btn {
+  margin-left: 5px;
+  padding: 5px 10px;
+  background: #f4cd00; /* Aangepast */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+#send-btn:hover {
+  background: #1bd3c6; /* Aangepast */
+}
+
+
+/* Zorgt ervoor dat de chat minimaliseerbaar is */
+.hidden {
+  display: none !important;
+}
+
+
+/* Algemene footerstijl */
+footer {
+  background-color: #333;
+  color: #fff;
+  width: 100%;
+  padding: 1rem;
+  text-align: center;
+  z-index: 100;
+}
+footer {
+  overflow-x: hidden; /* voorkom dat iets binnen de footer horizontaal scrollt */
+  box-sizing: border-box; /* zorg dat padding niet optelt bij breedte */
+}
+
+
+/* Footer navigatie */
+.footer-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.footer-nav li {
+  margin: 0;
+}
+
+/* Links en knop */
+.footer-nav a,
+.footer-nav .cookie-btn {
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.95rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+  /* Algemene styling voor het zoek/filter gedeelte */
+.zoek-filter-container {
+  padding: 20px;
+}
+
+/* Desktop: Zoekbalk en knoppen naast elkaar */
+.search-row { 
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-direction: row;
+}
+
+.zoek-filter-form {
+  flex: 1;
+}
+
+.zoek-filter-form input[type="text"] {
+  width: 90%;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+/* Container met knoppen (Categorieën & Vergelijk) */
+.button-container {
+  display: flex;
+  gap: 10px;
+}
+
+.button-container .dropdown-container,
+.button-container .btn-compare {
+  min-width: 120px;
+}
+
+/* Zorg dat beide knoppen exact dezelfde hoogte en uitlijning hebben */
+.button-container .dropdown-container .dropdown-button,
+.button-container .btn-compare {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  font-size: 0.9rem;
+  height: 40px;            /* Vaste hoogte */
+  line-height: 40px;       /* Zorgt voor verticale uitlijning */
+  display: flex;           /* Gebruik flex voor centreren */
+  align-items: center;
+  justify-content: center;
+}
+
+/* Dropdown-menu styling */
+.dropdown-menu,
+.sub-dropdown {
+  position: absolute;
+  width: 100%;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  padding: 5px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  display: none;
+}
+
+.dropdown-container:hover .dropdown-menu,
+.dropdown-container:focus-within .dropdown-menu {
+  display: block;
+}
+
+.dropdown-item,
+.sub-dropdown a {
+  text-align: center;
+  padding: 5px 0;
+}
+
+/* Wrapper voor de scrollbare container en pijlen */
+.categorie-scroll-wrapper {
+  position: relative;
+}
+
+.categorie-scroll-container {
+  display: flex;
+  flex-direction: row;
+  gap: 20px; /* Zorgt voor een consistente ruimte tussen de originele lijst en de kloon */
+  overflow-x: auto;
+  padding: 0 10px; /* Ruimte zodat de pijlen niet over de inhoud vallen */
+  scrollbar-width: none; /* Firefox */
+  scroll-snap-type: x mandatory;
+}
+
+.categorie-scroll-container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari en Opera */
+}
+
+/* Abonnementen-lijst dwingt horizontale layout */
+.abonnementen-lijst {
+  display: flex;
+  flex-wrap: nowrap;   /* voorkom dat de tegels op een nieuwe regel komen */
+  gap: 20px;
+  width: max-content;  /* breedte wordt bepaald door de inhoud */
+}
+
+/* Algemene styling voor beide scroll-pijlen */
+.scroll-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+/* Specifieke positie voor linker- en rechterpijl */
+.scroll-arrow-left {
+  left: 0;
+}
+.scroll-arrow-right {
+  right: 0;
+}
+
+.sterren {
+  font-size: 1.2em;
+  color: gold;
+}
+.ster-rating .vol-ster {
+  color: gold;
+  font-size: 1.2rem;
+}
+
+.ster-rating .halve-ster {
+  background: linear-gradient(90deg, gold 50%, lightgray 50%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  font-size: 1.2rem;
+}
+
+.ster-rating .leeg-ster {
+  color: lightgray;
+  font-size: 1.2rem;
+}
+
+.score-tekst {
+  margin-left: 8px;
+  font-size: 0.95rem;
+  color: #555;
+}
+.star-rating {
+  display: inline-block;
+  font-size: 2rem;
+  position: relative;
+  unicode-bidi: bidi-override;
+  direction: ltr;
+  cursor: pointer;
+}
+
+.star {
+  position: relative;
+  display: inline-block;
+  width: 2rem;
+  height: 2rem;
+}
+
+.star .half {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  background: none;
+  z-index: 1;
+}
+
+.star .left {
+  left: 0;
+}
+
+.star .right {
+  right: 0;
+}
+
+.star::before {
+  content: "☆";
+  color: lightgray;
+  position: absolute;
+  left: 0;
+  z-index: 0;
+}
+
+.star.filled::before {
+  content: "★";
+  color: gold;
+}
+
+.star.half-filled::before {
+  content: "★";
+  background: linear-gradient(to right, gold 50%, lightgray 50%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+
+/* Optimized media query voor mobiele apparaten */
+@media (max-width: 768px) {
+  /* Verberg de navigatie */
+  nav {
+    display: none;
+  }
+  
+  /* verklein header */
+  header {
+    padding: 10px 10px;
+}
+
+  /* Optimaliseer de hoofdinhoud */
+  main {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 1rem; /* extra ruimte voor betere leesbaarheid */
+  }
+  
+  /* Centreer de abonnementen-lijst */
+  .abonnementen-lijst {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+  }
+  
+  /* Verberg de zoekknop */
+  .zoek-filter-form button.btn-search {
+    display: none;
+  }
+  
+  /* Pas de zoek-filter-container aan */
+  .zoek-filter-container {
+    display: grid;
+    margin-top: 5px;
+    grid-template-columns: 1fr;
+    gap: 0.7rem;
+    padding: 0.5rem;
+  }
+  .zoek-filter-container h1 {
+    text-align: center;
+    margin: 0 auto;
+  }
+  
+  /* Optimaliseer het zoek-filter-formulier */
+  .zoek-filter-form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 400px; /* beperkt de breedte voor betere leesbaarheid */
+    margin: 0 auto;
+  }
+  .zoek-filter-form input[type="text"],
+  .zoek-filter-form select,
+  .dropdown-container,
+  .dropdown-button {
+    width: 75%;
+    box-sizing: border-box;
+    padding: 0.5rem; /* grotere hit-area voor touch */
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Dropdown styling: zorg dat het menu als overlay verschijnt zodat de layout niet wordt verplaatst */
+  .dropdown-container {
+    position: relative; /* Nodig voor de absolute positionering van het menu */
+  }
+  .dropdown-menu,
+  .sub-dropdown {
+    position: absolute;
+    top: 100%; /* Onder de knop */
+    left: 0;
+    width: 100%;
+    box-shadow: none;
+    padding: 0.5rem;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    z-index: 10;
+  }
+  
+  .dropdown-item,
+  .sub-dropdown a {
+    text-align: center;
+    padding: 0.5rem 0;
+  }
+  
+  
+  /* Footer aangepast voor mobiele weergave */
+  footer {
+    position: static;
+    width: 100%;
+    padding: 1rem;
+    text-align: center;
+    z-index: 100;
+  }
+  
+  /* Zet de zoek-row in kolom met voldoende spacing */
+  .search-row {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  /* Zorg dat de knoppen in de button-container gelijk en responsief zijn */
+  .button-container {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+  }
+  .button-container .dropdown-container,
+  .button-container .btn-compare {
+    flex: 1;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Zorg dat de dropdown-knop de volledige breedte benut */
+.button-container {
+    display: flex;
+    gap: 1rem;
+    align-items: stretch; /* Zorgt dat beide knoppen dezelfde hoogte krijgen */
+    justify-content: center;
+  }
+  
+  /* Zorg dat de knoppen in de button-container gelijk en responsief zijn */
+  .button-container .dropdown-container,
+  .button-container .btn-compare {
+    flex: 1;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Pas de styling van de dropdown-knop en vergelijk-knop aan */
+  .button-container .dropdown-container .dropdown-button,
+  .button-container .btn-compare {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 10px;
+    font-size: 0.9rem;
+  }
+}
+
+.btn-compare {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.5rem;
+}
+
+/* Wrapper voor de scrollbare container en pijlen */
+.categorie-scroll-wrapper {
+  position: relative;
+}
+
+/* Zorg dat de abonnementen-lijst horizontaal blijft staan */
+.abonnementen-lijst {
+  display: flex;
+  flex-wrap: nowrap;   /* tegels blijven op één regel */
+  gap: 20px;
+  width: max-content;  /* breedte wordt bepaald door de inhoud */
+}
+
+@media (max-width: 768px) {
+  html, body {
+    overflow-x: hidden; /* Voorkomt horizontaal scrollen van de hele pagina */
+  }
+}
+@media (max-width: 768px) {
+  .abonnementen-lijst::after {
+    content: "";
+    flex: 0 0 calc(50vw - 125px);
+  }
+}
+@media (max-width: 768px) {
+  .abonnement {
+    width: 300px;           /* vaste breedte */
+    height: 430px;          /* vaste hoogte; pas dit aan als er meer ruimte nodig is */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between; /* verdeelt de ruimte tussen de elementen */
+    box-sizing: border-box;
+    padding: 15px;
+    overflow: hidden;       /* voorkomt dat inhoud buiten de tegel valt */
+  }
+  
+  /* Zorg dat het logo binnen een vaste ruimte past */
+  .abonnement-logo {
+    width: 200px;
+    height: 200px;
+    object-fit: contain;
+    margin-bottom: 5px;
+  }
+  
+  /* Consistente opmaak voor titels en paragrafen */
+  .abonnement h3 {
+    margin: 0px 0 5px;
+    text-align: center;
+  }
+  
+  .abonnement p {
+    margin: 0 0 10px;
+    text-align: center;
+    flex: 1;
+    overflow: hidden;  /* voorkomt dat lange teksten de vaste hoogte doorbreken */
+  }
+  
+  .subcategorie {
+    margin: 5px 0;
+    text-align: center;
+  }
+}
+@media (max-width: 768px) {
+  .scroll-arrow-left {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .categorie-scroll-container {
+    overflow-x: auto;
+    width: 100%;
+  }
+
+  .abonnementen-lijst {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 20px;
+    width: max-content; /* dit is al goed bij jou */
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .abonnement {
+    width: 300px;
+    flex: 0 0 auto;
+  }
+}

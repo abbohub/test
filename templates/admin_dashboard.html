@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beheerdersdashboard - AbboHub</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+    <!-- Eventueel extra inline styles (beter in .css bestand) -->
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        nav {
+            background-color: #8968cd;
+            padding: 10px 0;
+        }
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+        }
+        nav li {
+            margin: 0 1rem;
+        }
+        nav a {
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            margin-top: 0;
+        }
+        .btn {
+            display: inline-block;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            background-color: #8968cd;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #fff;
+        }
+        caption {
+            caption-side: top;
+            text-align: left;
+            padding: 8px;
+            font-weight: bold;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            vertical-align: middle;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        a.bewerken-link {
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        a.bewerken-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Flash-meldingen */
+        .flash-container {
+            margin: 10px 0;
+        }
+        .flash-message {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+        .flash-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .flash-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Drag-handle */
+        .drag-handle {
+            cursor: grab;
+            border: 1px solid #ddd;
+            background: #fff;
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+        }
+        /* Kleine marge tussen categorie-containers */
+        .category-section {
+            margin-bottom: 30px;
+        }
+        .sortableAbonnementen {
+  display: flex;
+  flex-wrap: wrap;       /* Laat items doorlopen op de volgende regel als ze niet meer passen */
+  gap: 16px;             /* Ruimte tussen abonnementen */
+  margin-bottom: 20px;   /* Eventuele extra marge onder de rij */
+}
+
+.abonnement {
+  border: 1px solid #ddd;
+  background: #fff;
+  padding: 10px;
+  border-radius: 4px;
+  cursor: grab;          /* Visuele hint dat je kunt slepen */
+  width: 200px;          /* Vaste breedte (pas aan naar wens) */
+  box-sizing: border-box;
+}
+
+    </style>
+</head>
+<body>
+
+    <!-- Navigatie (optioneel) -->
+    <nav aria-label="Hoofdnavigatie">
+        <ul>
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+            <li><a href="{{ url_for('vergelijk') }}">Vergelijk</a></li>
+            {% if current_user.is_authenticated %}
+                <li><a href="{{ url_for('logout') }}">Uitloggen</a></li>
+            {% else %}
+                <li><a href="{{ url_for('login') }}">Inloggen</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <div class="dashboard-container">
+        <h1>Beheerdersdashboard</h1>
+
+        <!-- FLASH-BERICHTEN (optioneel) -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="flash-container">
+              {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}">
+                  {{ message }}
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <!-- Knoppen voor acties -->
+        <p>
+            <a href="{{ url_for('add_subscription') }}" class="btn">Abonnement Toevoegen</a>
+            <a href="{{ url_for('manage_subscriptions') }}" class="btn">Beheer Abonnementen</a>
+            <a href="{{ url_for('categorieen') }}" class="btn">Beheer categorieën</a>
+            <a href="{{ url_for('manage_tags') }}"class="btn">Beheer Tags</a>
+            <a href="{{ url_for('manage_doelgroepen') }}"class="btn">Beheer Doelgroepen</a>
+            <a href="{{ url_for('view_logs') }}" class="btn">Bekijk Logs</a>
+            <a href="{{ url_for('berichten') }}" class="btn">Bekijk berichten</a>
+            <a href="{{ url_for('admin_train_chatbot') }}" class="btn">Chatbot trainen</a>
+        </p>
+
+        <h2>Alle Abonnementen per Categorie</h2>
+
+        <!-- Weergave van abonnementen per categorie -->
+        {% for categorie in categorieen %}
+        <div class="category-section">
+            <h3>{{ categorie.naam }}</h3>
+            
+            <!-- Container voor drag & drop binnen deze categorie -->
+            <div class="sortableAbonnementen" data-categorie-id="{{ categorie.id }}">
+                {% for abonnement in abonnementen %}
+                    {% if abonnement.subcategorie and abonnement.subcategorie.categorie.id == categorie.id %}
+                        <div class="abonnement drag-handle" data-id="{{ abonnement.id }}">
+                            <strong>{{ abonnement.naam }}</strong><br>
+                            Subcategorie: {{ abonnement.subcategorie.naam }}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+
+    </div>
+
+    <!-- Sortable.js functionaliteit -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Pak alle categoriecontainers
+            const categorieContainers = document.querySelectorAll('.sortableAbonnementen');
+
+            categorieContainers.forEach(container => {
+                new Sortable(container, {
+                    // Elke container heeft een eigen groep met 'put: false'
+                    // zodat je niet tussen containers kunt verslepen
+                    group: {
+                        name: 'cat-' + container.dataset.categorieId,
+                        put: false
+                    },
+                    animation: 150,
+                    onEnd: function (evt) {
+                        // Bepaal in welke container we een wijziging hebben
+                        const catId = container.dataset.categorieId;
+
+                        // Haal de volgorde van abonnement IDs op binnen deze container
+                        const order = [];
+                        container.querySelectorAll('.abonnement').forEach(item => {
+                            order.push(item.dataset.id);
+                        });
+
+                        // Stuur de nieuwe volgorde naar de server
+                        fetch('/update_abonnementen_volgorde', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({
+                                categorieId: catId,
+                                order: order
+                            })
+                        })
+                        .then(response => {
+                            if (response.ok) {
+                                console.log('Volgorde succesvol opgeslagen voor categorie ' + catId);
+                            } else {
+                                console.error('Fout bij het opslaan van de volgorde');
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>
