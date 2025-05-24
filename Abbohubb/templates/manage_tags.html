@@ -106,9 +106,10 @@
 <body>
     <div class="container">
         <h1>Tags Beheren</h1>
-        
+
         <!-- Formulier voor toevoegen -->
         <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="text" name="naam" placeholder="Nieuwe tag" required>
             <button type="submit">Toevoegen</button>
         </form>
@@ -117,8 +118,9 @@
         <ul>
             {% for tag in tags %}
             <li>
-                {{ tag.naam }}
-                <form method="POST" action="{{ url_for('delete_tag', id=tag.id) }}" style="margin: 0;">
+                {{ tag.naam }} – {{ tag_usage[tag.id] }}x gebruikt
+                <form method="POST" action="{{ url_for('delete_tag', id=tag.id) }}" style="display:inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit">Verwijder</button>
                 </form>
             </li>

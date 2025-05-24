@@ -127,19 +127,43 @@
       {% endif %}
     {% endwith %}
 
-    <!-- Zoek- en filterformulier -->
-    <form method="GET" action="{{ url_for('manage_subscriptions') }}">
-      <input type="text" name="zoekterm" placeholder="Zoek op naam..." value="{{ zoekterm }}">
-      <select name="categorie_id">
-        <option value="">Filter op categorie</option>
-        {% for categorie in categorieen %}
-        <option value="{{ categorie.id }}" {% if categorie.id == geselecteerde_categorie|int %}selected{% endif %}>
-          {{ categorie.naam }}
-        </option>
-        {% endfor %}
-      </select>
-      <button type="submit">Toepassen</button>
-    </form>
+<!-- Zoek- en filterformulier -->
+<form method="GET" action="{{ url_for('manage_subscriptions') }}" class="filter-form">
+  <input 
+    type="text" 
+    name="zoekterm" 
+    placeholder="Zoek op naam..." 
+    value="{{ zoekterm or '' }}" 
+  >
+
+  <!-- Categorie filter -->
+  <select name="categorie_id">
+    <option value="">Filter op categorie</option>
+    {% for categorie in categorieen %}
+      <option value="{{ categorie.id }}" 
+        {% if categorie.id == geselecteerde_categorie|int %}selected{% endif %}>
+        {{ categorie.naam }}
+      </option>
+    {% endfor %}
+  </select>
+
+  <!-- Subcategorie filter (optioneel) -->
+  {% if subcategorieen %}
+  <select name="subcategorie_id">
+    <option value="">Filter op subcategorie</option>
+    {% for sub in subcategorieen %}
+      <option value="{{ sub.id }}" 
+        {% if sub.id == geselecteerde_subcategorie|int %}selected{% endif %}>
+        {{ sub.naam }}
+      </option>
+    {% endfor %}
+  </select>
+  {% endif %}
+
+  <button type="submit">Toepassen</button>
+  <a href="{{ url_for('manage_subscriptions') }}">Reset</a>
+</form>
+
 
     <!-- Tabel met abonnementen -->
     <table class="table">
@@ -161,9 +185,10 @@
           <td>{{ abonnement.subcategorie.naam if abonnement.subcategorie else 'Geen subcategorie' }}</td>
           <td class="actions">
             <a href="{{ url_for('edit_subscription', id=abonnement.id) }}" class="edit">Bewerk</a>
-            <form action="{{ url_for('verwijder', id=abonnement.id) }}" method="POST" style="display:inline;">
-              <button type="submit" class="delete">Verwijder</button>
-            </form>
+          <form action="{{ url_for('verwijder', id=abonnement.id) }}" method="POST" style="display:inline;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="delete">Verwijder</button>
+          </form>
           </td>
         </tr>
         {% endfor %}

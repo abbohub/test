@@ -151,16 +151,83 @@
     .back-link:hover {
       text-decoration: underline;
     }
-    /* Bezoek website knop stijl: groene, dikgedrukte tekst */
-    a.visit-website {
-      color: #8968cd;
-      font-weight: bold;
-      text-decoration: none;
-    }
-    a.visit-website:hover,
-    a.visit-website:focus {
-      text-decoration: underline;
-    }
+a.visit-website {
+  background-color: #f4cd00;
+  color: white;
+  font-weight: bold;
+  text-decoration: none;
+  padding: 8px 12px;           /* iets minder hoog en breed */
+  font-size: 0.9rem;           /* iets kleinere tekst */
+  border-radius: 6px;          /* iets minder rond */
+  display: inline-block;
+  transition: background-color 0.2s ease;
+}
+
+a.visit-website:hover,
+a.visit-website:focus {
+  background-color: #e0ba00;
+  text-decoration: none;
+}
+
+
+    /* vergelijk en meer info knoppen */
+.actieknoppen {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.btn-compare {
+  flex: 1 1 48%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 0.85rem;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  transition: background 0.2s ease;
+  background-color: #f4cd00;
+  color: white;
+  white-space: nowrap;
+}
+
+.btn-compare:hover {
+  background-color: #e0ba00;
+}
+footer {
+  width: 100%;
+  background-color: #2e2e2e;
+  color: white;
+  padding: 24px 20px;
+  text-align: center;
+  position: relative;
+  box-sizing: border-box;
+}
+
+footer .footer-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 15px 0 0;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 25px;
+}
+
+footer .footer-nav a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+footer .footer-nav a:hover {
+  text-decoration: underline;
+}
+
+
     /* Responsive design */
     @media (max-width: 768px) {
       header h1 {
@@ -173,6 +240,16 @@
         padding: 10px;
       }
     }
+    @media (max-width: 768px) {
+  .page-layout {
+    flex-direction: column;
+  }
+  .sidebar {
+    max-width: 100%;
+    margin-top: 30px;
+  }
+}
+
   </style>
 </head>
 <!-- Google Tag Manager (noscript) -->
@@ -185,105 +262,61 @@
     <h1>{{ abonnement.naam }}</h1>
     <p>Ontdek alles wat dit abonnement te bieden heeft</p>
   </header>
+  </div>
+    <!-- Terug naar overzicht link -->
+    <a href="{{ url_for('index') }}" class="back-link">&larr; Terug naar overzicht</a>
+<div class="page-wrapper" style="max-width: 1200px; margin: 0 auto; padding: 40px 20px;">
 
-  <div class="container">
-    <!-- Tabel sectie met abonnementsgegevens -->
-    <section class="card">
-      <h2>Abonnementsgegevens</h2>
-      <table>
-        <tr>
-          <th>Frequentie Bezorging</th>
-          <td>{{ abonnement.frequentie_bezorging }}</td>
-        </tr>
-        <tr>
-          <th>Contractduur</th>
-          <td>{{ abonnement.contractduur }}</td>
-        </tr>
-        <tr>
-          <th>Prijs vanaf</th>
-          <td>€{{ abonnement.prijs_vanaf }}</td>
-        </tr>
-        {% if abonnement.prijs_tot %}
-        <tr>
-          <th>Prijs tot</th>
-          <td>€{{ abonnement.prijs_tot }}</td>
-        </tr>
-        {% endif %}
-        <tr>
-          <th>Doelgroep</th>
-          <td>
-            {% for doelgroep in abonnement.doelgroepen %}
-              <span class="badge">{{ doelgroep.naam }}</span>
-            {% endfor %}
-          </td>
-        </tr>
-        <tr>
-          <th>Tags</th>
-          <td>
-            {% for tag in abonnement.tags %}
-              <span class="badge">{{ tag.naam }}</span>
-            {% endfor %}
-          </td>
-        </tr>
-        <tr>
-          <th>Gemiddelde Beoordeling</th>
-          <td>
-            {% set score = abonnement.get_average_score() %}
-            {% set volle_sterren = score | int %}
-            {% set halve_ster = (score - volle_sterren) >= 0.25 and (score - volle_sterren) < 0.75 %}
-            {% set lege_sterren = 5 - volle_sterren - (1 if halve_ster else 0) %}
-        
-            <span class="ster-rating" aria-label="Gemiddelde beoordeling: {{ score }} van 5">
-              {% for i in range(volle_sterren) %}
-                <span class="vol-ster">★</span>
-              {% endfor %}
-              {% if halve_ster %}
-                <span class="halve-ster">★</span>
-              {% endif %}
-              {% for i in range(lege_sterren) %}
-                <span class="leeg-ster">☆</span>
-              {% endfor %}
-            </span>
-            <span class="score-tekst">{{ score }} ({{ abonnement.reviews|length }} beoordelingen)</span>
-          </td>
-        </tr>        
-        <tr>
-          <th>Bezoek Website</th>
-          <td>
-            <a href="{{ abonnement.url }}" target="_blank" rel="noopener noreferrer" class="visit-website" data-abonnement="{{ abonnement.naam }}">
-              Bezoek website
-            </a>
-          </td>
-        </tr>
-      </table>
-    </section>
+  <div class="page-layout" style="display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start; justify-content: space-between;">
 
-    <!-- Tekstuele content secties -->
-    <section class="card text-section">
-      <h3>Wat is {{ abonnement.naam }}?</h3>
-      <p>{{ abonnement.wat_is_het_abonnement }}</p>
-    </section>
+    <!-- MAIN CONTENT -->
+    <main class="main-content" style="flex: 1 1 65%; min-width: 320px;">
+      <section class="card">
+        <h2>Abonnementsgegevens</h2>
+        <table>
+          <tr><th>Frequentie Bezorging</th><td>{{ abonnement.frequentie_bezorging }}</td></tr>
+          <tr><th>Contractduur</th><td>{{ abonnement.contractduur }}</td></tr>
+          <tr><th>Prijs vanaf</th><td>€{{ abonnement.prijs_vanaf }}</td></tr>
+          {% if abonnement.prijs_tot %}
+          <tr><th>Prijs tot</th><td>€{{ abonnement.prijs_tot }}</td></tr>
+          {% endif %}
+          <tr><th>Doelgroep</th>
+            <td>{% for doelgroep in abonnement.doelgroepen %}<span class="badge">{{ doelgroep.naam }}</span>{% endfor %}</td>
+          </tr>
+          <tr><th>Tags</th>
+            <td>{% for tag in abonnement.tags %}<span class="badge">{{ tag.naam }}</span>{% endfor %}</td>
+          </tr>
+          <tr>
+            <th>Gemiddelde Beoordeling</th>
+            <td>
+              {% set score = abonnement.get_average_score() %}
+              {% set volle = score | int %}
+              {% set halve = (score - volle) >= 0.25 and (score - volle) < 0.75 %}
+              {% set leeg = 5 - volle - (1 if halve else 0) %}
+              <span class="ster-rating">
+                {% for _ in range(volle) %}<span class="vol-ster">★</span>{% endfor %}
+                {% if halve %}<span class="halve-ster">★</span>{% endif %}
+                {% for _ in range(leeg) %}<span class="leeg-ster">☆</span>{% endfor %}
+              </span>
+              <span class="score-tekst">{{ score }} ({{ abonnement.reviews|length }} beoordelingen)</span>
+            </td>
+          </tr>
+          <tr>
+            <th>Bezoek Website</th>
+            <td><a href="{{ abonnement.url }}" target="_blank" rel="noopener noreferrer" class="visit-website">Bezoek website</a></td>
+          </tr>
+        </table>
+      </section>
 
-    <section class="card text-section">
-      <h3>Waarom kiezen voor {{ abonnement.naam }}?</h3>
-      <p>{{ abonnement.waarom_kiezen }}</p>
-    </section>
-
-    <section class="card text-section">
-      <h3>Hoe werkt het?</h3>
-      <p>{{ abonnement.hoe_werkt_het }}</p>
-    </section>
-
-    <section class="card text-section">
-      <h3>Past {{ abonnement.naam }} bij jou?</h3>
-      <p>{{ abonnement.past_dit_bij_jou }}</p>
-    </section>
-
-<!-- Reviews sectie -->
+      <section class="card text-section"><h3>Wat is {{ abonnement.naam }}?</h3><p>{{ abonnement.wat_is_het_abonnement }}</p></section>
+      <section class="card text-section"><h3>Waarom kiezen voor {{ abonnement.naam }}?</h3><p>{{ abonnement.waarom_kiezen }}</p></section>
+      <section class="card text-section"><h3>Hoe werkt het?</h3><p>{{ abonnement.hoe_werkt_het }}</p></section>
+      <section class="card text-section"><h3>Past {{ abonnement.naam }} bij jou?</h3><p>{{ abonnement.past_dit_bij_jou }}</p></section>
+   
+    <!-- Reviews sectie -->
 <section class="card" aria-labelledby="reviews-heading">
   <h2 id="reviews-heading">Reviews</h2>
 
-  <tr>
     <th>Gemiddelde Beoordeling</th>
     <td>
       {% set score = abonnement.get_average_score() %}
@@ -392,20 +425,51 @@
       <p>Er zijn nog geen reviews voor dit abonnement.</p>
     {% endif %}
   </div>
-</section>
-    <!-- Terug naar overzicht link -->
-    <a href="{{ url_for('index') }}" class="back-link">&larr; Terug naar overzicht</a>
-  </div>
+</section> 
+    </main>
+<!-- SIDEBAR -->
+<aside class="sidebar" style="flex: 1 1 30%; max-width: 360px;">
+  <section class="card">
+    <h2>Vergelijk {{ abonnement.naam }} met:</h2>
+
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+      {% for ab in andere_abonnementen %}
+      <article style="background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 12px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+        <h3 style="font-size: 1rem; margin-bottom: 8px;">{{ ab.naam }}</h3>
+
+        {% if ab.logo %}
+          <img src="{{ url_for('static', filename='uploads/' + ab.logo) }}" alt="Logo van {{ ab.naam }}" style="max-width: 100px; margin-bottom: 10px;">
+        {% endif %}
+
+        <p style="font-size: 0.85rem; min-height: 50px;">{{ ab.beschrijving or 'Geen beschrijving.' }}</p>
+
+        <!-- ACTIEKNOPPEN naast elkaar -->
+        <div class="actieknoppen">
+          <a href="{{ url_for('abonnement_reviews', slug=ab.slug) }}" class="btn-compare geel">
+            Meer info
+          </a>
+          <a href="javascript:void(0);" onclick="vergelijkSlugs('{{ abonnement.slug }}', '{{ ab.slug }}')" class="btn-compare grijs">
+            Vergelijk
+          </a>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+
+  </section>
+</aside>
+  </div></div>
   <footer>
-    <p>&copy; 2025 AbboHub. Alle rechten voorbehouden.</p>
-    <nav class="footer-nav">
-      <ul>
-        <li><a href="{{ url_for('privacy_cookieverklaring') }}">Privacy en Cookieverklaring</a></li>
-        <li><a href="{{ url_for('over_abbohub') }}">Over AbboHub</a></li>
-        <li><a href="#" onclick="openSettings()">Cookievoorkeuren aanpassen</a></li>
-      </ul>
-    </nav>
-  </footer>
+  <p>&copy; 2025 AbboHub. Alle rechten voorbehouden.</p>
+  <nav class="footer-nav">
+    <ul>
+      <li><a href="{{ url_for('privacy_cookieverklaring') }}">Privacy en Cookieverklaring</a></li>
+      <li><a href="{{ url_for('over_abbohub') }}">Over AbboHub</a></li>
+      <li><a href="#" onclick="openSettings()">Cookievoorkeuren aanpassen</a></li>
+    </ul>
+  </nav>
+</footer>
+
   <!-- Cookiebanner insluiten -->
   {% include 'cookie-banner.html' %}
   <script>
@@ -463,7 +527,14 @@
       });
     });
   </script>
-    
+  <script>
+function vergelijkSlugs(slug1, slug2) {
+  const slugs = [slug1, slug2];
+  document.cookie = "comparison_slugs=" + slugs.join(",") + "; path=/; max-age=604800";
+  window.location.href = "/vergelijk?abonnementen=" + slugs.join(",");
+}
+</script>
+  
 </body>
 </html>
 
