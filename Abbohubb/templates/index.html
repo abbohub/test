@@ -16,7 +16,6 @@
   <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
 
-
   <!-- Open Graph -->
   <meta property="og:title" content="{{ page_title or 'AbboHub - Vergelijk abonnementen eenvoudig' }}">
   <meta property="og:description" content="{{ page_description or 'Vind het abonnement dat bij jou past.' }}">
@@ -29,6 +28,12 @@
   <meta name="twitter:title" content="{{ page_title or 'AbboHub' }}">
   <meta name="twitter:description" content="{{ page_description or 'Vergelijk eenvoudig abonnementen per categorie.' }}">
   <meta name="twitter:image" content="{{ url_for('static', filename='logo.png', _external=True) }}">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+
+  <!-- vendor scripts Google Tag Manager -->
+  <script src="{{ url_for('static', filename='js/vendor.js') }}"></script>
 
   <!-- Structured data (organisatie) -->
   <script type="application/ld+json">
@@ -40,20 +45,8 @@
     "logo": "https://abbohub.nl/static/logo.png"
   }
   </script>
-
-  <!-- Styles -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-
-  <!-- Google Tag Manager -->
-  <script>
-    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-      'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-NRGH8P6W');
-  </script>
-  <!-- End Google Tag Manager -->
 </head>
+
 <body>
   <!-- Google Tag Manager (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NRGH8P6W"
@@ -256,161 +249,7 @@
   
   <!-- Cookiebanner insluiten -->
   {% include 'cookie-banner.html' %}
-  
-  <!-- Vergelijk-script -->
-  <script>
-      document.getElementById("send-btn").addEventListener("click", function() {
-          let userMessage = document.getElementById("user-message").value;
-          if (!userMessage) return;
-  
-          let chatlog = document.getElementById("chatlog");
-          chatlog.innerHTML += `<div><b>Jij:</b> ${userMessage}</div>`;
-          document.getElementById("user-message").value = "";
-  
-          fetch(`http://localhost:8500/chatbot/?vraag=${encodeURIComponent(userMessage)}`)
-              .then(response => response.json())
-              .then(data => {
-                  let antwoordContent = "";
-                  if (Array.isArray(data.antwoord)) {
-                      // Als antwoord een array is, veronderstel dat elk element objecten bevat met naam en prijs
-                      antwoordContent = data.antwoord.map(a => `${a.naam}: ${a.prijs}`).join("<br>");
-                  } else {
-                      // Anders ga er van uit dat het een string is
-                      antwoordContent = data.antwoord;
-                  }
-                  chatlog.innerHTML += `<div><b>Adviseur:</b> ${antwoordContent}</div>`;
-                  chatlog.scrollTop = chatlog.scrollHeight;
-              })
-              .catch(error => {
-                  chatlog.innerHTML += `<div><b>Bot:</b> Er is een fout opgetreden.</div>`;
-              });
-      });
-  
-      document.addEventListener("DOMContentLoaded", function() {
-          const chatbox = document.getElementById("chatbox");
-          const toggleChatBtn = document.getElementById("toggle-chat");
-          const closeChatBtn = document.getElementById("close-chat");
-  
-          // Open/sluit de chatbox bij klikken op de knop
-          toggleChatBtn.addEventListener("click", function() {
-              if (chatbox.classList.contains("hidden")) {
-                  chatbox.classList.remove("hidden");
-                  chatbox.style.display = "flex";
-              } else {
-                  chatbox.classList.add("hidden");
-                  chatbox.style.display = "none";
-              }
-          });
-  
-          // Minimaliseer de chatbox
-          closeChatBtn.addEventListener("click", function() {
-              chatbox.classList.add("hidden");
-              chatbox.style.display = "none";
-          });
-      });
-  </script>
-         
-         <script>
-document.addEventListener('DOMContentLoaded', () => {
-    // 1. Selecteer de vergelijk-knop en alle checkboxes
-    const vergelijkKnop = document.getElementById('vergelijk-knop');
-    const checkboxes = document.querySelectorAll('.vergelijk-checkbox');
-
-    // 2. Functie om de "Vergelijk" link (href) te updaten op basis van slugs
-    function updateVergelijkLink() {
-        const geselecteerdeSlugs = Array.from(checkboxes)
-            .filter(cb => cb.checked)
-            .map(cb => cb.value);
-
-        // Update de href van de knop op basis van geselecteerde slugs
-        vergelijkKnop.href = geselecteerdeSlugs.length >= 2
-            ? `/vergelijk?abonnementen=${geselecteerdeSlugs.join(',')}`
-            : '#'; // of '/vergelijk' als fallback
-    }
-
-    // 3. Checkbox-change events → update de link live
-    checkboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', () => {
-            updateVergelijkLink();
-        });
-    });
-
-    // 4. Roep initieel aan bij pagina-lading
-    updateVergelijkLink();
-
-    // 5. Dropdown-links in mobiele menu (optioneel)
-    document.querySelectorAll('.dropdown-item a').forEach(link => {
-        link.addEventListener('click', function (e) {
-            e.preventDefault();
-            window.location.href = this.getAttribute('href');
-        });
-    });
-});
-</script>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      // 1) Mobile: hide Vergelijk-knop bij klikken op categorie-link
-      if (window.matchMedia('(max-width: 768px)').matches) {
-        document.querySelectorAll('.dropdown-menu a').forEach(function(link) {
-          link.addEventListener('click', function() {
-            const compareBtn = document.getElementById('vergelijk-knop');
-            if (compareBtn) compareBtn.style.display = 'none';
-          });
-        });
-      }
-    
-      // 2) Carousel endless scroll per categorie
-      document.querySelectorAll('.categorie-scroll-wrapper').forEach(function(wrapper) {
-        const container  = wrapper.querySelector('.categorie-scroll-container');
-        const list       = container?.querySelector('.abonnementen-lijst');
-        const leftArrow  = wrapper.querySelector('.scroll-arrow-left');
-        const rightArrow = wrapper.querySelector('.scroll-arrow-right');
-        if (!container || !list || !leftArrow || !rightArrow) return;
-    
-        const isMobile  = window.matchMedia('(max-width: 768px)').matches;
-        const tileCount = list.children.length;
-        if ((!isMobile && tileCount < 4) || (isMobile && tileCount < 2)) return;
-    
-        // dubbel klonen (origineel + 2 clones)
-        if (!container.dataset.duplicated) {
-          container.appendChild(list.cloneNode(true));
-          container.appendChild(list.cloneNode(true));
-          container.dataset.duplicated = 'true';
-        }
-    
-        // init: linkerpijl verbergen
-        leftArrow.style.display = 'none';
-    
-        // metingen
-        const gap        = 20;
-        const tile       = list.querySelector('.abonnement');
-        const tileWidth  = tile ? tile.offsetWidth : 300;
-        const scrollStep = tileWidth + gap;
-        const listWidth  = list.offsetWidth;
-        const wrapAt     = listWidth * 2; // na 2x origin
-    
-        // wrap‑around & pijl‑weergave
-        container.addEventListener('scroll', function() {
-          const pos = container.scrollLeft;
-          if (pos >= wrapAt) {
-            container.scrollLeft = pos - wrapAt;
-          } else if (pos < 0) {
-            container.scrollLeft = pos + wrapAt;
-          }
-          leftArrow.style.display = container.scrollLeft > 0 ? 'flex' : 'none';
-        });
-    
-        // klik handlers pijlen
-        rightArrow.addEventListener('click', function() {
-          container.scrollBy({ left: scrollStep, behavior: 'smooth' });
-        });
-        leftArrow.addEventListener('click', function() {
-          container.scrollBy({ left: -scrollStep, behavior: 'smooth' });
-        });
-      });
-    });
-    </script>
+  <script src="{{ url_for('static', filename='js/index.js') }}"></script> 
             </body>
 </html>
 

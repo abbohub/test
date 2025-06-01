@@ -6,7 +6,7 @@
     <title>Abonnement Bewerken | AbboHub</title>
 
     <!-- Stijlblad koppelen -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 
     <style>
         /* Algemene instellingen */
@@ -107,6 +107,42 @@
             color: #721c24;
         }
 
+        /* Simpele styling voor de toolbar en de “B”-knop */
+    .toolbar {
+      margin-bottom: 0.25rem;
+    }
+    .toolbar button {
+      font-weight: bold;
+      padding: 0.2rem 0.5rem;
+      cursor: pointer;
+      border: 1px solid #888;
+      background-color: #f0f0f0;
+      border-radius: 3px;
+    }
+    .toolbar button:hover {
+      background-color: #e0e0e0;
+    }
+    /* Optioneel: maak de textarea wat hoger zodat je voldoende tekst kunt invoeren */
+    textarea {
+      width: 100%;
+      min-height: 6em;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.4;
+      margin-bottom: 1rem;
+    }
+    /* Simpele styling van input/label/secties mocht je dat willen uitbreiden */
+    .container {
+      max-width: 800px;
+      margin: 2rem auto;
+      font-family: Arial, sans-serif;
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+
         /* Responsief ontwerp */
         @media (max-width: 600px) {
             .container {
@@ -163,7 +199,7 @@
   <!-- Categorie -->
   <div class="form-group">
     <label for="categorie_id">Categorie</label>
-    <select id="categorie_id" name="categorie_id" onchange="laadSubcategorieen(this.value)" required>
+    <select id="categorie_id" name="categorie_id" required>
       <option value="">Selecteer een categorie</option>
       {% for categorie in categorieen %}
       <option value="{{ categorie.id }}"
@@ -285,23 +321,6 @@
   <button type="submit">Opslaan</button>
 </form>
     </div>
-    
-    <script>
-        // Dynamisch subcategorieën laden bij selectie van een categorie
-        function laadSubcategorieen(categorieId) {
-            fetch(`/api/subcategorieen/${categorieId}`)
-                .then(response => response.json())
-                .then(data => {
-                    const subcategorieSelect = document.getElementById('subcategorie_id');
-                    subcategorieSelect.innerHTML = ''; // Verwijder bestaande opties
-                    data.forEach(subcategorie => {
-                        const option = document.createElement('option');
-                        option.value = subcategorie.id;
-                        option.textContent = subcategorie.naam;
-                        subcategorieSelect.appendChild(option);
-                    });
-                });
-        }
-    </script>
+    <script src="{{ url_for('static', filename='js/edit_subscription.js') }}"></script> 
 </body>
 </html>

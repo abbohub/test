@@ -1,0 +1,79 @@
+/* ====================================================
+   2. LAYOUT (header, nav, main, footer)
+==================================================== */
+
+header {
+    background: #8968cd; /* Aangepast: header achtergrond naar #9133bb */
+    color: white;
+    padding: 15px 10px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    font-family: inherit;
+    animation: fadeIn 1s ease-in-out;
+}
+
+header p {
+    margin: 5px 0 0;
+    font-size: 1.2rem;
+    font-family: inherit;
+    opacity: 0.9;
+}
+/* Hoofdnavigatie */
+nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+}
+nav li {
+    margin: 0 1rem;
+}
+nav a {
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+}
+main {
+  background: #f3e6cc;
+}
+
+/* ========== NAVIGATION ========== */
+.header-nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+    margin: 20px 0 0;
+    padding: 0;
+}
+
+.header-nav ul li {
+    display: inline-block;
+}
+
+.header-nav ul li a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.1rem;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.header-nav ul li a:hover {
+    background-color: #f6ae86; /* Aangepast: hover kleur naar #f6ae86 */
+    color: #e6ffe6;
+    transform: scale(1.1);
+}
+

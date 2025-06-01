@@ -1,193 +1,168 @@
 # chatbot.py
-from fastapi import FastAPI, Query
-import sqlite3
+
 import os
-import nltk
 import json
+import sqlite3
+import pickle
+import collections
+from pathlib import Path
+
+import nltk
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
+
+from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
-import pickle
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import make_pipeline
-import collections
 
-# Download benodigde NLTK-data
+# Download benodigde NLTK-data (éénmalig, sla caches op in ~/.cache/nltk_data)
 nltk.download('punkt')
 nltk.download('stopwords')
 nltk.download('wordnet')
 
-# Definieer FastAPI app
-app = FastAPI()
+# ==== Setup paden ====
+BASE_DIR      = Path(__file__).parent.resolve()
+INSTANCE_DIR  = BASE_DIR / 'instance'
+DATABASE_PATH = INSTANCE_DIR / 'abonnementen.db'
+MODEL_PATH    = INSTANCE_DIR / 'chatbot_model.pkl'
+CONFIG_PATH   = INSTANCE_DIR / 'config.json'
 
-# CORS-instellingen toevoegen
+# Zorg dat de instance-map bestaat
+INSTANCE_DIR.mkdir(exist_ok=True)
+
+# ==== FastAPI app + CORS ====
+app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Of specifieker, bijv. ["http://127.0.0.1:5000"]
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Databaseverbinding
-DATABASE_PATH = os.path.join(
-    "C:\\Users\\timoo\\OneDrive\\Bureaublad\\Abbo-test\\abonnementen_website_test\\instance",
-    "abonnementen.db"
-)
-
+# ==== Database helper ====
 def get_db_connection():
-    """Geeft een SQLite-verbinding terug met row_factory ingesteld."""
-    conn = sqlite3.connect(DATABASE_PATH)
+    """Return SQLite connection met row_factory."""
+    conn = sqlite3.connect(str(DATABASE_PATH), check_same_thread=False)
     conn.row_factory = sqlite3.Row
     return conn
 
-# Stopwoorden en lemmatizer initialiseren
+# ==== NLP setup ====
 stopwoorden = set(stopwords.words('dutch'))
 lemmatizer = WordNetLemmatizer()
 
 def verwerk_vraag(vraag: str) -> str:
-    """Tokenizeert de vraag, verwijdert stopwoorden en lemmatiseert de woorden."""
-    woorden = word_tokenize(vraag.lower())
-    kernwoorden = [lemmatizer.lemmatize(w) for w in woorden if w.isalnum() and w not in stopwoorden]
+    tokens = word_tokenize(vraag.lower())
+    kernwoorden = [
+        lemmatizer.lemmatize(w)
+        for w in tokens
+        if w.isalnum() and w not in stopwoorden
+    ]
     return " ".join(kernwoorden)
 
 def extract_zoekterm(vraag: str) -> str:
-    """
-    Extraheer de relevante zoekterm uit de vraag.
-    Bijvoorbeeld: "wat is de prijs van nespresso" -> "nespresso"
-    """
     tokens = word_tokenize(vraag.lower())
     ignore = {"wat", "is", "de", "prijs", "van", "hoe", "duur", "kosten", "kost", "welke", "zijn", "er"}
-    relevante_tokens = [lemmatizer.lemmatize(w) for w in tokens if w.isalnum() and w not in ignore]
-    if relevante_tokens:
-        return " ".join(relevante_tokens)
-    return verwerk_vraag(vraag)
+    relevante = [lemmatizer.lemmatize(w) for w in tokens if w.isalnum() and w not in ignore]
+    return " ".join(relevante) if relevante else verwerk_vraag(vraag)
 
 def extract_advantage_zoekterm(vraag: str) -> str:
-    """
-    Extraheer de zoekterm voor voordeel-gerelateerde vragen.
-    Woorden als "wat", "is", "het", "voordeel", "plus", "van", "de", "een" worden verwijderd,
-    zodat bijvoorbeeld "wat is het voordeel van hello fresh" resulteert in "hello fresh".
-    """
     tokens = word_tokenize(vraag.lower())
     ignore = {"wat", "is", "het", "voordeel", "plus", "van", "de", "een"}
-    relevante_tokens = [lemmatizer.lemmatize(w) for w in tokens if w.isalnum() and w not in ignore]
-    if relevante_tokens:
-        return " ".join(relevante_tokens)
-    return verwerk_vraag(vraag)
+    relevante = [lemmatizer.lemmatize(w) for w in tokens if w.isalnum() and w not in ignore]
+    return " ".join(relevante) if relevante else verwerk_vraag(vraag)
 
-# Handmatige fallback-antwoorden
 handmatige_antwoorden = {
     "goedemiddag": "Goedemiddag, waarmee kan ik u helpen?",
-    "goedeavond": "Goedeavond, waarmee kan ik u helpen?",
+    "goedeavond":   "Goedeavond, waarmee kan ik u helpen?",
     "wat is het populairste abonnement": "Het populairste abonnement is HelloFresh.",
 }
 
-# Laad de configuratie uit een extern JSON-bestand
-def load_config():
-    with open("config.json", "r", encoding="utf-8") as f:
+# ==== Config laden ====
+def load_config() -> dict:
+    if not CONFIG_PATH.exists():
+        raise FileNotFoundError(f"Config niet gevonden: {CONFIG_PATH}")
+    with open(CONFIG_PATH, "r", encoding="utf-8") as f:
         return json.load(f)
 
 config = load_config()
 
 def match_intent(vraag: str, config: dict) -> dict:
-    vraag_lower = vraag.lower()
+    vraag_l = vraag.lower()
     for intent_name, intent_data in config.get("intents", {}).items():
         if intent_name == "default":
             continue
         for kw in intent_data.get("keywords", []):
-            if kw in vraag_lower:
-                print(f"Intent gematcht: {intent_name}")
+            if kw in vraag_l:
                 return intent_data
-    print("Default intent gebruikt")
-    return config.get("intents", {}).get("default", {})
+    return config["intents"].get("default", {})
 
-
-# Contextbuffer voor gesprekshistorie (laatste 3 vragen)
+# ==== Logging & training ====
 context_buffer = collections.deque(maxlen=3)
 
 def log_chat(vraag: str, antwoord: str):
-    """Logt de vraag en het antwoord in de database (tabel chatbot_logs)."""
     try:
         with get_db_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute("INSERT INTO chatbot_logs (vraag, antwoord) VALUES (?, ?)", (vraag, antwoord))
+            conn.execute(
+                "INSERT INTO chatbot_logs (vraag, antwoord) VALUES (?, ?)",
+                (vraag, antwoord)
+            )
             conn.commit()
     except Exception as e:
-        print(f"Fout bij het loggen: {e}")
+        print(f"⚠️ Fout bij loggen: {e}")
 
 def train_chatbot():
-    """Traind het ML-model met een pipeline die TF-IDF en MultinomialNB combineert."""
     with get_db_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT vraag, antwoord FROM chatbot_logs")
+        cursor = conn.execute("SELECT vraag, antwoord FROM chatbot_logs")
         data = cursor.fetchall()
     if not data:
         print("⚠️ Geen data om te trainen!")
         return
     vragen, antwoorden = zip(*data)
-    model_pipeline = make_pipeline(TfidfVectorizer(), MultinomialNB())
-    model_pipeline.fit(vragen, antwoorden)
-    with open("chatbot_model.pkl", "wb") as f:
-        pickle.dump(model_pipeline, f)
-    print("✅ Chatbot getraind met verbeterde AI!")
+    pipeline = make_pipeline(TfidfVectorizer(), MultinomialNB())
+    pipeline.fit(vragen, antwoorden)
+    with open(MODEL_PATH, "wb") as f:
+        pickle.dump(pipeline, f)
+    print("✅ Chatbot getraind en opgeslagen als pickle!")
 
-# Probeer het getrainde model te laden
+# ==== Model laden ====
 try:
-    with open("chatbot_model.pkl", "rb") as f:
+    with open(MODEL_PATH, "rb") as f:
         loaded = pickle.load(f)
-        if hasattr(loaded, "predict"):
-            model_pipeline = loaded
-        else:
-            print("Oude modelstructuur gedetecteerd, model_pipeline wordt op None gezet.")
-            model_pipeline = None
+        model_pipeline = loaded if hasattr(loaded, "predict") else None
 except FileNotFoundError:
     model_pipeline = None
 
+# ==== API endpoint ====
 @app.get("/chatbot/")
-def chatbot(vraag: str = Query(..., description="Vraag over abonnementen")):
+def chatbot_endpoint(vraag: str = Query(..., description="Vraag over abonnementen")):
     try:
-        # Voeg de vraag toe aan de contextbuffer
         context_buffer.append(vraag)
-        verwerkte_vraag = verwerk_vraag(vraag)
-        print(f"🔍 Gebruiker zoekt: {verwerkte_vraag}")
-        antwoord = None
-
-        # Bepaal de intentie op basis van de vraag via de configuratie
+        verwerkte = verwerk_vraag(vraag)
         intent = match_intent(vraag, config)
-        
-        # Voor voordeel-gerelateerde intenties gebruiken we een aangepaste zoektermextractie
-        if "voordeel" in intent.get("template", "").lower() or "plus" in intent.get("template", "").lower():
-            zoekterm_str = extract_advantage_zoekterm(vraag)
-        else:
-            # Voor andere vragen gebruiken we de standaard verwerkte vraag
-            zoekterm_str = verwerkte_vraag
-        zoekterm = f"%{zoekterm_str}%"
 
-        # Gebruik de kolommen uit de intentie om de query dynamisch op te bouwen
-        columns = intent.get("columns", [])
-        if not columns:
-            columns = ["naam", "prijs"]
-        
-        # Bouw dynamisch de CASE-expressies voor scoreberekening
-        
-        case_exprs = []
-        for col in columns:
-            case_exprs.append(f"(CASE WHEN a.{col} LIKE ? THEN 1 ELSE 0 END)")
+        # Kies juiste zoekterm-extractie
+        tmpl = intent.get("template", "").lower()
+        if "voordeel" in tmpl or "plus" in tmpl:
+            zoek = extract_advantage_zoekterm(vraag)
+        else:
+            zoek = verwerkte
+
+        zoekpatroon = f"%{zoek}%"
+        cols = intent.get("columns", ["naam", "prijs"])
+        case_exprs = [f"(CASE WHEN a.{c} LIKE ? THEN 1 ELSE 0 END)" for c in cols]
         score_expr = " + ".join(case_exprs)
-        where_clause = " OR ".join([f"a.{col} LIKE ?" for col in columns])
-        # Voor elke kolom wordt de zoekterm 2 keer gebruikt (voor CASE en WHERE)
-        params = tuple([zoekterm] * (len(columns) * 2))
-        
-        # Extra filter als de intentie op voordelen gericht is:
+        where_clause = " OR ".join([f"a.{c} LIKE ?" for c in cols])
+        params = tuple([zoekpatroon] * (len(cols) * 2))
+
         extra_filter = ""
-        if "voordeel" in intent.get("template", "").lower() or "plus" in intent.get("template", "").lower():
-            extra_filter = " AND a.voordelen IS NOT NULL AND TRIM(a.voordelen) != '' "
+        if "voordeel" in tmpl or "plus" in tmpl:
+            extra_filter = " AND a.voordelen IS NOT NULL AND TRIM(a.voordelen)!=''"
 
         with get_db_connection() as conn:
-            cursor = conn.cursor()
             query = f"""
                 SELECT a.naam, a.prijs, a.beschrijving, a.contractduur, a.voordelen,
                        a.wat_is_het_abonnement, a.waarom_kiezen, a.hoe_werkt_het, a.past_dit_bij_jou,
@@ -199,62 +174,70 @@ def chatbot(vraag: str = Query(..., description="Vraag over abonnementen")):
                 WHERE {where_clause} {extra_filter}
                 ORDER BY score DESC
             """
-            cursor.execute(query, params)
+            cursor = conn.execute(query, params)
             results = cursor.fetchall()
 
-            if results:
-                template = intent.get("template", "{naam} ({prijs})")
-                # Als de vraag over voordelen gaat, maak het antwoord op basis van het voordelen-veld
-                if "voordeel" in template.lower() or "plus" in template.lower():
-                    antwoord_list = []
-                    for row in results:
-                        data = { key: row[key] for key in row.keys() }
-                        antwoord_list.append(template.format(**data))
-                    antwoord = " ".join(antwoord_list)
-                else:
-                    antwoord = "Abonnementen: " + ", ".join([f"{row['naam']} ({row['prijs']})" for row in results if row["score"] > 0])
-        
-        # Fallback-optie: specifieke prijs-query als de vraag prijs/duur bevat
+        antwoord = None
+        if results:
+            if "voordeel" in tmpl or "plus" in tmpl:
+                antwoord = " ".join(
+                    intent["template"].format(**row) for row in results
+                )
+            else:
+                opties = [f"{r['naam']} ({r['prijs']})" for r in results if r["score"] > 0]
+                if opties:
+                    antwoord = "Abonnementen: " + ", ".join(opties)
+
+        # Fallback voor prijs/duur
         if not antwoord and any(kw in vraag.lower() for kw in ["prijs", "duur"]):
-            query_price = """
-                SELECT a.naam, a.prijs, sc.naam AS subcategorie, c.naam AS categorie
-                FROM abonnement a
-                LEFT JOIN subcategorie sc ON a.subcategorie_id = sc.id
-                LEFT JOIN categorie c ON sc.categorie_id = c.id
-                WHERE a.naam LIKE ? OR sc.naam LIKE ? OR c.naam LIKE ?
-            """
-            cursor.execute(query_price, (zoekterm, zoekterm, zoekterm))
-            record = cursor.fetchone()
-            if record:
-                antwoord = (f"De prijs van {record['naam']} (categorie: {record['categorie']}, "
-                            f"subcategorie: {record['subcategorie']}) is {record['prijs']}.")
-        
-        # Fallback: Gebruik het ML-model indien beschikbaar
+            with get_db_connection() as conn:
+                cur = conn.execute(
+                    """
+                    SELECT a.naam, a.prijs, sc.naam AS subcategorie, c.naam AS categorie
+                    FROM abonnement a
+                    LEFT JOIN subcategorie sc ON a.subcategorie_id=sc.id
+                    LEFT JOIN categorie c ON sc.categorie_id=c.id
+                    WHERE a.naam LIKE ? OR sc.naam LIKE ? OR c.naam LIKE ?
+                    """,
+                    (zoekpatroon, zoekpatroon, zoekpatroon)
+                )
+                rec = cur.fetchone()
+            if rec:
+                antwoord = (
+                    f"De prijs van {rec['naam']} (categorie: {rec['categorie']}, "
+                    f"subcategorie: {rec['subcategorie']}) is {rec['prijs']}."
+                )
+
+        # Fallback ML-model
         if not antwoord and model_pipeline:
-            voorspelling = model_pipeline.predict([verwerkte_vraag])[0]
-            if voorspelling and str(voorspelling).strip().lower() != "undefined":
-                antwoord = voorspelling
-        
-        # Fallback: Handmatige antwoorden
+            pred = model_pipeline.predict([verwerkte])[0]
+            if pred and str(pred).strip().lower() != "undefined":
+                antwoord = pred
+
+        # Handmatige fallback
         if not antwoord:
-            for key, manueel in handmatige_antwoorden.items():
+            for key, man in handmatige_antwoorden.items():
                 if key in vraag.lower():
-                    antwoord = manueel
+                    antwoord = man
                     break
-        
-        # Fallback: Suggesties uit eerdere logs
+
+        # Laatste fallback: suggesties uit logs
         if not antwoord:
             with get_db_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute("SELECT DISTINCT vraag FROM chatbot_logs WHERE vraag LIKE ?", (zoekterm,))
-                suggesties = [row['vraag'] for row in cursor.fetchall()]
-                if suggesties:
-                    antwoord = f"Ik kon geen exact antwoord vinden, bedoelde je: {', '.join(suggesties[:3])}?"
-                else:
-                    antwoord = "Ik kon geen relevante informatie vinden. Kun je de vraag anders formuleren?"
-        
+                cur = conn.execute(
+                    "SELECT DISTINCT vraag FROM chatbot_logs WHERE vraag LIKE ?",
+                    (zoekpatroon,)
+                )
+                sugg = [r["vraag"] for r in cur.fetchall()]
+            if sugg:
+                antwoord = f"Ik kon geen exact antwoord vinden, bedoelde je: {', '.join(sugg[:3])}?"
+            else:
+                antwoord = "Ik kon geen relevante informatie vinden. Kun je de vraag anders formuleren?"
+
+        # Log en return
         log_chat(vraag, antwoord)
         return {"antwoord": antwoord}
+
     except Exception as e:
         print(f"⚠️ ERROR: {e}")
         return {"fout": str(e)}

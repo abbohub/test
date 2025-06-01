@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Abonnement Toevoegen - Beheerder</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 
   <style>
     /* Basistijl en container */
@@ -302,14 +302,6 @@
       <button type="submit">Toevoegen</button>
     </form>
   </div>
-  <script>
-  document.getElementById('logo').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (!file || !file.type.startsWith('image/')) return;
-    const preview = document.getElementById('logo-preview');
-    preview.src = URL.createObjectURL(file);
-    preview.style.display = 'block';
-  });
-</script>
+<script src="{{ url_for('static', filename='js/add_subscription.js') }}"></script> 
 </body>
 </html>

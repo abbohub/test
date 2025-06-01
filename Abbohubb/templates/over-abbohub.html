@@ -4,13 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Over AbboHub</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 </head>
 <body>
     <header>
         <h1>Over AbboHub</h1>
+                <nav class="main-nav" aria-label="Hoofdnavigatie">
+            <ul>
+                <li><a href="{{ url_for('index') }}">Home</a></li>
+                {% if current_user.is_authenticated %}
+                    <li><a href="{{ url_for('logout') }}">Uitloggen</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('login') }}">Inloggen</a></li>
+                {% endif %}
+                <li><a href="/contact">Contact</a></li>
+            </ul>
+        </nav>
     </header>
     <main>
+        
         <section>
             <h2>Wat is AbboHub?</h2>
             <p>AbboHub is een innovatief platform waarmee consumenten eenvoudig abonnementen kunnen vinden, vergelijken en beheren. Wij helpen je om de beste keuze te maken.</p>

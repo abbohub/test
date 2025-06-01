@@ -77,10 +77,11 @@ login_manager.login_view = "login"  # waar de user heen gaat als hij moet inlogg
 # ---------------------------------------
 
 # Databaseverbinding (zorg dat dit overeenkomt met jouw configuratie)
-DATABASE_PATH = os.path.join(
-    "C:\\Users\\timoo\\OneDrive\\Bureaublad\\Abbo-test\\abonnementen_website_test\\instance",
-    "abonnementen.db"
-)
+# Bepaal de basisdirectory van dit script
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Zet de database in <project_root>/instance/abonnementen.db
+DATABASE_PATH = os.path.join(BASE_DIR, "instance", "abonnementen.db")
 
 def get_db_connection():
     conn = sqlite3.connect(DATABASE_PATH)
@@ -467,41 +468,6 @@ def abonnement_reviews(slug):
         page_description=page_description
     )
 
-@app.route('/abonnement/<int:id>', methods=['GET', 'POST'])
-def abonnement_detail(id):
-    abonnement = Abonnement.query.get_or_404(id)
-
-    if request.method == 'POST':
-        score_str = request.form.get('score', '').strip()
-        comment = request.form.get('comment', '').strip()
-
-        # Validatie
-        if not score_str:
-            flash("Geef een score op!", "danger")
-            return redirect(url_for('abonnement_detail', id=id))
-
-        try:
-            score = float(score_str)
-        except ValueError:
-            flash("Score moet een numerieke waarde zijn!", "danger")
-            return redirect(url_for('abonnement_detail', id=id))
-
-        if score < 1 or score > 5:
-            flash("Score moet tussen 1 en 5 liggen!", "danger")
-            return redirect(url_for('abonnement_detail', id=id))
-
-        # Bewaar de review
-        new_review = Review(abonnement_id=id, score=score, comment=comment)
-        db.session.add(new_review)
-        db.session.commit()
-
-        flash("Bedankt voor je review!", "success")
-        return redirect(url_for('abonnement_detail', id=id))
-
-    return render_template('abonnement_detail.html', abonnement=abonnement)
-
-
-
 @app.route('/user_dashboard')
 @login_required
 def user_dashboard():
@@ -797,6 +763,22 @@ def edit_subscription(id):
         doelgroepen=doelgroepen,
         tags=tags
     )# Route om tags te beheren
+
+
+@app.route('/api/subcategorieen/<int:categorie_id>')
+def api_subcategorieen(categorie_id):
+    """
+    Retourneert een JSON-lijst van subcategorieën voor de gegeven categorie_id.
+    Wordt gebruikt door edit_subscription.js om dynamisch de <select> te vullen.
+    """
+    subcats = Subcategorie.query.filter_by(categorie_id=categorie_id).all()
+    result = [
+        {'id': sub.id, 'naam': sub.naam}
+        for sub in subcats
+    ]
+    return jsonify(result)
+
+
 @app.route('/tags', methods=['GET', 'POST'])
 @login_required
 def manage_tags():
@@ -919,40 +901,8 @@ def manage_subscriptions():
 
 
 # ---------------------------------------
-# Routes: Abonnementen (publiek)
+# Routes: Abonnementen vergelijken (publiek)
 # ---------------------------------------
-@app.route('/abonnementen', methods=['GET'])
-def abonnementen():
-    """Publieke lijst van abonnementen met zoek- en filtreermogelijkheid."""
-    zoekterm = request.args.get('zoekterm', '').strip()
-    geselecteerde_categorie = request.args.get('categorie', '')
-    sorteer = request.args.get('sorteer', False)
-
-    query = Abonnement.query
-
-    if zoekterm:
-        query = query.filter(Abonnement.naam.ilike(f'%{zoekterm}%'))
-
-    if geselecteerde_categorie:
-        query = query.filter(Abonnement.categorie_id == int(geselecteerde_categorie))
-
-    if sorteer:
-        # Sorteren op categorienaam
-        unieke_categorieen = Categorie.query.order_by(Categorie.naam.asc()).all()
-    else:
-        unieke_categorieen = Categorie.query.all()
-
-    result = query.all()
-
-    return render_template(
-        'abonnementen.html',
-        abonnementen=result,
-        unieke_categorieen=unieke_categorieen,
-        zoekterm=zoekterm,
-        geselecteerde_categorie=geselecteerde_categorie
-    )
-
-
 @app.route('/vergelijk')
 def vergelijk():
     # Lees slugs vanuit querystring, bijv. ?abonnementen=hello-fresh,green-chef
@@ -991,112 +941,6 @@ def clear_comparison():
 # ---------------------------------------
 # Routes: publiek toevoegen / bewerken
 # ---------------------------------------
-@app.route('/voeg_toe', methods=['GET', 'POST'])
-def voeg_toe():
-    """Publieke route om een abonnement toe te voegen (zonder admin-check)."""
-    if request.method == 'POST':
-        naam = request.form.get('naam', '').strip()
-        beschrijving = request.form.get('beschrijving', '').strip()
-        filter_optie = request.form.get('filter_optie', '').strip()
-        categorie_id = request.form.get('categorie_id', '').strip()
-        prijs = request.form.get('prijs', '').strip()
-        contractduur = request.form.get('contractduur', '').strip()
-        aanbiedingen = request.form.get('aanbiedingen', '').strip()
-        annuleringsvoorwaarden = request.form.get('annuleringsvoorwaarden', '').strip()
-        voordelen = request.form.get('voordelen', '').strip()
-        beoordelingen = request.form.get('beoordelingen', '').strip()
-        url = request.form.get('url', '').strip()
-
-        # Verplichte velden check
-        if not naam or not filter_optie or not categorie_id or not url:
-            return render_template(
-                'add_abonnement.html',
-                categorieen=Categorie.query.all(),
-                error="Vul alle verplichte velden in, inclusief een geldige URL!"
-            )
-
-        # URL-validatie
-        if not url.startswith(('http://', 'https://')):
-            return render_template(
-                'add_abonnement.html',
-                categorieen=Categorie.query.all(),
-                error="De URL moet beginnen met http:// of https://."
-            )
-
-        # Logo verwerken
-        logo = None
-        if 'logo' in request.files:
-            logo_file = request.files['logo']
-            if logo_file.filename != '' and allowed_file(logo_file.filename):
-                logo_filename = secure_filename(logo_file.filename)
-                # Voeg een UUID toe om bestandsnaam uniek te maken
-                unique_name = str(uuid.uuid4()) + "_" + logo_filename
-                logo_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_name)
-                logo_file.save(logo_path)
-                logo = unique_name
-            elif logo_file.filename != '':
-                return render_template(
-                    'add_abonnement.html',
-                    categorieen=Categorie.query.all(),
-                    error="Alleen PNG, JPG, JPEG en GIF bestanden zijn toegestaan!"
-                )
-
-        # Nieuw abonnement aanmaken
-        nieuw_abonnement = Abonnement(
-            naam=naam,
-            beschrijving=beschrijving,
-            filter_optie=filter_optie,
-            logo=logo,
-            categorie_id=categorie_id,
-            url=url,
-            prijs=prijs,
-            contractduur=contractduur,
-            aanbiedingen=aanbiedingen,
-            annuleringsvoorwaarden=annuleringsvoorwaarden,
-            voordelen=voordelen,
-            beoordelingen=beoordelingen
-        )
-        db.session.add(nieuw_abonnement)
-        db.session.commit()
-        return redirect(url_for('abonnementen'))
-
-    return render_template('add_abonnement.html', categorieen=Categorie.query.all())
-
-
-@app.route('/bewerk/<int:id>', methods=['GET', 'POST'])
-def bewerk(id):
-    """Publieke route om een abonnement te bewerken (geen admin-check)."""
-    abonnement = Abonnement.query.get_or_404(id)
-    if request.method == 'POST':
-        abonnement.naam = request.form['naam']
-        abonnement.beschrijving = request.form['beschrijving']
-        abonnement.filter_optie = request.form['filter_optie']
-        abonnement.categorie_id = request.form['categorie_id']
-        abonnement.url = request.form.get('url', '').strip()
-        abonnement.prijs = request.form.get('prijs', '').strip()
-        abonnement.contractduur = request.form.get('contractduur', '').strip()
-        abonnement.aanbiedingen = request.form.get('aanbiedingen', '').strip()
-        abonnement.annuleringsvoorwaarden = request.form.get('annuleringsvoorwaarden', '').strip()
-        abonnement.voordelen = request.form.get('voordelen', '').strip()
-        abonnement.beoordelingen = request.form.get('beoordelingen', '').strip()
-
-        if 'logo' in request.files:
-            logo_file = request.files['logo']
-            if logo_file.filename != '' and allowed_file(logo_file.filename):
-                logo_filename = secure_filename(logo_file.filename)
-                unique_name = str(uuid.uuid4()) + "_" + logo_filename
-                logo_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_name)
-                logo_file.save(logo_path)
-                abonnement.logo = unique_name
-
-
-
-        db.session.commit()
-        return redirect(url_for('abonnementen'))
-
-    categorieen = Categorie.query.all()
-    return render_template('edit_abonnement.html', abonnement=abonnement, categorieen=categorieen)
-
 
 @app.route('/verwijder/<int:id>', methods=['POST'])
 def verwijder(id):
