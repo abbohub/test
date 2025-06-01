@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+            <!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-NRGH8P6W');</script>
+    <!-- End Google Tag Manager -->  
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Vergelijk en bezoek abonnementen eenvoudig met AbboHub.">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    
+    <title>Vergelijk Abonnementen | AbboHub</title>
+    
+    <!-- Eigen stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+      <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/vergelijk.css') }}">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">    
+</head>
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NRGH8P6W"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+<body>
+  <!-- Header met de abonnementsnaam -->
+  <header>
+    <h1>Vergelijk Abonnementen</h1>
+    <p>Bekijk en vergelijk de geselecteerde abonnementen.</p>
+    <button id="clear-comparison" class="btn">Wis vergelijking</button>
+  </header>
+
+<!-- FLASH-BERICHTEN (optioneel, als je in Flask flash() gebruikt) -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-container">
+      {% for category, message in messages %}
+        <div class="flash-message flash-{{ category }}">
+          {{ message }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+<!-- Terug naar overzicht link -->
+    <a href="{{ url_for('index') }}" class="back-link">&larr; home</a>
+  <style>.back-link {
+  display: inline-block;
+  margin: 1rem 0;
+  font-size: 1rem;
+  color: #8968cd;
+  text-decoration: none;
+  font-weight: bold;
+  transition: color 0.2s;
+}
+.back-link:hover {
+  color: #4CAF50;
+  text-decoration: underline;
+}
+</style>
+<!-- Hoofdcontainer -->
+<div class="container">
+    <!-- Getransponeerde vergelijk-tabel -->
+    <table class="vergelijk-tabel" aria-label="Vergelijking van geselecteerde abonnementen">
+        <caption>Geselecteerde abonnementen vergelijken</caption>
+        <thead>
+            <tr>
+                <th scope="col">Provider</th>
+                {% for abonnement in abonnementen %}
+                <th scope="col">{{ abonnement.naam }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th scope="row">Prijs</th>
+                {% for abonnement in abonnementen %}
+                <td>{{ abonnement.prijs }}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <th scope="row">Contractduur</th>
+                {% for abonnement in abonnementen %}
+                <td>{{ abonnement.contractduur }}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <th scope="row">Aanbiedingen</th>
+                {% for abonnement in abonnementen %}
+                <td>{{ abonnement.aanbiedingen }}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <th scope="row">Voordelen</th>
+                {% for abonnement in abonnementen %}
+                <td>{{ abonnement.voordelen }}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <th scope="row">Annuleringsvoorwaarden</th>
+                {% for abonnement in abonnementen %}
+                <td>{{ abonnement.annuleringsvoorwaarden }}</td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <th scope="row">Doelgroepen</th>
+                {% for abonnement in abonnementen %}
+                <td>
+                    {% for doelgroep in abonnement.doelgroepen %}
+                        <span class="badge">{{ doelgroep.naam }}</span>
+                    {% endfor %}
+                </td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <th scope="row">Tags</th>
+                {% for abonnement in abonnementen %}
+                <td>
+                    {% for tag in abonnement.tags %}
+                        <span class="badge">{{ tag.naam }}</span>
+                    {% endfor %}
+                </td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <th scope="row">Gem. Beoordeling</th>
+                {% for abonnement in abonnementen %}
+                <td>
+                  {% set score = abonnement.get_average_score() %}
+                  {% if score is not none %}
+                    {% set volle = score | int %}
+                    {% set halve = (score - volle) >= 0.25 and (score - volle) < 0.75 %}
+                    {% set leeg = 5 - volle - (1 if halve else 0) %}
+              
+                    <span class="ster-rating" aria-label="Beoordeling: {{ score }} van 5">
+                      {% for _ in range(volle) %}<span class="vol-ster">★</span>{% endfor %}
+                      {% if halve %}<span class="halve-ster">★</span>{% endif %}
+                      {% for _ in range(leeg) %}<span class="leeg-ster">☆</span>{% endfor %}
+                    </span>
+                    <span class="score-tekst">{{ score | round(1) }} ({{ abonnement.reviews|length }} beoordelingen)</span>
+                  {% else %}
+                    <em>Geen beoordelingen</em>
+                  {% endif %}
+                </td>
+                {% endfor %}
+              </tr>              
+            <tr>
+                <th scope="row">Reviews</th>
+                {% for abonnement in abonnementen %}
+                <td>
+                    <a href="{{ url_for('abonnement_reviews', slug=abonnement.slug) }}">
+                        Bekijk of schrijf een review
+                    </a>
+                </td>
+                {% endfor %}
+            </tr>
+            <tr>
+                <th scope="row">Bezoek website</th>
+                {% for abonnement in abonnementen %}
+                <td>
+                    <a href="{{ abonnement.url }}"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       aria-label="Bezoek de website van {{ abonnement.naam }}">
+                        Bezoek website
+                    </a>
+                </td>
+                {% endfor %}
+            </tr>
+        </tbody>
+    </table>
+</div>
+<!-- Footer -->
+  <footer>
+  <p>&copy; 2025 AbboHub. Alle rechten voorbehouden.</p>
+  <nav class="footer-nav">
+    <ul>
+      <li><a href="{{ url_for('privacy_cookieverklaring') }}">Privacy en Cookieverklaring</a></li>
+      <li><a href="{{ url_for('over_abbohub') }}">Over AbboHub</a></li>
+      <li><a href="#" onclick="openSettings()">Cookievoorkeuren aanpassen</a></li>
+    </ul>
+  </nav>
+</footer>
+  <!-- Cookiebanner insluiten -->
+  {% include 'cookie-banner.html' %}
+  <script src="{{ url_for('static', filename='js/vergelijk.js') }}"></script> 
+</body>
+</html>

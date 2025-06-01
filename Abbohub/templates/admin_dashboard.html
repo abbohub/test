@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beheerdersdashboard - AbboHub</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+
+    <!-- Eventueel extra inline styles (beter in .css bestand) -->
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        nav {
+            background-color: #8968cd;
+            padding: 10px 0;
+        }
+        nav ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+        }
+        nav li {
+            margin: 0 1rem;
+        }
+        nav a {
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            margin-top: 0;
+        }
+        .btn {
+            display: inline-block;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            background-color: #8968cd;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #fff;
+        }
+        caption {
+            caption-side: top;
+            text-align: left;
+            padding: 8px;
+            font-weight: bold;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            vertical-align: middle;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        a.bewerken-link {
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        a.bewerken-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Flash-meldingen */
+        .flash-container {
+            margin: 10px 0;
+        }
+        .flash-message {
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+        .flash-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .flash-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Drag-handle */
+        .drag-handle {
+            cursor: grab;
+            border: 1px solid #ddd;
+            background: #fff;
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+        }
+        /* Kleine marge tussen categorie-containers */
+        .category-section {
+            margin-bottom: 30px;
+        }
+        .sortableAbonnementen {
+  display: flex;
+  flex-wrap: wrap;       /* Laat items doorlopen op de volgende regel als ze niet meer passen */
+  gap: 16px;             /* Ruimte tussen abonnementen */
+  margin-bottom: 20px;   /* Eventuele extra marge onder de rij */
+}
+
+.abonnement {
+  border: 1px solid #ddd;
+  background: #fff;
+  padding: 10px;
+  border-radius: 4px;
+  cursor: grab;          /* Visuele hint dat je kunt slepen */
+  width: 200px;          /* Vaste breedte (pas aan naar wens) */
+  box-sizing: border-box;
+}
+/* Container voor de twee kolommen */
+.dashboard-taken .tasks-columns {
+  display: flex;
+  justify-content: space-between; /* Verspreidt links en rechts */
+  gap: 32px; /* Optioneel: ruimte tussen kolommen */
+  flex-wrap: wrap; /* Zorg dat het netjes breekt op kleinere schermen */
+}
+
+/* Algemene styling voor elke kolom */
+.dashboard-taken .column {
+  flex: 1 1 45%; /* Beide kolommen krijgen ongeveer 45% van de breedte */
+  min-width: 280px; /* Voorkomt te smalle kolommen op kleine schermen */
+}
+
+/* Specifiek: rechterkolom rechts uitlijnen */
+.dashboard-taken .column-right {
+  text-align: left;
+}
+
+/* Optioneel: zet de checkboxes iets naar rechts zodat ze mee 'schuiven' */
+.dashboard-taken .column-right ul li {
+  display: block;
+  padding-right: 8px; /* Kleine ruimte tussen checkbox en rand */
+}
+
+/* (De linker kolom blijft standaard links uitgelijnd) */
+/* --- Algemene styling voor de abonnementstegels --- */
+.abonnement {
+  position: relative;            /* nodig om het menu gepositioneerd weer te geven */
+  padding: 12px 16px 16px 16px;  /* wat ruimte rondom de inhoud */
+  border: 1px solid #ccc;        /* dun randje standaard */
+  border-radius: 6px;            /* afgeronde hoeken */
+  margin-bottom: 12px;           /* ruimte tussen tegels */
+  background-color: white;       /* standaard: wit */
+  transition: background-color 0.2s ease;
+}
+
+/* --- Styling per kleurklasse (witte tegel is default) --- */
+.abonnement.color-white {
+  background-color: #ffffff;
+}
+.abonnement.color-green {
+  background-color: #d4edda;  /* lichtgroen */
+}
+.abonnement.color-orange {
+  background-color: #fff3cd;  /* lichtoranje/gele tint */
+}
+.abonnement.color-red {
+  background-color: #f8d7da;  /* lichtrood */
+}
+
+/* --- Verfbutton (kleur‐toggle) rechtsboven in de tegel --- */
+.color-picker-toggle {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+
+/* --- Verberg het menu standaard --- */
+.color-picker-menu {
+  position: absolute;
+  top: 32px;    /* net onder de 🎨-knop */
+  right: 8px;
+  display: none;  /* wordt zichtbaar als je togglet */
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  z-index: 100;    /* zorg dat het boven de andere dingen zweeft */
+}
+
+/* --- De vier kleur‐opties --- */
+.color-picker-menu .color-option {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  margin: 4px;
+  border: 1px solid #aaa;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+/* Achtergrondkleuren voor elke optie */
+.color-picker-menu .color-option[data-color="white"] {
+  background-color: #ffffff;
+}
+.color-picker-menu .color-option[data-color="green"] {
+  background-color: #28a745;
+}
+.color-picker-menu .color-option[data-color="orange"] {
+  background-color: #fd7e14;
+}
+.color-picker-menu .color-option[data-color="red"] {
+  background-color: #dc3545;
+}
+
+/* Hover‐effect op kleur‐vinkjes */
+.color-picker-menu .color-option:hover {
+  transform: scale(1.2);
+}
+
+/* Indien het menu actief is (toegevoegd via JS), toon dan */
+.color-picker-menu.active {
+  display: block;
+}
+
+    </style>
+</head>
+<body>
+
+    <!-- Navigatie (optioneel) -->
+    <nav aria-label="Hoofdnavigatie">
+        <ul>
+            <li><a href="{{ url_for('index') }}">Home</a></li>
+            <li><a href="{{ url_for('vergelijk') }}">Vergelijk</a></li>
+            {% if current_user.is_authenticated %}
+                <li><a href="{{ url_for('logout') }}">Uitloggen</a></li>
+            {% else %}
+                <li><a href="{{ url_for('login') }}">Inloggen</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <div class="dashboard-container">
+        <h1>Beheerdersdashboard</h1>
+
+        <!-- FLASH-BERICHTEN (optioneel) -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="flash-container">
+              {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}">
+                  {{ message }}
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <!-- Knoppen voor acties -->
+        <p>
+            <a href="{{ url_for('add_subscription') }}" class="btn">Abonnement Toevoegen</a>
+            <a href="{{ url_for('manage_subscriptions') }}" class="btn">Beheer Abonnementen</a>
+            <a href="{{ url_for('categorieen') }}" class="btn">Beheer categorieën</a>
+            <a href="{{ url_for('manage_tags') }}"class="btn">Beheer Tags</a>
+            <a href="{{ url_for('manage_doelgroepen') }}"class="btn">Beheer Doelgroepen</a>
+            <a href="{{ url_for('view_logs') }}" class="btn">Bekijk Logs</a>
+            <a href="{{ url_for('berichten') }}" class="btn">Bekijk berichten</a>
+            <a href="{{ url_for('admin_train_chatbot') }}" class="btn">Chatbot trainen</a>
+        </p>
+        
+<section class="dashboard-taken">
+  <h2>📋 Terugkerende en Lange Termijn Taken</h2>
+
+  <div class="tasks-columns">
+    <!-- Linker kolom: Dagelijkse en Wekelijkse Taken -->
+    <div class="column column-left">
+      <h3>Dagelijkse Taken</h3>
+      <ul>
+        <li><label><input type="checkbox"> Website controleren op fouten en laadtijd</label></li>
+        <li><label><input type="checkbox"> Nieuwe berichten beantwoorden</label></li>
+        <li><label><input type="checkbox"> Reviews beoordelen of modereren</label></li>
+        <li><label><input type="checkbox"> Google Analytics checken op verkeer en gedrag</label></li>
+        <li><label><input type="checkbox"> Logs controleren op fouten of mislukte aanvragen</label></li>
+      </ul>
+
+      <h3>Wekelijkse Taken</h3>
+      <ul>
+        <li><label><input type="checkbox"> Nieuwe abonnementen toevoegen of prijzen bijwerken</label></li>
+        <li><label><input type="checkbox"> Chatbot intents trainen of uitbreiden</label></li>
+        <li><label><input type="checkbox"> Reviews of gebruikersdata controleren</label></li>
+        <li><label><input type="checkbox"> Nieuwe content of blog schrijven</label></li>
+        <li><label><input type="checkbox"> Nieuwsbrief voorbereiden (indien actief)</label></li>
+      </ul>
+    </div>
+
+    <!-- Rechter kolom: Maandelijkse en Langetermijn Taken -->
+    <div class="column column-right">
+      <h3>Maandelijkse Taken</h3>
+      <ul>
+        <li><label><input type="checkbox"> SEO-audit en optimalisatie uitvoeren</label></li>
+        <li><label><input type="checkbox"> Google Analytics rapport analyseren</label></li>
+        <li><label><input type="checkbox"> Back-up maken van database en bestanden</label></li>
+        <li><label><input type="checkbox"> Packages en dependencies updaten</label></li>
+        <li><label><input type="checkbox"> AdSense / Affiliate opbrengst analyseren</label></li>
+        <li><label><input type="checkbox"> Gebruikersonderzoek / feedback verzamelen</label></li>
+      </ul>
+
+      <h3>Lange Termijn / Projectdoelen</h3>
+      <ul>
+        <li><label><input type="checkbox"> Webshop-functionaliteit toevoegen</label></li>
+        <li><label><input type="checkbox"> Betalingssysteem (Stripe/Mollie) integreren</label></li>
+        <li><label><input type="checkbox"> Partnerdashboard opzetten voor aanbieders</label></li>
+        <li><label><input type="checkbox"> Premium plaatsing en promotie van abonnementen ontwikkelen</label></li>
+        <li><label><input type="checkbox"> Blogstrategie + social media automatiseren</label></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+        <h2>Alle Abonnementen per Categorie</h2>
+
+{% for categorie in categorieen %}
+  <div class="category-section">
+    <h3>{{ categorie.naam }}</h3>
+
+    <div class="sortableAbonnementen" data-categorie-id="{{ categorie.id }}">
+      {% for abonnement in abonnementen %}
+        {% if abonnement.subcategorie and abonnement.subcategorie.categorie.id == categorie.id %}
+          <div class="abonnement drag-handle" data-id="{{ abonnement.id }}">
+            <!-- Naam / info van het abonnement -->
+            <strong>{{ abonnement.naam }}</strong><br>
+            Subcategorie: {{ abonnement.subcategorie.naam }}
+            
+            <!-- Knopje om kleurenkeuze te openen -->
+            <button class="color-picker-toggle" aria-label="Kleur kiezen">🎨</button>
+            
+            <!-- Verborgen kleurkeuze-menu (wordt getoond als je op 🎨 klikt) -->
+            <div class="color-picker-menu" aria-hidden="true">
+              <span class="color-option" data-color="white"  title="Wit"></span>
+              <span class="color-option" data-color="green"  title="Groen"></span>
+              <span class="color-option" data-color="orange" title="Oranje"></span>
+              <span class="color-option" data-color="red"    title="Rood"></span>
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+{% endfor %}
+
+
+    <!-- Sortable.js functionaliteit -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Pak alle categoriecontainers
+            const categorieContainers = document.querySelectorAll('.sortableAbonnementen');
+
+            categorieContainers.forEach(container => {
+                new Sortable(container, {
+                    // Elke container heeft een eigen groep met 'put: false'
+                    // zodat je niet tussen containers kunt verslepen
+                    group: {
+                        name: 'cat-' + container.dataset.categorieId,
+                        put: false
+                    },
+                    animation: 150,
+                    onEnd: function (evt) {
+                        // Bepaal in welke container we een wijziging hebben
+                        const catId = container.dataset.categorieId;
+
+                        // Haal de volgorde van abonnement IDs op binnen deze container
+                        const order = [];
+                        container.querySelectorAll('.abonnement').forEach(item => {
+                            order.push(item.dataset.id);
+                        });
+
+                        // Stuur de nieuwe volgorde naar de server
+                        fetch('/update_abonnementen_volgorde', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({
+                                categorieId: catId,
+                                order: order
+                            })
+                        })
+                        .then(response => {
+                            if (response.ok) {
+                                console.log('Volgorde succesvol opgeslagen voor categorie ' + catId);
+                            } else {
+                                console.error('Fout bij het opslaan van de volgorde');
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+<script>
+// Wacht tot de pagina volledig is geladen
+document.addEventListener('DOMContentLoaded', function() {
+  // 1) Alle abonnement‐tegels selecteren
+  const tegels = document.querySelectorAll('.abonnement');
+
+  tegels.forEach(function(tegel) {
+    const abonnementId = tegel.getAttribute('data-id');
+    const toggleKnop   = tegel.querySelector('.color-picker-toggle');
+    const menu         = tegel.querySelector('.color-picker-menu');
+
+    // --- Stap A: Opstartcheck: was er al een opgeslagen kleur voor deze tegel? ---
+    const opgeslagenKleur = localStorage.getItem('abonnement-color-' + abonnementId);
+    if (opgeslagenKleur) {
+      // Verwijder eerst alle bestaande kleurklassen (white, green, orange, red)
+      tegel.classList.remove('color-white', 'color-green', 'color-orange', 'color-red');
+      // Voeg de opgeslagen klasse toe
+      tegel.classList.add('color-' + opgeslagenKleur);
+    } else {
+      // Als er niets in localStorage staat, zorg dat hij in ieder geval 'white' heeft (optie)
+      tegel.classList.add('color-white');
+    }
+
+    // --- Stap B: Klik op de 🎨-knop: toggle het menu ---
+    toggleKnop.addEventListener('click', function(e) {
+      e.stopPropagation(); // voorkom dat klik doordrukt naar document
+      // Sluit eventueel alle andere open menu's
+      document.querySelectorAll('.color-picker-menu.active').forEach(function(otherMenu) {
+        if (otherMenu !== menu) {
+          otherMenu.classList.remove('active');
+        }
+      });
+      // Toon/verberg dit menu
+      menu.classList.toggle('active');
+    });
+
+    // --- Stap C: Klik buiten menu: sluit menu ---
+    document.addEventListener('click', function() {
+      menu.classList.remove('active');
+    });
+
+    // --- Stap D: Wanneer er op één van de kleur‐span’s geklikt wordt ---
+    menu.querySelectorAll('.color-option').forEach(function(option) {
+      option.addEventListener('click', function(e) {
+        e.stopPropagation(); // zodat document.click niet meteen sluit zonder afhandeling
+
+        const gekozenKleur = this.getAttribute('data-color'); // 'white', 'green', ...
+        // 1) Update de tegel‐class
+        tegel.classList.remove('color-white', 'color-green', 'color-orange', 'color-red');
+        tegel.classList.add('color-' + gekozenKleur);
+
+        // 2) Sla de keuze op in localStorage (key = 'abonnement-color-<id>')
+        localStorage.setItem('abonnement-color-' + abonnementId, gekozenKleur);
+
+        // 3) Sluit het menu
+        menu.classList.remove('active');
+      });
+    });
+  });
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,84 @@
+/* ========== 4. SEARCH & FILTER ========== */
+.zoek-filter-container {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr; /* Links, midden, rechts */
+  align-items: center;
+  gap: 1rem;
+  margin-top: 15px;
+  padding: 20px;
+  background: rgba(246, 243, 243, 0.2);
+  border-radius: 8px;
+}
+
+/* Linkeruitlijning voor H1 */
+.zoek-filter-container h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: #ebeeeb; /* Primaire kleur */
+  text-align: left;
+  justify-self: start; /* Links uitlijnen */
+}
+
+/* Centraal uitgelijnde zoekbalk */
+.zoek-filter-form {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  justify-self: center; /* Centraal uitlijnen */
+}
+
+/* Zoekvelden en dropdowns */
+.zoek-filter-form input[type="text"],
+.zoek-filter-form select {
+  padding: 0.7rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  min-width: 200px;
+  font-size: 1rem;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.zoek-filter-form input[type="text"]:focus,
+.zoek-filter-form select:focus {
+  border-color: #f6ae86; /* Aangepast: focus kleur naar #f6ae86 */
+  box-shadow: 0 0 5px rgba(246,174,134,0.5);
+  outline: none;
+}
+
+/* Zoekknop */
+.zoek-filter-form button.btn {
+  background-color: #f4cd00; /* Aangepast: knop kleur naar #f4cd00 */
+  color: #fff;
+  padding: 0.7rem 1.2rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1rem;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+/* Algemene styling voor het zoek/filter gedeelte */
+.zoek-filter-container {
+  padding: 20px;
+}
+
+/* Desktop: Zoekbalk en knoppen naast elkaar */
+.search-row { 
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-direction: row;
+}
+
+.zoek-filter-form {
+  flex: 1;
+}
+
+.zoek-filter-form input[type="text"] {
+  width: 90%;
+  padding: 8px;
+  box-sizing: border-box;
+}
