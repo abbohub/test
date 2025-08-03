@@ -1,0 +1,81 @@
+/* STERRENBEOORDELING */
+.sterren {
+  font-size: 1.2em;
+  color: gold;
+}
+.ster-rating .vol-ster {
+  color: gold;
+  font-size: 1.2rem;
+}
+
+.ster-rating .halve-ster {
+  background: linear-gradient(90deg, gold 50%, lightgray 50%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  font-size: 1.2rem;
+}
+
+.ster-rating .leeg-ster {
+  color: lightgray;
+  font-size: 1.2rem;
+}
+
+.score-tekst {
+  margin-left: 8px;
+  font-size: 0.95rem;
+  color: #555;
+}
+.star-rating {
+  display: inline-block;
+  font-size: 2rem;
+  position: relative;
+  unicode-bidi: bidi-override;
+  direction: ltr;
+  cursor: pointer;
+}
+
+.star {
+  position: relative;
+  display: inline-block;
+  width: 2rem;
+  height: 2rem;
+}
+
+.star .half {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  background: none;
+  z-index: 1;
+}
+
+.star .left {
+  left: 0;
+}
+
+.star .right {
+  right: 0;
+}
+
+.star::before {
+  content: "☆";
+  color: lightgray;
+  position: absolute;
+  left: 0;
+  z-index: 0;
+}
+
+.star.filled::before {
+  content: "★";
+  color: gold;
+}
+
+.star.half-filled::before {
+  content: "★";
+  background: linear-gradient(to right, gold 50%, lightgray 50%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
