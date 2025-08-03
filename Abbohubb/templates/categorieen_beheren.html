@@ -257,7 +257,7 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <input type="hidden" name="subcategorie_naam" value="{{ subcategorie.naam }}">
             <label for="subbeschrijving_{{ subcategorie.id }}">Beschrijving</label>
-            <textarea id="subbeschrijving_{{ subcategorie.id }}" name="subcategorie_beschrijving" placeholder="Beschrijving subcategorie...">{{ subcategorie.beschrijving or '' }}</textarea>
+            <textarea id="subbeschrijving_{{ subcategorie.id }}" name="subcategorie_beschrijving" class="larger-textarea" placeholder="Beschrijving subcategorie...">{{ subcategorie.beschrijving or '' }}</textarea>
             <button type="submit" class="button-primary">Beschrijving bijwerken</button>
           </form>
 
