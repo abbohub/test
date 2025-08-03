@@ -12,7 +12,17 @@
 
   <!-- Dynamische SEO -->
   <title>{{ page_title or abonnement.naam ~ ' - Abonnementsinformatie | AbboHub' }}</title>
-  <meta name="description" content="{{ page_description or 'Bekijk alles over het ' ~ abonnement.naam ~ ' abonnement, inclusief voordelen, prijzen en gebruikerservaringen.' }}">
+  <meta name="description"
+      content="{{ page_description
+         or (abonnement.get_average_score() is defined
+             and (abonnement.get_average_score() ~ ' uit 5 sterren van '
+                  ~ abonnement.reviews|length
+                  ~ ' gebruikers voor '
+                  ~ abonnement.naam
+                  ~ '. Ontdek prijzen, voordelen en echte ervaringen op AbboHub!')
+             or ('Lees alles over het '
+                 ~ abonnement.naam
+                 ~ '-abonnement: prijzen, voordelen en gebruikerservaringen.')) }}">
 
   <!-- Open Graph -->
   <meta property="og:title" content="{{ page_title or abonnement.naam }}">
@@ -43,6 +53,7 @@
   <header>
     <h1>{{ abonnement.naam }}</h1>
     <p>Ontdek alles wat dit abonnement te bieden heeft</p>
+    
   </header>
   </div>
     <!-- Terug naar overzicht link -->
@@ -123,37 +134,58 @@
 
   <!-- Structured data voor SEO -->
   {% if gemiddelde_score is not none and abonnement.reviews %}
-    <script type="application/ld+json">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": ["Product", "SubscriptionService"],
+  "name":           "{{ abonnement.naam | e }}",
+  "description":    "{{ abonnement.wat_is_het_abonnement | e }}",
+  "image":          "{{ url_for('static', filename='logo.png', _external=True) }}",
+  "url":            "{{ request.url }}",
+  "offers": {
+    "@type":         "Offer",
+    "priceCurrency": "EUR",
+    "price":         "{{ abonnement.prijs_vanaf }}",
+    "availability":  "https://schema.org/InStock",
+    "url":           "{{ abonnement.url }}",
+    "priceValidUntil":"2025-12-31"        // optioneel
+  },
+  "aggregateRating": {
+    "@type":       "AggregateRating",
+    "ratingValue": "{{ gemiddelde_score }}",
+    "bestRating":  "5",
+    "worstRating": "1",
+    "reviewCount": "{{ abonnement.reviews|length }}"
+  },
+  "review": [
+    {% for review in abonnement.reviews %}
     {
-      "@context": "https://schema.org",
-      "@type": "Product",
-      "name": "{{ abonnement.naam | e }}",
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "{{ gemiddelde_score }}",
-        "reviewCount": "{{ abonnement.reviews | length }}"
-      },
-      "review": [
-        {% for review in abonnement.reviews %}
-        {
-          "@type": "Review",
-          "author": {
-            "@type": "Person",
-            "name": "{{ review.naam | e }}"
-          },
-          "datePublished": "{{ review.created_at.strftime('%Y-%m-%d') }}",
-          "reviewBody": "{{ review.comment | e }}",
-          "reviewRating": {
-            "@type": "Rating",
-            "ratingValue": "{{ review.score }}",
-            "bestRating": "5",
-            "worstRating": "1"
-          }
-        }{% if not loop.last %},{% endif %}
-        {% endfor %}
-      ]
+      "@type":        "Review",
+      "author":       { "@type": "Person", "name": "{{ review.naam | e }}" },
+      "datePublished":"{{ review.created_at.strftime('%Y-%m-%d') }}",
+      "reviewBody":   "{{ review.comment | e }}",
+      "reviewRating": {
+        "@type":        "Rating",
+        "ratingValue":  "{{ review.score }}",
+        "bestRating":   "5",
+        "worstRating":  "1"
+      }
+    }{{ "," if not loop.last else "" }}
+    {% endfor %}
+  ],
+  "requiresSubscription": true,            // maakt expliciet dat het abonnement betreft
+  "billingDuration":      "P1M",           // ISO 8601-duur (hier: 1 maand)
+  "publisher": {
+    "@type":        "Organization",
+    "name":         "AbboHub",
+    "logo": {
+      "@type":     "ImageObject",
+      "url":       "{{ url_for('static', filename='logo.png', _external=True) }}"
     }
-    </script>
+  }
+}
+</script>
+
   {% endif %}
 
   <!-- Formulier om een review toe te voegen -->

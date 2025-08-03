@@ -36,15 +36,38 @@
   <script src="{{ url_for('static', filename='js/vendor.js') }}"></script>
 
   <!-- Structured data (organisatie) -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    "name": "AbboHub",
-    "url": "https://abbohub.nl",
-    "logo": "https://abbohub.nl/static/logo.png"
-  }
-  </script>
+<!-- Structured data (organisatie) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "AbboHub",
+  "url": "https://abbohub.nl",
+  "logo": "https://abbohub.nl/static/logo.png"
+}
+</script>
+
+{% if actieve_subcategorie or actieve_categorie %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": "Abonnementen in categorie {{ actieve_subcategorie.naam if actieve_subcategorie else actieve_categorie.naam }}",
+  "description": "{{ actieve_subcategorie.beschrijving if actieve_subcategorie else actieve_categorie.beschrijving | striptags | replace('\n', ' ') }}",
+  "url": "{{ request.url }}",
+  "itemListElement": [
+    {% for i, abbo in enumerate(abonnementen) %}
+    {
+      "@type": "ListItem",
+      "position": {{ i + 1 }},
+      "name": "{{ abbo.naam }}",
+      "url": "{{ url_for('abonnement_reviews', slug=abbo.slug, _external=True) }}"
+    }{{ "," if not loop.last else "" }}
+    {% endfor %}
+  ]
+}
+</script>
+{% endif %}
 </head>
 
 <body>
@@ -52,85 +75,124 @@
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NRGH8P6W"
   height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <!-- End Google Tag Manager (noscript) -->
-    <!-- HEADER -->
-    <header>
-        <nav class="main-nav" aria-label="Hoofdnavigatie">
-            <ul>
-                <li><a href="{{ url_for('index') }}">Home</a></li>
-                {% if current_user.is_authenticated %}
-                    <li><a href="{{ url_for('logout') }}">Uitloggen</a></li>
-                {% else %}
-                    <li><a href="{{ url_for('login') }}">Inloggen</a></li>
-                {% endif %}
-                <li><a href="/contact">Contact</a></li>
-            </ul>
-        </nav>
+{% if geselecteerde_subcategorie %}
+  {% set actieve_subcategorie = unieke_subcategorieën | selectattr("id", "equalto", geselecteerde_subcategorie | int) | list | first %}
+{% endif %}
+{% if geselecteerde_categorie %}
+  {% set actieve_categorie = unieke_categorieën | selectattr("id", "equalto", geselecteerde_categorie | int) | list | first %}
+{% endif %}
 
-        <div class="zoek-filter-container">
-            <h1>AbboHub</h1>
-            <div class="search-row">
-              <!-- Zoekformulier -->
-              <form method="GET" action="{{ url_for('index') }}" class="zoek-filter-form">
-                <input 
-                  type="text" 
-                  name="zoekterm" 
-                  placeholder="Zoek abonnementen..." 
-                  value="{{ zoekterm }}" 
-                  aria-label="Zoek abonnementen"
-                >
-              </form>
-<!-- Container met knoppen: Categorieën dropdown en Vergelijk-knop -->
-<div class="button-container">
-  <div class="dropdown-container">
-    <button type="button" class="dropdown-button">Categorieën</button>
-    <div class="dropdown-menu">
-      <!-- Optie: Alle categorieën -->
-      <div class="dropdown-item">
-        <a href="{{ url_for('index') }}">Alle categorieën</a>
-      </div>
+<!-- HEADER -->
+<header>
+  <nav class="main-nav" aria-label="Hoofdnavigatie">
+    <ul>
+      <li><a href="{{ url_for('index') }}">Home</a></li>
+      {% if current_user.is_authenticated %}
+        <li><a href="{{ url_for('logout') }}">Uitloggen</a></li>
+      {% else %}
+        <li><a href="{{ url_for('login') }}">Inloggen</a></li>
+      {% endif %}
+      <li><a href="/contact">Contact</a></li>
+    </ul>
+  </nav>
 
-      <!-- Categorieën en subcategorieën -->
-      {% for cat in unieke_categorieën %}
-        <div class="dropdown-item">
-          <!-- Hoofdcategorie als knop die niet navigeert maar submenu opent -->
-          <span class="category-button">{{ cat.naam }}</span>
+  <div class="zoek-filter-container">
+    <h1>AbboHub abonnementen</h1>
+    <div class="search-row">
+      <form method="GET" action="{{ url_for('index') }}" class="zoek-filter-form">
+        <input 
+          type="text" 
+          name="zoekterm" 
+          placeholder="Zoek abonnementen..." 
+          value="{{ zoekterm }}" 
+          aria-label="Zoek abonnementen"
+        >
+      </form>
 
-          <!-- Submenu -->
-          <div class="sub-dropdown">
-            <!-- Link naar alle abonnementen in deze hoofdcategorie -->
-            <a href="{{ url_for('abonnement_overzicht', categorie_slug=cat.naam|slugify) }}">{{ cat.naam }}</a>
-
-            <!-- Subcategorieën -->
-            {% for subcat in unieke_subcategorieën if subcat.categorie_id == cat.id %}
-            <a href="{{ url_for('abonnement_overzicht', categorie_slug=cat.naam|slugify, subcategorie_slug=subcat.naam|slugify) }}">
-
-                {{ subcat.naam }}
-              </a>
+      <div class="button-container">
+        <div class="dropdown-container">
+          <button type="button" class="dropdown-button">Categorieën</button>
+          <div class="dropdown-menu">
+            <div class="dropdown-item">
+              <a href="{{ url_for('index') }}">Alle categorieën</a>
+            </div>
+            {% for cat in unieke_categorieën %}
+              <div class="dropdown-item">
+                <span class="category-button">{{ cat.naam }}</span>
+                <div class="sub-dropdown">
+                  <a href="{{ url_for('abonnement_overzicht', categorie_slug=cat.naam|slugify) }}">{{ cat.naam }}</a>
+                  {% for subcat in unieke_subcategorieën if subcat.categorie_id == cat.id %}
+                  <a href="{{ url_for('abonnement_overzicht', categorie_slug=cat.naam|slugify, subcategorie_slug=subcat.naam|slugify) }}">
+                    {{ subcat.naam }}
+                  </a>
+                  {% endfor %}
+                </div>
+              </div>
             {% endfor %}
           </div>
         </div>
-      {% endfor %}
+
+        <a href="{{ url_for('vergelijk') }}" class="btn btn-compare" id="vergelijk-knop">
+          Vergelijk
+        </a>
+
+        {% if actieve_subcategorie %}
+          <a href="javascript:void(0)" onclick="toggleSidebar()" class="btn btn-compare">Categorie Info</a>
+        {% elif actieve_categorie %}
+          <a href="javascript:void(0)" onclick="toggleSidebar()" class="btn btn-compare">Categorie Info</a>
+        {% endif %}
+      </div>
     </div>
   </div>
+</header>
 
-  <!-- Vergelijk-knop -->
-  <a href="{{ url_for('vergelijk') }}" class="btn btn-compare" id="vergelijk-knop">
-    Vergelijk
-  </a>
-</div>      
-    </header>
-    <!-- HOOFDCONTENT: Abonnementen per categorie -->
+{% if actieve_subcategorie or actieve_categorie %}
+<!-- Mobiele overlay -->
+<div id="categorieOverlayMobile" class="categorie-overlay-mobile">
+  <div class="overlay-content">
+    <button onclick="toggleMobileOverlay()" class="overlay-close-btn">×</button>
+    <h3>Over {{ actieve_subcategorie.naam if actieve_subcategorie else actieve_categorie.naam }}</h3>
+    <div class="overlay-description">
+      {{ actieve_subcategorie.beschrijving if actieve_subcategorie else actieve_categorie.beschrijving | safe }}
+    </div>
+  </div>
+</div>
+
+<!-- Desktop zijbalk met semantische <aside> -->
+<aside id="categorieSidebar" aria-label="Categorie-informatie" style="
+  position: fixed;
+  top: 0;
+  right: -380px;
+  width: 340px;
+  height: 100vh;
+  background: white;
+  box-shadow: -2px 0 10px rgba(0,0,0,0.2);
+  padding: 20px;
+  transition: right 0.3s ease-in-out;
+  z-index: 2000;
+  overflow-y: auto;
+">
+<div style="display: flex; justify-content: space-between; align-items: center;">
+  <h3>Over {{ actieve_subcategorie.naam if actieve_subcategorie else actieve_categorie.naam }}</h3>
+  <button onclick="toggleSidebar()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">×</button>
+</div>
+<hr>
+<div style="font-size: 0.95rem; line-height: 1.6;">
+  {{ (actieve_subcategorie.beschrijving if actieve_subcategorie else actieve_categorie.beschrijving) | safe }}
+</div>
+</aside>
+
+{% endif %}
 <main>
-  {% if categorie or subcategorie %}
-    <section class="pagina-intro">
-      <h1>{{ subcategorie.naam if subcategorie else categorie.naam }}</h1>
-      <p>
-        Vergelijk eenvoudig {{ subcategorie.naam if subcategorie else categorie.naam }}-abonnementen 
-        van populaire aanbieders zoals {{ abonnementen[0].naam if abonnementen }} en meer. 
-        Bekijk prijzen, beoordelingen en unieke voordelen op AbboHub.
-      </p>
-    </section>
-  {% endif %}
+{% if actieve_subcategorie or actieve_categorie %}
+<!-- Verborgen SEO-tekst zodat AI/zoekmachines de categorie-info kunnen indexeren -->
+<section class="categorie-seo-info" aria-hidden="true" style="position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden;">
+  <h2>Over {{ actieve_subcategorie.naam if actieve_subcategorie else actieve_categorie.naam }}</h2>
+  <div>
+    {{ actieve_subcategorie.beschrijving if actieve_subcategorie else actieve_categorie.beschrijving | safe }}
+  </div>
+</section>
+{% endif %}
         <div class="abonnementen-container">
             {% if abonnementen %}
                 {% for categorie in unieke_categorieën %}
@@ -167,7 +229,8 @@
                                           {% if abonnement.logo %}
                                             <img 
                                               src="{{ url_for('static', filename='uploads/' ~ abonnement.logo) }}" 
-                                              alt="Logo van {{ abonnement.naam }}" 
+                                              alt="Logo van {{ abonnement.naam }} abonnement - {{ abonnement.subcategorie.naam }}" 
+                                              loading="lazy"
                                               class="abonnement-logo"
                                             >
                                           {% else %}
@@ -177,7 +240,6 @@
                                               class="abonnement-logo"
                                             >
                                           {% endif %}
-                                        </a>
                                       </div>
                                       <div class="flip-back">
                                         <p class="beschrijving">{{ abonnement.beschrijving }}</p>

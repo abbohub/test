@@ -1,235 +1,290 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Categorieën en Subcategorieën Beheren</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Externe stylesheet -->
-    <style>
-        /* Algemene styling */
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
-            margin: 0;
-            padding: 0;
-            color: #333;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Categorieën en Subcategorieën Beheren</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f7fa;
+      color: #333;
+    }
 
-        .container {
-            max-width: 1000px;
-            margin: 40px auto;
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        }
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
 
-        h1 {
-            text-align: center;
-            color: #4CAF50;
-            margin-bottom: 20px;
-        }
+    button {
+      cursor: pointer;
+    }
 
-        /* Navigatiebalk */
-        nav {
-            background-color: #4CAF50;
-            padding: 10px 0;
-        }
+    nav {
+      background-color: #4CAF50;
+      padding: 12px 0;
+    }
 
-        nav ul {
-            list-style: none;
-            display: flex;
-            justify-content: center;
-            margin: 0;
-            padding: 0;
-        }
+    nav ul {
+      display: flex;
+      justify-content: center;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
 
-        nav ul li {
-            margin: 0 10px;
-        }
+    nav ul li a {
+      color: white;
+      font-weight: bold;
+      font-size: 1rem;
+    }
 
-        nav ul li a {
-            color: white;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 1rem;
-        }
+    nav ul li a:hover {
+      text-decoration: underline;
+    }
 
-        nav ul li a:hover {
-            text-decoration: underline;
-        }
+    .container {
+      max-width: 960px;
+      margin: 40px auto;
+      background-color: #fff;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+    }
 
-        /* Categorie styling */
-        .categorie {
-            margin-bottom: 20px;
-            padding: 20px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            background-color: #f8f8f8;
-        }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #2e7d32;
+    }
 
-        .categorie-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    h2 {
+      margin-top: 0;
+      color: #4CAF50;
+    }
 
-        .categorie-header h2 {
-            margin: 0;
-            font-size: 1.3rem;
-            color: #333;
-        }
+    form {
+      margin-bottom: 25px;
+    }
 
-        .categorie-header form {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 6px;
+      margin-top: 12px;
+    }
 
-        .categorie-header input {
-            width: 60px;
-            padding: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            text-align: center;
-        }
+    input[type="text"],
+    input[type="number"],
+    textarea {
+      width: 100%;
+      padding: 10px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+      margin-bottom: 12px;
+    }
 
-        .categorie-header button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
 
-        .categorie-header button:hover {
-            background-color: #45a049;
-        }
+    .larger-textarea {
+      min-height: 120px;
+    }
 
-        /* Subcategorie styling */
-        .subcategorie-list {
-            margin-top: 15px;
-            padding-left: 20px;
-        }
+    .button-primary {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border-radius: 6px;
+      margin-top: 8px;
+    }
 
-        .subcategorie-list li {
-            margin: 10px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    .button-primary:hover {
+      background-color: #45a049;
+    }
 
-        .subcategorie-list li span {
-            font-size: 0.95rem;
-            color: #555;
-        }
+    .button-danger {
+      background-color: #dc3545;
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.95rem;
+    }
 
-        .subcategorie-list li a {
-            color: #dc3545;
-            text-decoration: none;
-            font-size: 0.9rem;
-        }
+    .button-danger:hover {
+      background-color: #c82333;
+    }
 
-        .subcategorie-list li a:hover {
-            text-decoration: underline;
-        }
+    hr {
+      border: none;
+      border-top: 1px solid #e0e0e0;
+      margin: 30px 0;
+    }
 
-        /* Formulier voor subcategorie toevoegen */
-        .subcategorie-form {
-            margin-top: 15px;
-            display: flex;
-            gap: 10px;
-        }
+    .categorie {
+      background-color: #f9f9f9;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
 
-        .subcategorie-form input {
-            flex: 1;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
+    .categorie-header {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
 
-        .subcategorie-form button {
-            padding: 8px 16px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
+    .categorie-tools {
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
+      margin-top: 10px;
+    }
 
-        .subcategorie-form button:hover {
-            background-color: #45a049;
-        }
-    </style>
+    .subcategorie-list {
+      list-style: none;
+      padding: 0;
+      margin-top: 20px;
+    }
+
+    .subcategorie-list li {
+      background-color: #fff;
+      border: 1px solid #ddd;
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+    }
+
+    .subcat-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 600px) {
+      nav ul {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .categorie-tools {
+        flex-direction: column;
+      }
+
+      .subcat-actions {
+        flex-direction: column;
+      }
+    }
+  </style>
 </head>
 <body>
-    <!-- Navigatiebalk -->
-    <nav>
-        <ul>
-            <li><a href="{{ url_for('index') }}">Home</a></li>
-            <li><a href="{{ url_for('admin_dashboard') }}">Dashboard</a></li>
-            {% if current_user.is_authenticated %}
-                <li><a href="{{ url_for('logout') }}">Uitloggen</a></li>
-            {% else %}
-                <li><a href="{{ url_for('login') }}">Inloggen</a></li>
-            {% endif %}
-        </ul>
-    </nav>
 
-    <div class="container">
-        <h1>Categorieën en Subcategorieën Beheren</h1>
+<nav>
+  <ul>
+    <li><a href="{{ url_for('index') }}">Home</a></li>
+    <li><a href="{{ url_for('admin_dashboard') }}">Dashboard</a></li>
+    {% if current_user.is_authenticated %}
+      <li><a href="{{ url_for('logout') }}">Uitloggen</a></li>
+    {% else %}
+      <li><a href="{{ url_for('login') }}">Inloggen</a></li>
+    {% endif %}
+  </ul>
+</nav>
 
-        <!-- Formulier voor categorie toevoegen -->
-        <form method="POST" class="form-container">
-            <!-- CSRF-token niet vergeten! -->
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            
-            <input type="text" name="categorie_naam" placeholder="Nieuwe categorie" required>
-            <button type="submit">Categorie Toevoegen</button>
+<div class="container">
+  <h1>Categorieën en Subcategorieën Beheren</h1>
+
+  <!-- Nieuwe categorie -->
+  <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="categorie_naam">Nieuwe categorie</label>
+    <input type="text" id="categorie_naam" name="categorie_naam" placeholder="Naam" required>
+
+    <label for="categorie_beschrijving">Beschrijving (optioneel)</label>
+    <textarea id="categorie_beschrijving" name="categorie_beschrijving" placeholder="Beschrijving..."></textarea>
+
+    <button type="submit" class="button-primary">Categorie Toevoegen</button>
+  </form>
+
+  <hr />
+
+  {% for categorie in categorieen %}
+  <div class="categorie">
+    <div class="categorie-header">
+      <h2>{{ categorie.naam }}</h2>
+
+      <div class="categorie-tools">
+        <!-- Volgorde -->
+        <form method="POST" action="{{ url_for('update_categorie_volgorde', id=categorie.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <label for="volgorde_{{ categorie.id }}">Volgorde</label>
+          <input type="number" id="volgorde_{{ categorie.id }}" name="volgorde" value="{{ categorie.volgorde }}" min="1" required>
+          <button type="submit" class="button-primary">Opslaan</button>
         </form>
 
-        <!-- Overzicht van categorieën en subcategorieën -->
-        {% for categorie in categorieen %}
-        <div class="categorie">
-            <div class="categorie-header">
-                <h2>{{ categorie.naam }}</h2>
-                <form method="POST" action="{{ url_for('update_categorie_volgorde', id=categorie.id) }}">
-                    <!-- CSRF-token -->
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    
-                    <label for="volgorde">Volgorde:</label>
-                    <input type="number" name="volgorde" value="{{ categorie.volgorde }}" min="1" required>
-                    <button type="submit">Opslaan</button>
-                </form>
-            </div>
-
-            <!-- Subcategorieën -->
-            <ul class="subcategorie-list">
-                {% for subcategorie in categorie.subcategorieën %}
-                <li>
-                    <span>{{ subcategorie.naam }}</span>
-                    <div>
-                        <form method="POST" action="{{ url_for('verwijder_subcategorie', id=subcategorie.id) }}" style="display:inline;">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <button type="submit" onclick="return confirm('Weet je zeker dat je deze subcategorie wilt verwijderen?')">[Verwijder]</button>
-</form>
-                    </div>
-                </li>
-                {% endfor %}
-            </ul>
-
-            <!-- Formulier voor subcategorie toevoegen -->
-            <form method="POST" class="subcategorie-form">
-                <!-- CSRF-token -->
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                
-                <input type="hidden" name="categorie_id" value="{{ categorie.id }}">
-                <input type="text" name="subcategorie_naam" placeholder="Nieuwe subcategorie" required>
-                <button type="submit">Toevoegen</button>
-            </form>
-        </div>
-        {% endfor %}
+        <!-- Beschrijving -->
+        <form method="POST" action="{{ url_for('bewerk_categorie', id=categorie.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="categorie_naam" value="{{ categorie.naam }}">
+          <label for="beschrijving_{{ categorie.id }}">Beschrijving</label>
+          <textarea id="beschrijving_{{ categorie.id }}" name="categorie_beschrijving" class="larger-textarea" placeholder="Beschrijving categorie...">{{ categorie.beschrijving or '' }}</textarea>
+          <button type="submit" class="button-primary">Beschrijving bijwerken</button>
+        </form>
+      </div>
     </div>
+
+    <!-- Subcategorieën -->
+    <ul class="subcategorie-list">
+      {% for subcategorie in categorie.subcategorieën %}
+      <li>
+        <div><strong>{{ subcategorie.naam }}</strong></div>
+
+        <div class="subcat-actions">
+          <form method="POST" action="{{ url_for('bewerk_subcategorie', id=subcategorie.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="subcategorie_naam" value="{{ subcategorie.naam }}">
+            <label for="subbeschrijving_{{ subcategorie.id }}">Beschrijving</label>
+            <textarea id="subbeschrijving_{{ subcategorie.id }}" name="subcategorie_beschrijving" placeholder="Beschrijving subcategorie...">{{ subcategorie.beschrijving or '' }}</textarea>
+            <button type="submit" class="button-primary">Beschrijving bijwerken</button>
+          </form>
+
+          <form method="POST" action="{{ url_for('verwijder_subcategorie', id=subcategorie.id) }}" onsubmit="return confirm('Weet je zeker dat je deze subcategorie wilt verwijderen?')">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="button-danger">Verwijderen</button>
+          </form>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+
+    <!-- Subcategorie toevoegen -->
+    <form method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="categorie_id" value="{{ categorie.id }}">
+      <label for="subcat_naam_{{ categorie.id }}">Nieuwe subcategorie</label>
+      <input type="text" id="subcat_naam_{{ categorie.id }}" name="subcategorie_naam" placeholder="Naam" required>
+
+      <label for="subcat_beschrijving_{{ categorie.id }}">Beschrijving (optioneel)</label>
+      <textarea id="subcat_beschrijving_{{ categorie.id }}" name="subcategorie_beschrijving" placeholder="Beschrijving..."></textarea>
+
+      <button type="submit" class="button-primary">Subcategorie Toevoegen</button>
+    </form>
+  </div>
+  {% endfor %}
+</div>
+
 </body>
 </html>

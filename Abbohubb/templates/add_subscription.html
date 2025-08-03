@@ -128,9 +128,73 @@
     <form method="POST" action="{{ url_for('add_subscription') }}" enctype="multipart/form-data">
       <!-- CSRF-token toevoegen (heel belangrijk) -->
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<H2>bedrijfs informatie</H2>
+  <div class="form-group">
+    <label for="naam">Bedrijfsnaam <span class="required">*</span></label>
+    <input
+      type="text"
+      id="naam"
+      name="naam"
+      placeholder="Vul hier de naam van je bedrijf in"
+      value="{{ (bedrijf.naam if bedrijf else request.form.get('naam','')) }}"
+      required
+    >
+  </div>
 
-      <!-- Naam (verplicht) -->
-      <label for="naam">Naam (verplicht):</label>
+  <div class="form-group">
+    <label for="website_url">Website URL</label>
+    <input
+      type="url"
+      id="website_url"
+      name="website_url"
+      placeholder="https://example.com"
+      value="{{ (bedrijf.website_url if bedrijf else request.form.get('website_url','')) }}"
+    >
+  </div>
+
+  <div class="form-group">
+    <label for="logo">Logo (bestand)</label>
+    {% if bedrijf and bedrijf.logo %}
+      <div><img src="{{ url_for('static', filename='uploads/' ~ bedrijf.logo) }}" alt="Huidige logo" style="max-height:50px;"></div>
+    {% endif %}
+    <input type="file" id="logo" name="logo">
+  </div>
+
+  <div class="form-group">
+    <label for="contact_email">Contact e-mail</label>
+    <input
+      type="email"
+      id="contact_email"
+      name="contact_email"
+      placeholder="naam@bedrijf.nl"
+      value="{{ (bedrijf.contact_email if bedrijf else request.form.get('contact_email','')) }}"
+    >
+  </div>
+
+  <div class="form-group">
+    <label for="telefoon">Telefoonnummer</label>
+    <input
+      type="tel"
+      id="telefoon"
+      name="telefoon"
+      placeholder="+31 20 123 4567"
+      value="{{ (bedrijf.telefoon if bedrijf else request.form.get('telefoon','')) }}"
+    >
+  </div>
+
+  <div class="form-group">
+    <label for="kvk_nummer">KvK-nummer</label>
+    <input
+      type="text"
+      id="kvk_nummer"
+      name="kvk_nummer"
+      placeholder="12345678"
+      value="{{ (bedrijf.kvk_nummer if bedrijf else request.form.get('kvk_nummer','')) }}"
+    >
+  </div>
+  <H2>Abonnements informatie</H2>
+      <!-- Naam (abonnement) -->
+      <label for="naam">Naam (abonnement):</label>
       <input 
         type="text" 
         name="naam" 

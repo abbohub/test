@@ -49,3 +49,18 @@ document.addEventListener("DOMContentLoaded", function () {
     window.location.href = "/vergelijk?abonnementen=" + slugs.join(",");
   };
 });
+
+  const collapsible = document.getElementById('collapsible-header');
+  let isCollapsed = false;
+
+  window.addEventListener('scroll', () => {
+    const shouldCollapse = window.scrollY > 100;
+
+    if (shouldCollapse && !isCollapsed) {
+      collapsible.classList.add('collapsed');
+      isCollapsed = true;
+    } else if (!shouldCollapse && isCollapsed) {
+      collapsible.classList.remove('collapsed');
+      isCollapsed = false;
+    }
+  });

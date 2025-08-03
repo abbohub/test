@@ -121,3 +121,28 @@ document.addEventListener("DOMContentLoaded", () => {
     leftArrow.addEventListener("click",  () => container.scrollBy({ left: -step, behavior: "smooth" }));
   });
 });
+
+//<!-- Sidebar-script -->
+function toggleSidebar() {
+  const sidebar = document.getElementById("categorieSidebar");
+  if (!sidebar) return;
+  sidebar.style.right = sidebar.style.right === "0px" ? "-380px" : "0px";
+}
+
+function toggleSidebar() {
+  // Desktop toggle
+  const sidebar = document.getElementById("categorieSidebar");
+  if (window.innerWidth > 768) {
+    if (!sidebar) return;
+    sidebar.style.right = sidebar.style.right === "0px" ? "-360px" : "0px";
+  } else {
+    // Mobiel: open overlay
+    toggleMobileOverlay();
+  }
+}
+
+function toggleMobileOverlay() {
+  const overlay = document.getElementById("categorieOverlayMobile");
+  overlay.classList.toggle("show");
+}
+
