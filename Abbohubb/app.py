@@ -88,12 +88,15 @@ def get_db_connection():
     conn.row_factory = sqlite3.Row
     return conn
 
+
 class Categorie(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     naam = db.Column(db.String(100), nullable=False, unique=True)
     volgorde = db.Column(db.Integer, nullable=False, default=0)
     subcategorieën = db.relationship('Subcategorie', backref='categorie', lazy=True)
     slug = db.Column(db.String(100), unique=True, nullable=False)
+    beschrijving = db.Column(db.Text, nullable=True)  # 🔥 Nieuwe kolom voor pop-up info
+
 
 
 class Subcategorie(db.Model):
@@ -102,10 +105,26 @@ class Subcategorie(db.Model):
     categorie_id = db.Column(db.Integer, db.ForeignKey('categorie.id'), nullable=False)
     abonnementen = db.relationship('Abonnement', backref='subcategorie', lazy=True)
     slug = db.Column(db.String(100), unique=True, nullable=False)
+    beschrijving = db.Column(db.Text, nullable=True)
+    
+
+class Bedrijf(db.Model):
+    __tablename__ = 'bedrijf'
+    id            = db.Column(db.Integer, primary_key=True)
+    naam          = db.Column(db.String(150), nullable=False, unique=True)
+    website_url   = db.Column(db.String(255), nullable=True)
+    logo          = db.Column(db.String(200), nullable=True)
+    contact_email = db.Column(db.String(255), nullable=True)
+    telefoon      = db.Column(db.String(50),  nullable=True)
+    kvk_nummer    = db.Column(db.String(50),  nullable=True)
+
+    # relatie: 1 bedrijf -> n abonnementen
+    abonnementen  = db.relationship('Abonnement', back_populates='bedrijf')
 
 
 class Abonnement(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    bedrijf_id       = db.Column(db.Integer, db.ForeignKey('bedrijf.id'), nullable=True)
     naam = db.Column(db.String(100), nullable=False)
     beschrijving = db.Column(db.String(140), nullable=True)
     filter_optie = db.Column(db.String(20), nullable=False)
@@ -140,7 +159,7 @@ class Abonnement(db.Model):
     doelgroepen = db.relationship('Doelgroep', secondary='abonnement_doelgroep', back_populates='abonnementen')
     tags = db.relationship('Tag', secondary='abonnement_tag', back_populates='abonnementen')
     reviews = db.relationship("Review", back_populates="abonnement", lazy=True)
-
+    bedrijf          = db.relationship('Bedrijf', back_populates='abonnementen')
     def get_average_score(self):
         """Bereken het gemiddelde van alle reviews voor dit abonnement."""
         if not self.reviews:
@@ -518,38 +537,39 @@ def update_abonnementen_volgorde():
 @app.route('/add', methods=['GET', 'POST'])
 @login_required
 def add_subscription():
-    """Pagina voor abonnementen toevoegen (met bestaande doelgroepen, tags en extra informatie)."""
+    """Pagina voor abonnementen toevoegen (met nieuwe provider/bedrijf, doelgroepen, tags en extra informatie)."""
     if not current_user.is_admin:
         return redirect(url_for('index'))
 
     if request.method == 'POST':
         # 1) Basisvelden
-        naam = request.form.get('naam', '').strip()
-        beschrijving = request.form.get('beschrijving', '').strip()
-        filter_optie = request.form.get('filter_optie', '').strip()
-        prijs = request.form.get('prijs', '').strip()
-        contractduur = request.form.get('contractduur', '').strip()
-        aanbiedingen = request.form.get('aanbiedingen', '').strip()
-        annuleringsvoorwaarden = request.form.get('annuleringsvoorwaarden', '').strip()
-        voordelen = request.form.get('voordelen', '').strip()
-        beoordelingen = request.form.get('beoordelingen', '').strip()
-        url = request.form.get('url', '').strip()
-        subcategorie_id = request.form.get('subcategorie_id')
+        naam                  = request.form.get('naam', '').strip()
+        beschrijving          = request.form.get('beschrijving', '').strip()
+        filter_optie          = request.form.get('filter_optie', '').strip()
+        prijs                 = request.form.get('prijs', '').strip()
+        contractduur          = request.form.get('contractduur', '').strip()
+        aanbiedingen          = request.form.get('aanbiedingen', '').strip()
+        annuleringsvoorwaarden= request.form.get('annuleringsvoorwaarden', '').strip()
+        voordelen             = request.form.get('voordelen', '').strip()
+        beoordelingen         = request.form.get('beoordelingen', '').strip()
+        url                   = request.form.get('url', '').strip()
+        subcategorie_id       = request.form.get('subcategorie_id')
 
-        # 2) Extra velden
-        frequentie_bezorging = request.form.get('frequentie_bezorging', '').strip()
-        prijs_vanaf = request.form.get('prijs_vanaf', '').strip()
-        prijs_tot = request.form.get('prijs_tot', '').strip()
+        # 2) Vul aan met extra velden
+        bedrijf_naam          = request.form.get('bedrijf_naam', '').strip()
+        frequentie_bezorging  = request.form.get('frequentie_bezorging', '').strip()
+        prijs_vanaf           = request.form.get('prijs_vanaf', '').strip()
+        prijs_tot             = request.form.get('prijs_tot', '').strip()
         wat_is_het_abonnement = request.form.get('wat_is_het_abonnement', '').strip()
-        waarom_kiezen = request.form.get('waarom_kiezen', '').strip()
-        hoe_werkt_het = request.form.get('hoe_werkt_het', '').strip()
-        past_dit_bij_jou = request.form.get('past_dit_bij_jou', '').strip()
+        waarom_kiezen         = request.form.get('waarom_kiezen', '').strip()
+        hoe_werkt_het         = request.form.get('hoe_werkt_het', '').strip()
+        past_dit_bij_jou      = request.form.get('past_dit_bij_jou', '').strip()
 
         geselecteerde_doelgroepen = request.form.getlist('doelgroepen')
-        geselecteerde_tags = request.form.getlist('tags')
+        geselecteerde_tags        = request.form.getlist('tags')
 
         # 3) Validatie
-        if not naam or not filter_optie or not subcategorie_id or not url:
+        if not (naam and filter_optie and subcategorie_id and url and bedrijf_naam):
             flash("Vul alle verplichte velden in!", "danger")
             return redirect(url_for('add_subscription'))
         if not url.startswith(('http://', 'https://')):
@@ -558,11 +578,11 @@ def add_subscription():
 
         # 4) Slug genereren
         subcat = Subcategorie.query.get(int(subcategorie_id))
-        cat = Categorie.query.get(subcat.categorie_id) if subcat else None
-        categorie_slug = slugify(cat.naam) if cat else "categorie"
+        cat    = Categorie.query.get(subcat.categorie_id) if subcat else None
+        categorie_slug    = slugify(cat.naam) if cat else "categorie"
         subcategorie_slug = slugify(subcat.naam) if subcat else "subcategorie"
-        naam_slug = slugify(naam)
-        full_slug = f"{categorie_slug}/{subcategorie_slug}/{naam_slug}"
+        naam_slug         = slugify(naam)
+        full_slug         = f"{categorie_slug}/{subcategorie_slug}/{naam_slug}"
         if Abonnement.query.filter_by(slug=full_slug).first():
             flash("Er bestaat al een abonnement met deze naam in dezelfde categorie/subcategorie.", "danger")
             return redirect(url_for('add_subscription'))
@@ -576,24 +596,21 @@ def add_subscription():
                 upload_folder = current_app.config['UPLOAD_FOLDER']
                 logo_path = os.path.join(upload_folder, filename)
 
-                # Open en converteer naar RGB
                 img = Image.open(logo_file).convert('RGB')
-
-                # Kies juiste resample-filter
-                if hasattr(Image, "Resampling"):
-                    resample_filter = Image.Resampling.LANCZOS
-                else:
-                    resample_filter = Image.LANCZOS
-
-                # Resize naar maximaal 200×200 px
+                resample_filter = getattr(Image, "Resampling", Image).LANCZOS
                 img.thumbnail((200, 200), resample_filter)
-
-                # Opslaan als JPEG met compressie
                 img.save(logo_path, format='JPEG', optimize=True, quality=85)
 
                 logo_filename = filename
 
-        # 6) Nieuwe Abonnement-instance
+        # 6) Provider / Bedrijf aanmaken of ophalen
+        bedrijf = Bedrijf.query.filter_by(naam=bedrijf_naam).first()
+        if not bedrijf:
+            bedrijf = Bedrijf(naam=bedrijf_naam)
+            db.session.add(bedrijf)
+            db.session.flush()  # bedrijf.id beschikbaar maken
+
+        # 7) Nieuwe Abonnement-instance
         new_abonnement = Abonnement(
             naam=naam,
             slug=full_slug,
@@ -614,10 +631,11 @@ def add_subscription():
             wat_is_het_abonnement=wat_is_het_abonnement,
             waarom_kiezen=waarom_kiezen,
             hoe_werkt_het=hoe_werkt_het,
-            past_dit_bij_jou=past_dit_bij_jou
+            past_dit_bij_jou=past_dit_bij_jou,
+            bedrijf_id=bedrijf.id
         )
 
-        # 7) Relaties Doelgroepen & Tags
+        # 8) Relaties Doelgroepen & Tags
         for dg_id in geselecteerde_doelgroepen:
             dg = Doelgroep.query.get(int(dg_id))
             if dg:
@@ -627,19 +645,21 @@ def add_subscription():
             if tg:
                 new_abonnement.tags.append(tg)
 
-        # 8) Opslaan & redirect
+        # 9) Opslaan & redirect
         db.session.add(new_abonnement)
         db.session.commit()
         flash("Abonnement succesvol toegevoegd!", "success")
         return redirect(url_for('admin_dashboard'))
 
     # GET: toon het formulier
+    bedrijven      = Bedrijf.query.order_by(Bedrijf.naam).all()
     categorieen    = Categorie.query.all()
     subcategorieen = Subcategorie.query.all()
     doelgroepen    = Doelgroep.query.all()
     tags           = Tag.query.all()
     return render_template(
         'add_subscription.html',
+        bedrijven=bedrijven,
         categorieen=categorieen,
         subcategorieen=subcategorieen,
         doelgroepen=doelgroepen,
@@ -649,7 +669,7 @@ def add_subscription():
 @app.route('/edit/<int:id>', methods=['GET', 'POST'])
 @login_required
 def edit_subscription(id):
-    """Beheer van abonnementen bewerken (met subcategorie, doelgroepen, tags en extra velden)."""
+    """Beheer van abonnementen bewerken (met subcategorie, doelgroepen, tags, bedrijven en extra velden)."""
     if not current_user.is_admin:
         return redirect(url_for('index'))
 
@@ -657,6 +677,7 @@ def edit_subscription(id):
     abonnement = Abonnement.query.get_or_404(id)
 
     # Voor de dropdowns en checkboxes
+    bedrijven      = Bedrijf.query.order_by(Bedrijf.naam).all()
     categorieen    = Categorie.query.all()
     subcategorieen = Subcategorie.query.filter_by(
         categorie_id=abonnement.subcategorie.categorie_id
@@ -666,16 +687,20 @@ def edit_subscription(id):
 
     if request.method == 'POST':
         # 1) Algemene velden
-        abonnement.naam                   = request.form.get('naam', '').strip()
-        abonnement.beschrijving          = request.form.get('beschrijving', '').strip()
-        abonnement.filter_optie          = request.form.get('filter_optie', '').strip()
-        abonnement.prijs                 = request.form.get('prijs', '').strip()
-        abonnement.contractduur          = request.form.get('contractduur', '').strip()
-        abonnement.aanbiedingen          = request.form.get('aanbiedingen', '').strip()
+        abonnement.naam                    = request.form.get('naam', '').strip()
+        abonnement.beschrijving           = request.form.get('beschrijving', '').strip()
+        abonnement.filter_optie           = request.form.get('filter_optie', '').strip()
+        abonnement.prijs                  = request.form.get('prijs', '').strip()
+        abonnement.contractduur           = request.form.get('contractduur', '').strip()
+        abonnement.aanbiedingen           = request.form.get('aanbiedingen', '').strip()
         abonnement.annuleringsvoorwaarden = request.form.get('annuleringsvoorwaarden', '').strip()
-        abonnement.voordelen             = request.form.get('voordelen', '').strip()
+        abonnement.voordelen              = request.form.get('voordelen', '').strip()
 
-        # 2) Extra velden
+        # 2) Bedrijf
+        bedrijf_id = request.form.get('bedrijf_id')
+        abonnement.bedrijf_id = int(bedrijf_id) if bedrijf_id else None
+
+        # 3) Extra velden
         abonnement.frequentie_bezorging = request.form.get('frequentie_bezorging', '').strip()
 
         prijs_vanaf = request.form.get('prijs_vanaf', '').strip()
@@ -689,7 +714,7 @@ def edit_subscription(id):
         abonnement.hoe_werkt_het         = request.form.get('hoe_werkt_het', '').strip()
         abonnement.past_dit_bij_jou      = request.form.get('past_dit_bij_jou', '').strip()
 
-        # 3) Beoordelingen validatie
+        # 4) Beoordelingen validatie
         beoordelingen = request.form.get('beoordelingen', '').strip()
         if beoordelingen:
             try:
@@ -698,11 +723,11 @@ def edit_subscription(id):
                 flash("Beoordelingen moet een numerieke waarde zijn!", "danger")
                 return redirect(url_for('edit_subscription', id=abonnement.id))
 
-        # 4) URL en subcategorie
+        # 5) URL en subcategorie
         abonnement.url = request.form.get('url', '').strip()
         abonnement.subcategorie_id = int(request.form.get('subcategorie_id'))
 
-        # 5) Slug her-genereren
+        # 6) Slug her-genereren
         subcat = Subcategorie.query.get(abonnement.subcategorie_id)
         cat    = Categorie.query.get(subcat.categorie_id) if subcat else None
         categorie_slug    = slugify(cat.naam) if cat else "categorie"
@@ -710,7 +735,7 @@ def edit_subscription(id):
         naam_slug         = slugify(abonnement.naam)
         abonnement.slug   = f"{categorie_slug}/{subcategorie_slug}/{naam_slug}"
 
-        # 6) Doelgroepen & tags bijwerken
+        # 7) Doelgroepen & tags bijwerken
         abonnement.doelgroepen = Doelgroep.query.filter(
             Doelgroep.id.in_(request.form.getlist('doelgroepen'))
         ).all()
@@ -718,7 +743,7 @@ def edit_subscription(id):
             Tag.id.in_(request.form.getlist('tags'))
         ).all()
 
-        # 7) Logo upload & verwerking
+        # 8) Logo upload & verwerking
         if 'logo' in request.files:
             logo_file = request.files['logo']
             if logo_file and allowed_file(logo_file.filename):
@@ -734,22 +759,13 @@ def edit_subscription(id):
 
                 # Open en converteer naar RGB
                 img = Image.open(logo_file).convert('RGB')
-
-                # Kies resample-filter afhankelijk van Pillow-versie
-                if hasattr(Image, "Resampling"):
-                    resample_filter = Image.Resampling.LANCZOS
-                else:
-                    resample_filter = Image.LANCZOS
-
-                # Schaal naar max 200×200 px
+                resample_filter = getattr(Image, "Resampling", Image).LANCZOS
                 img.thumbnail((200, 200), resample_filter)
-
-                # Opslaan als JPEG met compressie
                 img.save(logo_path, format='JPEG', optimize=True, quality=85)
 
                 abonnement.logo = filename
 
-        # 8) Opslaan in database & redirect
+        # 9) Opslaan in database & redirect
         db.session.commit()
         flash("Abonnement succesvol bijgewerkt!", 'success')
         return redirect(url_for('admin_dashboard'))
@@ -758,11 +774,12 @@ def edit_subscription(id):
     return render_template(
         'edit_subscription.html',
         abonnement=abonnement,
+        bedrijven=bedrijven,
         categorieen=categorieen,
         subcategorieen=subcategorieen,
         doelgroepen=doelgroepen,
         tags=tags
-    )# Route om tags te beheren
+    )
 
 
 @app.route('/api/subcategorieen/<int:categorie_id>')
@@ -988,24 +1005,31 @@ def verwijder_bericht(id):
 # Routes: Categorieën en Subcategorieën
 # ---------------------------------------
 
-# Categorieën beheren
 @app.route('/categorieen', methods=['GET', 'POST'])
 def categorieen():
     if request.method == 'POST':
         # Toevoegen van een categorie
-        if 'categorie_naam' in request.form:
-            nieuwe_naam = request.form['categorie_naam']
-            if nieuwe_naam.strip():
-                nieuwe_categorie = Categorie(naam=nieuwe_naam)
+        if 'categorie_naam' in request.form and 'categorie_id' not in request.form:
+            nieuwe_naam = request.form['categorie_naam'].strip()
+            beschrijving = request.form.get('categorie_beschrijving', '').strip()
+
+            if nieuwe_naam:
+                nieuwe_categorie = Categorie(naam=nieuwe_naam, beschrijving=beschrijving)
                 db.session.add(nieuwe_categorie)
                 db.session.commit()
 
         # Toevoegen van een subcategorie
-        elif 'subcategorie_naam' in request.form:
-            subcategorie_naam = request.form['subcategorie_naam']
+        elif 'subcategorie_naam' in request.form and 'categorie_id' in request.form:
+            subcategorie_naam = request.form['subcategorie_naam'].strip()
+            subcategorie_beschrijving = request.form.get('subcategorie_beschrijving', '').strip()
             categorie_id = request.form['categorie_id']
-            if subcategorie_naam.strip() and categorie_id:
-                nieuwe_subcategorie = Subcategorie(naam=subcategorie_naam, categorie_id=categorie_id)
+
+            if subcategorie_naam and categorie_id:
+                nieuwe_subcategorie = Subcategorie(
+                    naam=subcategorie_naam,
+                    categorie_id=categorie_id,
+                    beschrijving=subcategorie_beschrijving
+                )
                 db.session.add(nieuwe_subcategorie)
                 db.session.commit()
 
@@ -1042,25 +1066,35 @@ def verwijder_subcategorie(id):
 def bewerk_categorie(id):
     categorie = Categorie.query.get_or_404(id)
     if request.method == 'POST':
-        nieuwe_naam = request.form['categorie_naam']
-        if nieuwe_naam.strip():
+        nieuwe_naam = request.form['categorie_naam'].strip()
+        nieuwe_beschrijving = request.form.get('categorie_beschrijving', '').strip()
+
+        if nieuwe_naam:
             categorie.naam = nieuwe_naam
+            categorie.beschrijving = nieuwe_beschrijving  # ✅ sla beschrijving op
             db.session.commit()
             flash("Categorie succesvol bijgewerkt!", "success")
+
         return redirect(url_for('categorieen'))
+
     return render_template('bewerk_categorie.html', categorie=categorie)
 
-@app.route('/bewerk_subcategorie/<int:id>', methods=['GET', 'POST'])
+
+@app.route('/bewerk_subcategorie/<int:id>', methods=['POST'])
 def bewerk_subcategorie(id):
     subcategorie = Subcategorie.query.get_or_404(id)
-    if request.method == 'POST':
-        nieuwe_naam = request.form['subcategorie_naam']
-        if nieuwe_naam.strip():
-            subcategorie.naam = nieuwe_naam
-            db.session.commit()
-            flash("Subcategorie succesvol bijgewerkt!", "success")
-        return redirect(url_for('categorieen'))
-    return render_template('bewerk_subcategorie.html', subcategorie=subcategorie)
+
+    nieuwe_naam = request.form['subcategorie_naam'].strip()
+    nieuwe_beschrijving = request.form.get('subcategorie_beschrijving', '').strip()
+
+    if nieuwe_naam:
+        subcategorie.naam = nieuwe_naam
+        subcategorie.beschrijving = nieuwe_beschrijving
+        db.session.commit()
+        flash("Subcategorie bijgewerkt", "success")
+
+    return redirect(url_for('categorieen'))
+
 
 # Route voor de chatbot training pagina
 @app.route("/admin/chatbot-training", methods=["GET", "POST"])
