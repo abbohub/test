@@ -153,7 +153,7 @@
     <button onclick="toggleMobileOverlay()" class="overlay-close-btn">×</button>
     <h3>Over {{ actieve_subcategorie.naam if actieve_subcategorie else actieve_categorie.naam }}</h3>
     <div class="overlay-description">
-      {{ actieve_subcategorie.beschrijving if actieve_subcategorie else actieve_categorie.beschrijving | safe }}
+      {{ (actieve_subcategorie.beschrijving if actieve_subcategorie else actieve_categorie.beschrijving) | safe }}
     </div>
   </div>
 </div>
@@ -189,7 +189,7 @@
 <section class="categorie-seo-info" aria-hidden="true" style="position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden;">
   <h2>Over {{ actieve_subcategorie.naam if actieve_subcategorie else actieve_categorie.naam }}</h2>
   <div>
-    {{ actieve_subcategorie.beschrijving if actieve_subcategorie else actieve_categorie.beschrijving | safe }}
+    {{ (actieve_subcategorie.beschrijving if actieve_subcategorie else actieve_categorie.beschrijving) | safe }}
   </div>
 </section>
 {% endif %}
