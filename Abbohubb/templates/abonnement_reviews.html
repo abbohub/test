@@ -55,7 +55,6 @@
     <p>Ontdek alles wat dit abonnement te bieden heeft</p>
     
   </header>
-  </div>
     <!-- Terug naar overzicht link -->
     <a href="{{ url_for('index') }}" class="back-link">&larr; Terug naar overzicht</a>
 <div class="page-wrapper" style="max-width: 1200px; margin: 0 auto; padding: 40px 20px;">
@@ -99,92 +98,180 @@
             <td><a href="{{ abonnement.url }}" target="_blank" rel="noopener noreferrer" class="visit-website">Bezoek website</a></td>
           </tr>
         </table>
-      </section>
+</section>
 <div style="white-space: pre-wrap;">
-      <section class="card text-section"><h3>Wat is {{ abonnement.naam }}?</h3><p>{{ abonnement.wat_is_het_abonnement }}</p></section>
-      <section class="card text-section"><h3>Waarom kiezen voor {{ abonnement.naam }}?</h3><p>{{ abonnement.waarom_kiezen }}</p></section>
-      <section class="card text-section"><h3>Hoe werkt het?</h3><p>{{ abonnement.hoe_werkt_het }}</p></section>
-      <section class="card text-section"><h3>Past {{ abonnement.naam }} bij jou?</h3><p>{{ abonnement.past_dit_bij_jou }}</p></section>
+  <section class="card text-section"><h3>Wat is {{ abonnement.naam }}?</h3><p>{{ abonnement.wat_is_het_abonnement }}</p></section>
+  <section class="card text-section"><h3>Waarom kiezen voor {{ abonnement.naam }}?</h3><p>{{ abonnement.waarom_kiezen }}</p></section>
+  <section class="card text-section"><h3>Hoe werkt het?</h3><p>{{ abonnement.hoe_werkt_het }}</p></section>
+  <section class="card text-section"><h3>Past {{ abonnement.naam }} bij jou?</h3><p>{{ abonnement.past_dit_bij_jou }}</p></section>
 </div>   
-    <!-- Reviews sectie -->
+
+<!-- Foto's van het abonnement -->
+{% if abonnement.fotos %}
+<section class="card">
+  <h3>Productfoto's</h3>
+  <div class="product-photos">
+    {% for foto in abonnement.fotos %}
+      <img src="{{ url_for('static', filename='uploads/' ~ foto.bestandsnaam) }}"
+           alt="Foto van {{ abonnement.naam }}"
+           class="product-photo"
+           onclick="openLightbox('{{ url_for('static', filename='uploads/' ~ foto.bestandsnaam) }}')"
+           loading="lazy">
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<!-- YouTube-video -->
+{% if abonnement.youtube_url %}
+  {% set yt = abonnement.youtube_url %}
+  {% if 'v=' in yt %}
+    {% set yt_id = yt.split('v=')[-1].split('&')[0] %}
+  {% else %}
+    {% set yt_id = yt.rsplit('/', 1)[-1].split('?')[0] %}
+  {% endif %}
+
+  <section class="card">
+    <h3>Video</h3>
+    <div class="video-container">
+      <iframe
+        title="{{ abonnement.naam }} video"
+        src="https://www.youtube-nocookie.com/embed/{{ yt_id }}?playsinline=1&modestbranding=1&rel=0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowfullscreen
+        loading="lazy"
+        referrerpolicy="strict-origin-when-cross-origin"
+        style="border:0;"
+      ></iframe>
+    </div>
+  </section>
+{% endif %}
+
+
+<!-- Lightbox -->
+<div id="lightbox" onclick="closeLightbox()">
+  <span class="lightbox-close">&times;</span>
+  <img id="lightbox-img" src="">
+</div>
+
+<!-- Reviews sectie -->
 <section class="card" aria-labelledby="reviews-heading">
   <h2 id="reviews-heading">Reviews</h2>
 
-    <th>Gemiddelde Beoordeling</th>
-    <td>
-      {% set score = abonnement.get_average_score() %}
-      {% set volle_sterren = score | int %}
-      {% set halve_ster = (score - volle_sterren) >= 0.25 and (score - volle_sterren) < 0.75 %}
-      {% set lege_sterren = 5 - volle_sterren - (1 if halve_ster else 0) %}
-  
-      <span class="ster-rating" aria-label="Gemiddelde beoordeling: {{ score }} van 5">
-        {% for i in range(volle_sterren) %}
-          <span class="vol-ster">★</span>
-        {% endfor %}
-        {% if halve_ster %}
-          <span class="halve-ster">★</span>
-        {% endif %}
-        {% for i in range(lege_sterren) %}
-          <span class="leeg-ster">☆</span>
-        {% endfor %}
-      </span>
-      <span class="score-tekst">{{ score }} ({{ abonnement.reviews|length }} beoordelingen)</span>
-    </td>
-  </tr>  
+  <th>Gemiddelde Beoordeling</th>
+  <td>
+    {% set score = abonnement.get_average_score() %}
+    {% set volle_sterren = score | int %}
+    {% set halve_ster = (score - volle_sterren) >= 0.25 and (score - volle_sterren) < 0.75 %}
+    {% set lege_sterren = 5 - volle_sterren - (1 if halve_ster else 0) %}
 
+    <span class="ster-rating" aria-label="Gemiddelde beoordeling: {{ score }} van 5">
+      {% for i in range(volle_sterren) %}
+        <span class="vol-ster">★</span>
+      {% endfor %}
+      {% if halve_ster %}
+        <span class="halve-ster">★</span>
+      {% endif %}
+      {% for i in range(lege_sterren) %}
+        <span class="leeg-ster">☆</span>
+      {% endfor %}
+    </span>
+    <span class="score-tekst">{{ score }} ({{ abonnement.reviews|length }} beoordelingen)</span>
+  </td>
+</tr>  
   <!-- Structured data voor SEO -->
   {% if gemiddelde_score is not none and abonnement.reviews %}
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": ["Product", "SubscriptionService"],
-  "name":           "{{ abonnement.naam | e }}",
-  "description":    "{{ abonnement.wat_is_het_abonnement | e }}",
-  "image":          "{{ url_for('static', filename='logo.png', _external=True) }}",
-  "url":            "{{ request.url }}",
+  "name": "{{ abonnement.naam | e }}",
+  "description": "{{ abonnement.wat_is_het_abonnement | e }}",
+  "image": "{{ url_for('static', filename='logo.png', _external=True) }}",
+  "url": "{{ request.url }}",
+
   "offers": {
-    "@type":         "Offer",
+    "@type": "Offer",
     "priceCurrency": "EUR",
-    "price":         "{{ abonnement.prijs_vanaf }}",
-    "availability":  "https://schema.org/InStock",
-    "url":           "{{ abonnement.url }}",
-    "priceValidUntil":"2025-12-31"        // optioneel
+    "price": "{{ abonnement.prijs_vanaf }}",
+    "availability": "https://schema.org/InStock",
+    "url": "{{ abonnement.url }}",
+    "priceValidUntil": "2025-12-31",
+    "hasMerchantReturnPolicy": {
+      "@type": "MerchantReturnPolicy",
+      "applicableCountry": "NL",
+      "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+      "merchantReturnDays": 14,
+      "returnFees": "https://schema.org/FreeReturn"
+    },
+    "shippingDetails": {
+      "@type": "OfferShippingDetails",
+      "shippingDestination": {
+        "@type": "DefinedRegion",
+        "addressCountry": "NL"
+      },
+      "shippingRate": {
+        "@type": "MonetaryAmount",
+        "value": "0",
+        "currency": "EUR"
+      },
+      "deliveryTime": {
+        "@type": "ShippingDeliveryTime",
+        "handlingTime": {
+          "@type": "QuantitativeValue",
+          "minValue": 0,
+          "maxValue": 0,
+          "unitCode": "DAY"
+        },
+        "transitTime": {
+          "@type": "QuantitativeValue",
+          "minValue": 0,
+          "maxValue": 0,
+          "unitCode": "DAY"
+        }
+      }
+    }
   },
+
   "aggregateRating": {
-    "@type":       "AggregateRating",
+    "@type": "AggregateRating",
     "ratingValue": "{{ gemiddelde_score }}",
-    "bestRating":  "5",
+    "bestRating": "5",
     "worstRating": "1",
     "reviewCount": "{{ abonnement.reviews|length }}"
   },
+
   "review": [
     {% for review in abonnement.reviews %}
     {
-      "@type":        "Review",
-      "author":       { "@type": "Person", "name": "{{ review.naam | e }}" },
-      "datePublished":"{{ review.created_at.strftime('%Y-%m-%d') }}",
-      "reviewBody":   "{{ review.comment | e }}",
+      "@type": "Review",
+      "author": { "@type": "Person", "name": "{{ review.naam | e }}" },
+      "datePublished": "{{ review.created_at.strftime('%Y-%m-%d') }}",
+      "reviewBody": "{{ review.comment | e }}",
       "reviewRating": {
-        "@type":        "Rating",
-        "ratingValue":  "{{ review.score }}",
-        "bestRating":   "5",
-        "worstRating":  "1"
+        "@type": "Rating",
+        "ratingValue": "{{ review.score }}",
+        "bestRating": "5",
+        "worstRating": "1"
       }
     }{{ "," if not loop.last else "" }}
     {% endfor %}
   ],
-  "requiresSubscription": true,            // maakt expliciet dat het abonnement betreft
-  "billingDuration":      "P1M",           // ISO 8601-duur (hier: 1 maand)
+
+  "requiresSubscription": true,
+  "billingDuration": "P1M",
+
   "publisher": {
-    "@type":        "Organization",
-    "name":         "AbboHub",
+    "@type": "Organization",
+    "name": "AbboHub",
     "logo": {
-      "@type":     "ImageObject",
-      "url":       "{{ url_for('static', filename='logo.png', _external=True) }}"
+      "@type": "ImageObject",
+      "url": "{{ url_for('static', filename='logo.png', _external=True) }}"
     }
   }
 }
 </script>
+
 
   {% endif %}
 
@@ -283,6 +370,17 @@
 </footer>
   <!-- abonnement review scripts -->
   <script src="{{ url_for('static', filename='js/abonnement_reviews.js') }}"></script>  
+
+<script>
+function openLightbox(src) {
+  document.getElementById('lightbox').style.display = 'block';
+  document.getElementById('lightbox-img').src = src;
+}
+function closeLightbox() {
+  document.getElementById('lightbox').style.display = 'none';
+}
+</script>
+
 </body>
 </html>
 

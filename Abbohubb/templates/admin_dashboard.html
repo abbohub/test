@@ -252,6 +252,46 @@
 }
 
     </style>
+    <style>
+  .planning-actions { display:flex; gap:8px; margin:10px 0 16px; }
+  .planning-actions button {
+    padding:8px 12px; border:1px solid #ccc; border-radius:6px; cursor:pointer; background:#fff;
+  }
+  .planning-root { display:grid; gap:16px; }
+  .phase-card {
+    background:#fff; border:1px solid #e5e5e5; border-radius:10px; overflow:hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  }
+  .phase-header {
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:12px 16px; background:#8968cd; color:#fff; cursor:pointer;
+  }
+  .phase-title { font-weight:700; }
+  .phase-body { padding:12px 16px; display:none; }
+  .phase-card.open .phase-body { display:block; }
+
+  .week {
+    border:1px solid #eee; border-radius:8px; margin:10px 0; overflow:hidden;
+  }
+  .week-header {
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:10px 12px; background:#f7f5ff; cursor:pointer; font-weight:600;
+  }
+  .week-body { padding:8px 12px; display:none; background:#fff; }
+  .week.open .week-body { display:block; }
+
+  .task-list { list-style:none; margin:0; padding:0; display:grid; gap:8px; }
+  .task-list li label { display:flex; gap:8px; align-items:flex-start; cursor:pointer; }
+  .task-list small { color:#666; }
+
+  /* Kleine badge-stijl voor labels (Technisch, Content, SEO, Marketing) */
+  .badge { display:inline-block; padding:2px 6px; border-radius:999px; font-size:11px; margin-left:6px; }
+  .badge.tech { background:#e6f4ff; color:#084c8d; }
+  .badge.content { background:#fff5e6; color:#8a5000; }
+  .badge.seo { background:#ecf9ec; color:#1f6d1f; }
+  .badge.marketing { background:#fff0f3; color:#8b1a33; }
+</style>
+
 </head>
 <body>
 
@@ -295,55 +335,20 @@
             <a href="{{ url_for('berichten') }}" class="btn">Bekijk berichten</a>
             <a href="{{ url_for('admin_train_chatbot') }}" class="btn">Chatbot trainen</a>
         </p>
-        
-<section class="dashboard-taken">
-  <h2>📋 Terugkerende en Lange Termijn Taken</h2>
+        <section class="dashboard-taken" id="abbohub-planning">
+  <h2>📅 Groei- & Inkomstenplanning (6 maanden)</h2>
 
-  <div class="tasks-columns">
-    <!-- Linker kolom: Dagelijkse en Wekelijkse Taken -->
-    <div class="column column-left">
-      <h3>Dagelijkse Taken</h3>
-      <ul>
-        <li><label><input type="checkbox"> Website controleren op fouten en laadtijd</label></li>
-        <li><label><input type="checkbox"> Nieuwe berichten beantwoorden</label></li>
-        <li><label><input type="checkbox"> Reviews beoordelen of modereren</label></li>
-        <li><label><input type="checkbox"> Google Analytics checken op verkeer en gedrag</label></li>
-        <li><label><input type="checkbox"> Logs controleren op fouten of mislukte aanvragen</label></li>
-      </ul>
-
-      <h3>Wekelijkse Taken</h3>
-      <ul>
-        <li><label><input type="checkbox"> Nieuwe abonnementen toevoegen of prijzen bijwerken</label></li>
-        <li><label><input type="checkbox"> Chatbot intents trainen of uitbreiden</label></li>
-        <li><label><input type="checkbox"> Reviews of gebruikersdata controleren</label></li>
-        <li><label><input type="checkbox"> Nieuwe content of blog schrijven</label></li>
-        <li><label><input type="checkbox"> Nieuwsbrief voorbereiden (indien actief)</label></li>
-      </ul>
-    </div>
-
-    <!-- Rechter kolom: Maandelijkse en Langetermijn Taken -->
-    <div class="column column-right">
-      <h3>Maandelijkse Taken</h3>
-      <ul>
-        <li><label><input type="checkbox"> SEO-audit en optimalisatie uitvoeren</label></li>
-        <li><label><input type="checkbox"> Google Analytics rapport analyseren</label></li>
-        <li><label><input type="checkbox"> Back-up maken van database en bestanden</label></li>
-        <li><label><input type="checkbox"> Packages en dependencies updaten</label></li>
-        <li><label><input type="checkbox"> AdSense / Affiliate opbrengst analyseren</label></li>
-        <li><label><input type="checkbox"> Gebruikersonderzoek / feedback verzamelen</label></li>
-      </ul>
-
-      <h3>Lange Termijn / Projectdoelen</h3>
-      <ul>
-        <li><label><input type="checkbox"> Webshop-functionaliteit toevoegen</label></li>
-        <li><label><input type="checkbox"> Betalingssysteem (Stripe/Mollie) integreren</label></li>
-        <li><label><input type="checkbox"> Partnerdashboard opzetten voor aanbieders</label></li>
-        <li><label><input type="checkbox"> Premium plaatsing en promotie van abonnementen ontwikkelen</label></li>
-        <li><label><input type="checkbox"> Blogstrategie + social media automatiseren</label></li>
-      </ul>
-    </div>
+  <!-- Actieknoppen -->
+  <div class="planning-actions">
+    <button id="expand-all" type="button">Alles uitklappen</button>
+    <button id="collapse-all" type="button">Alles inklappen</button>
+    <button id="reset-checks" type="button">Alle vinkjes wissen</button>
   </div>
+
+  <!-- Fase containers komen hier dynamisch in -->
+  <div id="planning-root" class="planning-root" aria-live="polite"></div>
 </section>
+
 
         <h2>Alle Abonnementen per Categorie</h2>
 
@@ -488,6 +493,319 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 </script>
+<script>
+(function(){
+  // ———————————————
+  // 0) Helpers (storage keys)
+  // ———————————————
+  const STORAGE_KEY = "abbohub_planning_checks_v1";
+  const UI_STATE_KEY = "abbohub_planning_ui_v1";
+
+  function loadChecks(){ try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}; } catch{ return {}; } }
+  function saveChecks(data){ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+
+  function loadUI(){ try { return JSON.parse(localStorage.getItem(UI_STATE_KEY)) || {}; } catch{ return {}; } }
+  function saveUI(data){ localStorage.setItem(UI_STATE_KEY, JSON.stringify(data)); }
+
+  // ———————————————
+  // 1) Data – 6 maanden planning
+  // label: 'tech' | 'content' | 'seo' | 'marketing'
+  // ———————————————
+  const PLANNING = [
+    {
+      phaseId: "fase1",
+      title: "Fase 1 – Direct inkomsten genereren (Week 1–4)",
+      weeks: [
+        {
+          weekId: "w1",
+          title: "Week 1",
+          tasks: [
+            { id:"w1_t1", text:"Google AdSense-account aanmaken & goedkeuring aanvragen", label:"marketing" },
+            { id:"w1_t2", text:"Advertentieblokken maken (responsive) in AdSense", label:"marketing" },
+            { id:"w1_t3", text:"Code plaatsen: onder eerste 3 tegels, sidebar categoriepagina’s, onder reviews", label:"tech" }
+          ]
+        },
+        {
+          weekId: "w2",
+          title: "Week 2",
+          tasks: [
+            { id:"w2_t1", text:"Nieuw veld `affiliate_url` toevoegen in Abonnement-model (app.py)", label:"tech" },
+            { id:"w2_t2", text:"Template aanpassen: gebruik `affiliate_url` indien gevuld", label:"tech" },
+            { id:"w2_t3", text:"GA4-event logging behouden voor affiliate clicks", label:"marketing" }
+          ]
+        },
+        {
+          weekId: "w3",
+          title: "Week 3",
+          tasks: [
+            { id:"w3_t1", text:"Alle huidige 20 abonnementen controleren (prijs, aanbiedingen, beschrijving)", label:"content" },
+            { id:"w3_t2", text:"5 nieuwe populaire abonnementen toevoegen", label:"content" }
+          ]
+        },
+        {
+          weekId: "w4",
+          title: "Week 4",
+          tasks: [
+            { id:"w4_t1", text:"Nog eens 5 nieuwe abonnementen toevoegen (populair & seizoensgebonden)", label:"content" },
+            { id:"w4_t2", text:"Eerste GA4-rapport draaien met klikdata", label:"marketing" }
+          ]
+        }
+      ]
+    },
+    {
+      phaseId: "fase2",
+      title: "Fase 2 – Verkeer & zichtbaarheid vergroten (Week 5–10)",
+      weeks: [
+        {
+          weekId: "w5",
+          title: "Week 5",
+          tasks: [
+            { id:"w5_t1", text:"Min. 300 woorden unieke tekst op 3 populairste categoriepagina’s", label:"content" },
+            { id:"w5_t2", text:"Structured data (Product, Review) toevoegen aan detailpagina’s", label:"seo" }
+          ]
+        },
+        {
+          weekId: "w6",
+          title: "Week 6",
+          tasks: [
+            { id:"w6_t1", text:"Sitemap uitbreiden met `lastmod` & `priority`", label:"seo" },
+            { id:"w6_t2", text:"GA4 doelen instellen voor ‘Klik naar aanbieder’", label:"marketing" }
+          ]
+        },
+        {
+          weekId: "w7",
+          title: "Week 7",
+          tasks: [
+            { id:"w7_t1", text:"Blogsectie aanmaken (`/blog/` route in Flask)", label:"tech" },
+            { id:"w7_t2", text:"Artikel publiceren: ‘Top 5 maaltijdbox-abonnementen in 2025’", label:"content" }
+          ]
+        },
+        {
+          weekId: "w8",
+          title: "Week 8",
+          tasks: [
+            { id:"w8_t1", text:"Artikel: ‘Hoe kies je het beste tijdschriftabonnement?’", label:"content" },
+            { id:"w8_t2", text:"Instagram- en LinkedIn-pagina’s starten", label:"marketing" }
+          ]
+        },
+        {
+          weekId: "w9",
+          title: "Week 9",
+          tasks: [
+            { id:"w9_t1", text:"Artikel: ‘Top 5 cadeau-abonnementen voor de feestdagen’", label:"content" },
+            { id:"w9_t2", text:"2 backlinks regelen via blogs/partners", label:"seo" }
+          ]
+        },
+        {
+          weekId: "w10",
+          title: "Week 10",
+          tasks: [
+            { id:"w10_t1", text:"Artikel: ‘Waarom een abonnement vaak goedkoper is dan losse aankopen’", label:"content" },
+            { id:"w10_t2", text:"Social posts (10 stuks: quotes, tips, aanbiedingen)", label:"marketing" }
+          ]
+        }
+      ]
+    },
+    {
+      phaseId: "fase3",
+      title: "Fase 3 – Conversie verhogen & premium model (Week 11–16)",
+      weeks: [
+        {
+          weekId: "w11",
+          title: "Week 11",
+          tasks: [
+            { id:"w11_t1", text:"Filterfunctie bouwen: prijs, beoordeling, bezorgfrequentie, doelgroep, tags", label:"tech" }
+          ]
+        },
+        {
+          weekId: "w12",
+          title: "Week 12",
+          tasks: [
+            { id:"w12_t1", text:"Sorteeropties: prijs laag/hoog, best beoordeeld", label:"tech" }
+          ]
+        },
+        {
+          weekId: "w13",
+          title: "Week 13",
+          tasks: [
+            { id:"w13_t1", text:"Nieuw veld `is_premium` in Abonnement", label:"tech" },
+            { id:"w13_t2", text:"Premium weergave in templates (bovenaan, label ‘Aanbevolen’)", label:"tech" }
+          ]
+        },
+        {
+          weekId: "w14",
+          title: "Week 14",
+          tasks: [
+            { id:"w14_t1", text:"Betaalpagina voor aanbieders (Mollie/Stripe testmode)", label:"tech" }
+          ]
+        },
+        {
+          weekId: "w15",
+          title: "Week 15",
+          tasks: [
+            { id:"w15_t1", text:"Adminoptie: abonnementen premium maken na betaling", label:"tech" },
+            { id:"w15_t2", text:"Factuurgeneratie in PDF", label:"tech" }
+          ]
+        },
+        {
+          weekId: "w16",
+          title: "Week 16",
+          tasks: [
+            { id:"w16_t1", text:"Eerste 2 aanbieders benaderen voor premium plaatsing", label:"marketing" }
+          ]
+        }
+      ]
+    },
+    {
+      phaseId: "fase4",
+      title: "Fase 4 – Webshopfunctie & partnerdashboard (Week 17–24)",
+      weeks: [
+        {
+          weekId: "w17_18",
+          title: "Week 17–18",
+          tasks: [
+            { id:"w17_18_t1", text:"Webshopmodule: direct abonnement afsluiten via AbboHub", label:"tech" },
+            { id:"w17_18_t2", text:"Betaalafhandeling integreren (Mollie/Stripe live)", label:"tech" }
+          ]
+        },
+        {
+          weekId: "w19_20",
+          title: "Week 19–20",
+          tasks: [
+            { id:"w19_20_t1", text:"Partnerdashboard: inlog, zelf abonnementen toevoegen/bewerken", label:"tech" }
+          ]
+        },
+        {
+          weekId: "w21_22",
+          title: "Week 21–22",
+          tasks: [
+            { id:"w21_22_t1", text:"Statistieken voor aanbieders (kliks, conversies)", label:"tech" }
+          ]
+        },
+        {
+          weekId: "w23_24",
+          title: "Week 23–24",
+          tasks: [
+            { id:"w23_24_t1", text:"E-mailnieuwsbrief met aanbiedingen opzetten", label:"marketing" },
+            { id:"w23_24_t2", text:"Retargeting-campagnes via Google Ads", label:"marketing" }
+          ]
+        }
+      ]
+    }
+  ];
+
+  const LABEL_BADGE = {
+    tech:       '<span class="badge tech">Technisch</span>',
+    content:    '<span class="badge content">Content</span>',
+    seo:        '<span class="badge seo">SEO</span>',
+    marketing:  '<span class="badge marketing">Marketing</span>',
+  };
+
+  // ———————————————
+  // 2) Renderer
+  // ———————————————
+  function renderPlanning(){
+    const root = document.getElementById('planning-root');
+    if(!root) return;
+    const checks = loadChecks();
+    const ui = loadUI();
+
+    root.innerHTML = ""; // reset
+    PLANNING.forEach(phase => {
+      const phaseCard = document.createElement('div');
+      phaseCard.className = 'phase-card' + (ui[phase.phaseId]?.open ? ' open' : '');
+
+      // Header
+      const header = document.createElement('div');
+      header.className = 'phase-header';
+      header.innerHTML = `<div class="phase-title">${phase.title}</div><div aria-hidden="true">▼</div>`;
+      header.addEventListener('click', () => {
+        const isOpen = phaseCard.classList.toggle('open');
+        ui[phase.phaseId] = { ...(ui[phase.phaseId]||{}), open:isOpen };
+        saveUI(ui);
+      });
+
+      // Body
+      const body = document.createElement('div');
+      body.className = 'phase-body';
+
+      phase.weeks.forEach(week => {
+        const weekEl = document.createElement('div');
+        weekEl.className = 'week' + (ui[week.weekId]?.open ? ' open' : '');
+
+        const wHeader = document.createElement('div');
+        wHeader.className = 'week-header';
+        wHeader.innerHTML = `<span>${week.title}</span><span aria-hidden="true">▸</span>`;
+        wHeader.addEventListener('click', () => {
+          const isOpen = weekEl.classList.toggle('open');
+          ui[week.weekId] = { ...(ui[week.weekId]||{}), open:isOpen };
+          saveUI(ui);
+        });
+
+        const wBody = document.createElement('div');
+        wBody.className = 'week-body';
+        const ul = document.createElement('ul');
+        ul.className = 'task-list';
+
+        week.tasks.forEach(task => {
+          const li = document.createElement('li');
+          const checked = !!checks[task.id];
+          const badge = LABEL_BADGE[task.label] || '';
+          li.innerHTML = `
+            <label>
+              <input type="checkbox" data-task-id="${task.id}" ${checked ? 'checked':''}>
+              <span>${task.text} ${badge}</span>
+            </label>
+          `;
+          ul.appendChild(li);
+        });
+
+        wBody.appendChild(ul);
+        weekEl.appendChild(wHeader);
+        weekEl.appendChild(wBody);
+        body.appendChild(weekEl);
+      });
+
+      phaseCard.appendChild(header);
+      phaseCard.appendChild(body);
+      root.appendChild(phaseCard);
+    });
+
+    // Checkbox listeners
+    root.querySelectorAll('input[type="checkbox"][data-task-id]').forEach(cb => {
+      cb.addEventListener('change', () => {
+        const taskId = cb.getAttribute('data-task-id');
+        const data = loadChecks();
+        data[taskId] = cb.checked;
+        saveChecks(data);
+      });
+    });
+
+    // Action buttons
+    document.getElementById('expand-all')?.addEventListener('click', () => {
+      const ui = loadUI();
+      PLANNING.forEach(p => { ui[p.phaseId] = {open:true}; p.weeks.forEach(w => ui[w.weekId] = {open:true}); });
+      saveUI(ui); renderPlanning();
+    });
+    document.getElementById('collapse-all')?.addEventListener('click', () => {
+      const ui = loadUI();
+      PLANNING.forEach(p => { ui[p.phaseId] = {open:false}; p.weeks.forEach(w => ui[w.weekId] = {open:false}); });
+      saveUI(ui); renderPlanning();
+    });
+    document.getElementById('reset-checks')?.addEventListener('click', () => {
+      if(!confirm('Alle vinkjes wissen?')) return;
+      localStorage.removeItem(STORAGE_KEY);
+      renderPlanning();
+    });
+  }
+
+  // ———————————————
+  // 3) Init
+  // ———————————————
+  document.addEventListener('DOMContentLoaded', renderPlanning);
+})();
+</script>
+
 
 </body>
 </html>
