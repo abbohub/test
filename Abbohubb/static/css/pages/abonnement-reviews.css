@@ -138,6 +138,65 @@ a.visit-website:focus {
 .btn-compare:hover {
   background-color: #e0ba00;
 }
+
+/* test foto en video*/
+/* Foto-galerij */
+.product-photos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.product-photo {
+  max-width: 200px;
+  height: auto;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out;
+}
+.product-photo:hover {
+  transform: scale(1.05);
+}
+
+/* Responsive video */
+.video-container {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+}
+.video-container iframe {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+}
+
+/* Lightbox styling */
+#lightbox {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  padding-top: 50px;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0,0,0,0.9);
+}
+#lightbox img {
+  margin: auto;
+  display: block;
+  max-width: 90%;
+  max-height: 80%;
+}
+.lightbox-close {
+  position: absolute;
+  top: 20px;
+  right: 35px;
+  color: #fff;
+  font-size: 40px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
     /* Responsive design */
     @media (max-width: 768px) {
       header h1 {
@@ -157,5 +216,49 @@ a.visit-website:focus {
   .sidebar {
     max-width: 100%;
     margin-top: 30px;
+  }
+}
+/* --- YOUTUBE: mobiele fix + overrides --- */
+
+/* Zorg dat de container altijd full-width is */
+.card .video-container {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Forceer het iframe om de volledige container te vullen */
+.card .video-container iframe {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;   /* overschrijft generieke max-width regels */
+  border: 0;
+}
+
+/* Moderne browsers: 16:9 zonder padding-hack */
+@supports (aspect-ratio: 16 / 9) {
+  .card .video-container {
+    aspect-ratio: 16 / 9;
+    height: auto;
+    padding: 0;                 /* override van padding-bottom fallback */
+  }
+  .card .video-container iframe {
+    position: static;           /* niet absoluut nodig met aspect-ratio */
+  }
+}
+
+/* Oudere browsers fallback: padding-hack */
+@supports not (aspect-ratio: 16 / 9) {
+  .card .video-container {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+  }
+  .card .video-container iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
   }
 }
