@@ -1314,6 +1314,10 @@ def robots():
 def favicon():
     return app.send_static_file('favicon.ico')
 
+@app.route('/ads.txt')
+def ads():
+  return send_from_directory(os.path.dirname(__file__), 'ads.txt', mimetype='text/plain')
+
 # ---------------------------------------
 # Start de app (development)
 # ---------------------------------------
