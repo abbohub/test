@@ -1,65 +1,136 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="nl" dir="ltr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Over AbboHub</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <meta name="description" content="AbboHub is dé webshop voor productabonnementen in Nederland. Ontdek, vergelijk en kies eenvoudig het abonnement dat bij jou past – met eerlijke aandacht voor kleine én grote aanbieders.">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Over AbboHub">
+    <meta property="og:description" content="Ontdek waarom AbboHub hét platform is voor productabonnementen in Nederland.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://abbohub.nl/over">
+    <meta property="og:image" content="https://abbohub.nl/static/images/abbohub-preview.jpg">
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" media="all">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "AbboHub",
+      "url": "https://abbohub.nl",
+      "logo": "https://abbohub.nl/static/images/logo.png",
+      "description": "AbboHub is het platform voor het ontdekken, vergelijken en kiezen van productabonnementen.",
+      "foundingDate": "2025",
+      "founder": {
+        "@type": "Person",
+        "name": "Tim"
+      }
+    }
+    </script>
 </head>
 <body>
-    <header>
-        <h1>Over AbboHub</h1>
-                <nav class="main-nav" aria-label="Hoofdnavigatie">
-            <ul>
-                <li><a href="{{ url_for('index') }}">Home</a></li>
-                {% if current_user.is_authenticated %}
-                    <li><a href="{{ url_for('logout') }}">Uitloggen</a></li>
-                {% else %}
-                    <li><a href="{{ url_for('login') }}">Inloggen</a></li>
-                {% endif %}
-                <li><a href="/contact">Contact</a></li>
-            </ul>
-        </nav>
-    </header>
+<header>
+  <nav class="main-nav" aria-label="Hoofdnavigatie">
+    <ul>
+      <li><a href="{{ url_for('index') }}">Home</a></li>
+      {% if current_user.is_authenticated %}
+        <li><a href="{{ url_for('logout') }}">Uitloggen</a></li>
+      {% else %}
+        <li><a href="{{ url_for('login') }}">Inloggen</a></li>
+      {% endif %}
+      <li><a href="/contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <div class="zoek-filter-container">
+    <h1>AbboHub abonnementen</h1>
+    <div class="search-row">
+      <form method="GET" action="{{ url_for('index') }}" class="zoek-filter-form">
+        <input 
+          type="text" 
+          name="zoekterm" 
+          placeholder="Zoek abonnementen..." 
+          value="{{ zoekterm }}" 
+          aria-label="Zoek abonnementen"
+        >
+      </form>
+
+      <div class="button-container">
+        <div class="dropdown-container">
+          <button type="button" class="dropdown-button">Categorieën</button>
+          <div class="dropdown-menu">
+            <div class="dropdown-item">
+              <a href="{{ url_for('index') }}">Alle categorieën</a>
+            </div>
+            {% for cat in unieke_categorieën %}
+              <div class="dropdown-item">
+                <span class="category-button">{{ cat.naam }}</span>
+                <div class="sub-dropdown">
+                  <a href="{{ url_for('abonnement_overzicht', categorie_slug=cat.naam|slugify) }}">{{ cat.naam }}</a>
+                  {% for subcat in unieke_subcategorieën if subcat.categorie_id == cat.id %}
+                  <a href="{{ url_for('abonnement_overzicht', categorie_slug=cat.naam|slugify, subcategorie_slug=subcat.naam|slugify) }}">
+                    {{ subcat.naam }}
+                  </a>
+                  {% endfor %}
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+  </div>
+</header>
     <main>
-        
-        <section>
-            <h2>Wat is AbboHub?</h2>
-            <p>AbboHub is een innovatief platform waarmee consumenten eenvoudig abonnementen kunnen vinden, vergelijken en beheren. Wij helpen je om de beste keuze te maken.</p>
-        </section>
-        <section>
-            <h2>Onze Missie</h2>
-            <p>Onze missie is om consumenten te voorzien van een transparante en overzichtelijke manier om abonnementen te vergelijken en te beheren. We streven ernaar om gebruikers tijd en geld te besparen door inzicht te geven in de beste opties die aansluiten bij hun behoeften.</p>
-        </section>
-        <section>
-            <h2>Waarom AbboHub?</h2>
-            <ul>
-                <li><strong>Gebruiksvriendelijk:</strong> Ons platform is eenvoudig te navigeren en biedt een duidelijke vergelijking van abonnementen.</li>
-                <li><strong>Onafhankelijk:</strong> Wij geven objectieve informatie en stellen jou als gebruiker centraal.</li>
-                <li><strong>Altijd up-to-date:</strong> We houden onze database continu bij met de nieuwste abonnementen en aanbiedingen.</li>
-            </ul>
-        </section>
-        <section>
-            <h2>Hoe werkt het?</h2>
-            <p>AbboHub verzamelt gegevens over diverse abonnementsdiensten en stelt deze beschikbaar via een overzichtelijke vergelijkingspagina. Gebruikers kunnen filters toepassen, prijzen vergelijken en eenvoudig doorklikken naar de aanbieders.</p>
-        </section>
-        <section>
-            <h2>Ons Team</h2>
-            <p>Ons team bestaat uit enthousiaste specialisten op het gebied van consumentendiensten, data-analyse en webontwikkeling. Samen werken we aan het verbeteren en uitbreiden van AbboHub om jou de beste ervaring te bieden.</p>
-        </section>
-        <section>
-            <h2>Contact</h2>
-            <p>Heb je vragen of suggesties? Neem contact met ons op via <a href="/contact">onze contactpagina</a>. We horen graag van je!</p>
-        </section>
+        <article>
+            <section>
+                <h2>Welkom bij AbboHub</h2>
+                <p><strong>AbboHub</strong> is dé webshop voor <strong>productabonnementen</strong> in Nederland. Of je nu op zoek bent naar een koffie-abonnement, hondenvoer dat maandelijks op de mat valt, of een verrassingsbox vol duurzame verzorgingsproducten: bij ons vind je het allemaal op één centrale plek.</p>
+            </section>
+
+            <section>
+                <h2>Meer dan vergelijken</h2>
+                <p>AbboHub is niet zomaar een vergelijkingssite. Wij zijn een <strong>platform waar aanbieders en gebruikers samenkomen</strong>, met ruimte voor diversiteit en persoonlijke voorkeuren. Van bekende merken tot start-ups en lokale makers – wij geloven dat <strong>de kleine aanbieder minstens zo belangrijk is als de grote</strong>. Misschien zelfs belangrijker.</p>
+            </section>
+
+            <section>
+                <h2>Waarom kiezen voor AbboHub?</h2>
+                <ul>
+                    <li><strong>Alle abonnementen op één plek:</strong> Ontdek, vergelijk en kies eenvoudig het abonnement dat bij jou past.</li>
+                    <li><strong>Eerlijke zichtbaarheid:</strong> Grote merken krijgen bij ons niet automatisch voorrang. Ook kleine aanbieders verdienen een podium.</li>
+                    <li><strong>Gebruikerservaring centraal:</strong> Lees ervaringen van anderen of deel jouw mening. Zo maken we het aanbod transparanter voor iedereen.</li>
+                    <li><strong>Voor ieder wat wils:</strong> Van gemak tot verrassing – ontdek abonnementen die perfect aansluiten bij jouw levensstijl.</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2>Voor aanbieders</h2>
+                <p>Bied jij een productabonnement aan? Sluit je aan bij AbboHub en vergroot je bereik. Ons platform helpt je zichtbaar te worden – of je nu net begonnen bent of al een gevestigde naam hebt. <strong>Iedere aanbieder telt bij ons mee</strong>.</p>
+            </section>
+
+            <section>
+                <h2>Contact</h2>
+                <address>
+                    Heb je suggesties of zie je een productabonnement dat je mist?<br>
+                    <a href="/contact">Neem gerust contact met ons op</a>.<br>
+                    Samen bouwen we aan het meest complete en eerlijke abonnementenplatform van Nederland.
+                </address>
+            </section>
+        </article>
     </main>
-    <footer>
-        <p>&copy; 2025 AbboHub. Alle rechten voorbehouden.</p>
-        <nav>
-          <ul>
-            <li><a href="/">Terug naar Home</a></li>
-            <li><a href="/privacy-cookieverklaring">Privacy- en Cookieverklaring</a></li>
-          </ul>
-        </nav>
-    </footer>
+
+  <footer>
+    <p>&copy; 2025 AbboHub. Alle rechten voorbehouden.</p>
+    <nav class="footer-nav">
+      <ul>
+        <li><a href="{{ url_for('privacy_cookieverklaring') }}">Privacy en Cookieverklaring</a></li>
+        <li><a href="{{ url_for('over_abbohub') }}">Over AbboHub</a></li>
+        <li><a href="#" onclick="openSettings()">Cookievoorkeuren aanpassen</a></li>
+      </ul>
+    </nav>
+  </footer>
 </body>
 </html>

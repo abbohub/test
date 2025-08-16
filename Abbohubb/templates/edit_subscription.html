@@ -143,6 +143,47 @@
       font-weight: bold;
     }
 
+    /* Galerij met productfoto's */
+.product-photos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.product-photos img {
+  max-width: 150px;
+  height: auto;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.product-photos img:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* Container voor elke foto + checkbox */
+.product-photos div {
+  position: relative;
+  text-align: center;
+}
+
+.product-photos label {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: #333;
+}
+
+/* Checkbox mooi maken */
+.product-photos input[type="checkbox"] {
+  transform: scale(1.2);
+  margin-right: 4px;
+  cursor: pointer;
+}
+
+
         /* Responsief ontwerp */
         @media (max-width: 600px) {
             .container {
@@ -187,25 +228,7 @@
           </option>
         {% endfor %}
       </select>
-  <div class="form-group">
-    <label for="website_url">Website URL</label>
-    <input
-      type="url"
-      id="website_url"
-      name="website_url"
-      placeholder="https://example.com"
-      value="{{ (bedrijf.website_url if bedrijf else request.form.get('website_url','')) }}"
-    >
-  </div>
-
-  <div class="form-group">
-    <label for="logo">Logo (bestand)</label>
-    {% if bedrijf and bedrijf.logo %}
-      <div><img src="{{ url_for('static', filename='uploads/' ~ bedrijf.logo) }}" alt="Huidige logo" style="max-height:50px;"></div>
-    {% endif %}
-    <input type="file" id="logo" name="logo">
-  </div>
-
+  
   <div class="form-group">
     <label for="contact_email">Contact e-mail</label>
     <input
@@ -293,23 +316,67 @@
     <input type="url" id="url" name="url" value="{{ abonnement.url }}">
   </div>
 
-  <!-- Logo upload -->
-  <div class="form-group">
-    <label for="logo">Logo (max 200×200)</label>
-    <input type="file" id="logo" name="logo" accept="image/*">
-    {% if abonnement.logo %}
-    <div class="logo-preview">
-      <p>Huidig logo:</p>
-      <img
-        src="{{ url_for('static', filename='uploads/' + abonnement.logo) }}"
-        width="200" height="200"
-        loading="lazy"
-        alt="Logo van {{ abonnement.naam }}"
-        class="logo-preview-img"
-      >
-    </div>
-    {% endif %}
+<!-- Logo upload -->
+<div class="form-group">
+  <label for="logo">Logo (max 200×200)</label>
+  <input type="file" id="logo" name="logo" accept="image/*">
+  {% if abonnement.logo %}
+  <div class="logo-preview">
+    <p>Huidig logo:</p>
+    <img
+      src="{{ url_for('static', filename='uploads/' + abonnement.logo) }}"
+      width="200" height="200"
+      loading="lazy"
+      alt="Logo van {{ abonnement.naam }}"
+      class="logo-preview-img"
+    >
   </div>
+  {% endif %}
+</div>
+
+<!-- Nieuw veld: YouTube-video -->
+<div class="form-group">
+  <label for="youtube_url">YouTube-video (URL)</label>
+  <input 
+    type="url" 
+    id="youtube_url" 
+    name="youtube_url"
+    placeholder="Bijv. https://www.youtube.com/watch?v=abcd1234"
+    value="{{ abonnement.youtube_url or '' }}">
+</div>
+
+<!-- Nieuw veld: Nieuwe productfoto's uploaden -->
+<div class="form-group">
+  <label for="product_fotos">Nieuwe productfoto's toevoegen (max 10)</label>
+  <input 
+    type="file" 
+    id="product_fotos" 
+    name="product_fotos" 
+    multiple 
+    accept="image/*">
+  <small>Je kunt meerdere bestanden selecteren met Ctrl/Cmd + klik. Maximaal 10 foto's.</small>
+</div>
+
+<!-- Bestaande productfoto's tonen en kunnen verwijderen -->
+{% if abonnement.fotos %}
+<div class="form-group">
+  <p>Huidige productfoto's:</p>
+  <div class="product-photos" style="display:flex; flex-wrap:wrap; gap:10px;">
+    {% for foto in abonnement.fotos %}
+      <div style="position:relative; text-align:center;">
+        <img 
+          src="{{ url_for('static', filename='uploads/' ~ foto.bestandsnaam) }}"
+          alt="Foto van {{ abonnement.naam }}"
+          style="max-width:150px; height:auto; border-radius:5px; border:1px solid #ccc;">
+        <label style="display:block; margin-top:5px;">
+          <input type="checkbox" name="delete_fotos" value="{{ foto.id }}">
+          Verwijderen
+        </label>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
 
   <!-- Aanbiedingen -->
   <label for="aanbiedingen">Aanbiedingen</label>
