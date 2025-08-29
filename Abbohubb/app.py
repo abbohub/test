@@ -1423,7 +1423,7 @@ def sitemap():
         'priority': '1.0'
     })
 
-    # 2. Categorieën en subcategorieën met juiste prefix
+    # 2. Categorieën en subcategorieën
     categorieën = Categorie.query.all()
     for cat in categorieën:
         if not cat.slug:
@@ -1433,7 +1433,6 @@ def sitemap():
             'changefreq': 'weekly',
             'priority': '0.8'
         })
-
         subcategorieën = Subcategorie.query.filter_by(categorie_id=cat.id).all()
         for sub in subcategorieën:
             if not sub.slug:
@@ -1444,7 +1443,7 @@ def sitemap():
                 'priority': '0.7'
             })
 
-    # 3. Abonnement-detailpagina's onder /review/ + volledige slug
+    # 3. Abonnement-detailpagina's
     abonnementen = Abonnement.query.all()
     for ab in abonnementen:
         if ab.slug:
@@ -1454,6 +1453,27 @@ def sitemap():
                 'changefreq': 'monthly',
                 'priority': '0.6'
             })
+
+    # 4. Blog overzicht
+    pages.append({
+        'loc': f"{base_url}/blog/",
+        'changefreq': 'weekly',
+        'priority': '0.7'
+    })
+
+    # 5. Blog detailpagina's
+    try:
+        blogposts = BlogPost.query.all()
+        for post in blogposts:
+            if post.slug:
+                url = f"{base_url}/blog/{post.slug}/"
+                pages.append({
+                    'loc': url,
+                    'changefreq': 'monthly',
+                    'priority': '0.6'
+                })
+    except Exception as e:
+        print("Geen BlogPost model gevonden:", e)
 
     # XML bouwen
     sitemap_xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
