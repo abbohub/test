@@ -316,6 +316,17 @@
     <input type="url" id="url" name="url" value="{{ abonnement.url }}">
   </div>
 
+        <!--affiliate url-->
+      <label for="affiliate_url">Affiliate URL (optioneel)</label>
+      <input 
+        type="url" 
+        name="affiliate_url" 
+        id="affiliate_url" 
+        placeholder="https://jouw-affiliate-link.example" 
+        value="{{ abonnement.affiliate_url if abonnement else '' }}">
+<small>Gebruik de trackinglink van je netwerk (bijv. Daisycon, TradeTracker, Awin). Voeg <code>rel="sponsored nofollow"</code> toe aan de CTA.</small>
+
+
 <!-- Logo upload -->
 <div class="form-group">
   <label for="logo">Logo (max 200×200)</label>

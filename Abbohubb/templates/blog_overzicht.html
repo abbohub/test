@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <title>Blog - AbboHub</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    .blog-lijst {
+      list-style: none;
+      padding: 0;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .blog-item {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 15px;
+      border-bottom: 1px solid #ddd;
+      padding: 15px 0;
+    }
+    .blog-tekst {
+      flex: 1;
+    }
+    .blog-tekst .meta {
+      font-size: 0.85rem;
+      color: #888;
+      margin-bottom: 5px;
+    }
+    .blog-tekst h2 {
+      font-size: 1.1rem;
+      margin: 0;
+    }
+    .blog-tekst h2 a {
+      text-decoration: none;
+      color: #0a2a4a;
+    }
+    .blog-tekst h2 a:hover {
+      text-decoration: underline;
+    }
+    .blog-thumbnail img {
+      width: 90px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<header>
+  <nav class="main-nav" aria-label="Hoofdnavigatie">
+    <ul>
+      <li><a href="{{ url_for('index') }}">Home</a></li>
+      {% if current_user.is_authenticated %}
+        <li><a href="{{ url_for('logout') }}">Uitloggen</a></li>
+      {% else %}
+        <li><a href="{{ url_for('login') }}">Inloggen</a></li>
+      {% endif %}
+      <li><a href="/contact">Contact</a></li>
+      <li><a href="{{ url_for('blog_overzicht') }}" aria-current="page">AbboHub Research</a></li>
+    </ul>
+  </nav>
+
+  <div class="zoek-filter-container">
+    <h1>AbboHub Research</h1>
+    <p>Trends, vergelijkingen & inzichten over abonnementen – door experts samengesteld.</p>
+  </div>
+</header>
+
+<body>
+
+  <h1 style="text-align: center;">Laatste blogberichten</h1>
+
+  <ul class="blog-lijst">
+    {% for post in posts %}
+    <li class="blog-item">
+      <div class="blog-tekst">
+<div class="meta">
+  {{ post.datum.strftime('%d %b %Y').lstrip('0') }} in 
+  <span>{{ post.auteur.username if post.auteur else 'Blog' }}</span>
+</div>
+        <h2>
+          <a href="{{ url_for('blog_detail', slug=post.slug) }}">{{ post.titel }}</a>
+        </h2>
+      </div>
+      <div class="blog-thumbnail">
+        {% if post.afbeelding %}
+          <img src="{{ url_for('static', filename='uploads/' ~ post.afbeelding) }}" alt="{{ post.titel }}">
+        {% else %}
+          <img src="{{ url_for('static', filename='images/placeholder.jpg') }}" alt="Geen afbeelding">
+        {% endif %}
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+
+</body>
+</html>

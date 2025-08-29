@@ -97,7 +97,14 @@
           </tr>
           <tr>
             <th>Bezoek Website</th>
-            <td><a href="{{ abonnement.url }}" target="_blank" rel="noopener noreferrer" class="visit-website">Bezoek website</a></td>
+            <td><a class="visit-website"
+   href="{{ url_for('outbound', ab_id=abonnement.id) }}?from={{ request.path }}"
+   target="_blank"
+   rel="sponsored nofollow"
+   data-abonnement="{{ abonnement.naam }}">
+  Bezoek aanbieder
+</a>
+</td>
           </tr>
         </table>
 </section>

@@ -162,12 +162,13 @@
                 <th scope="row">Bezoek website</th>
                 {% for abonnement in abonnementen %}
                 <td>
-                    <a href="{{ abonnement.url }}"
-                       target="_blank"
-                       rel="noopener noreferrer"
-                       aria-label="Bezoek de website van {{ abonnement.naam }}">
-                        Bezoek website
-                    </a>
+                    <a class="visit-website"
+   href="{{ url_for('outbound', ab_id=abonnement.id) }}?from={{ request.path }}"
+   target="_blank"
+   rel="sponsored nofollow"
+   data-abonnement="{{ abonnement.naam }}">
+  Bezoek aanbieder
+</a>
                 </td>
                 {% endfor %}
             </tr>

@@ -322,9 +322,18 @@
         type="url" 
         name="url" 
         id="url"
-        placeholder="Bijv. 'https://www.provider.nl'"
-      >
-
+        placeholder="Bijv. 'https://www.provider.nl'" >
+      
+      <!--affiliate url-->
+      <label for="affiliate_url">Affiliate URL (optioneel)</label>
+      <input 
+        type="url" 
+        name="affiliate_url" 
+        id="affiliate_url" 
+        placeholder="https://jouw-affiliate-link.example" 
+        value="{{ abonnement.affiliate_url if abonnement else '' }}">
+<small>Gebruik de trackinglink van je netwerk (bijv. Daisycon, TradeTracker, Awin). Voeg <code>rel="sponsored nofollow"</code> toe aan de CTA.</small>
+ 
       <!-- Categorie (verplicht) -->
       <label for="categorie_id">Categorie (verplicht):</label>
       <select 

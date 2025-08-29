@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <title>Clicks – Admin</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <style>
+    table { width:100%; border-collapse:collapse; }
+    th, td { border:1px solid #ddd; padding:8px; }
+    th { background:#f5f5f5; text-align:left; }
+    .filters { margin:10px 0; display:flex; gap:8px; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn">← Terug</a>
+  </nav>
+
+  <h1>Outbound Clicks</h1>
+
+  <form class="filters" method="get" action="{{ url_for('admin_clicks') }}">
+    <label>Van: <input type="datetime-local" name="from" value="{{ date_from }}"></label>
+    <label>Tot: <input type="datetime-local" name="to" value="{{ date_to }}"></label>
+    <button type="submit" class="btn">Filter</button>
+    <a class="btn" href="{{ url_for('admin_clicks_export', **request.args) }}">Export CSV</a>
+  </form>
+
+  <h2>Dag-aggregatie</h2>
+  <table>
+    <thead>
+      <tr><th>Dag</th><th>Abonnement</th><th>Clicks</th><th>Affiliate Clicks</th></tr>
+    </thead>
+    <tbody>
+      {% for r in agg %}
+        <tr>
+          <td>{{ r.dag }}</td>
+          <td>{{ r.ab_naam }}</td>
+          <td>{{ r.clicks }}</td>
+          <td>{{ r.aff_clicks }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h2>Laatst 500 kliks</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Tijd</th><th>Abonnement</th><th>Affiliate?</th><th>Target URL</th><th>Referer</th><th>Landing</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+      <tr>
+        <td>{{ r.created_at }}</td>
+        <td>{{ r.ab_naam }}</td>
+        <td>{{ 'ja' if r.used_affiliate else 'nee' }}</td>
+        <td style="max-width:420px; overflow-wrap:anywhere;">{{ r.target_url }}</td>
+        <td style="max-width:260px; overflow-wrap:anywhere;">{{ r.referer }}</td>
+        <td>{{ r.landing_path }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>

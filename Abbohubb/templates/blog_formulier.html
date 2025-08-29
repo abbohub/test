@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <title>Nieuw blogbericht - AbboHub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <style>
+    .blog-form-container {
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 25px;
+      background-color: #fff;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      font-family: Arial, sans-serif;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 25px;
+      font-size: 1.8rem;
+      color: #4CAF50;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+      color: #333;
+    }
+
+    input[type="text"],
+    input[type="url"],
+    textarea,
+    input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+
+    textarea {
+      min-height: 150px;
+      resize: vertical;
+    }
+
+    button[type="submit"] {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin-top: 25px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button[type="submit"]:hover {
+      background-color: #45a049;
+    }
+
+    .flash-message {
+      margin-bottom: 15px;
+      padding: 10px;
+      border-radius: 4px;
+    }
+
+    .flash-success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+
+    .flash-danger {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="blog-form-container">
+    <h1>Nieuw blogbericht</h1>
+
+    <!-- Flashberichten -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash-message flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+<form method="POST" enctype="multipart/form-data">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <label for="titel">Titel</label>
+  <input type="text" name="titel" id="titel" required value="{{ post.titel if post else '' }}">
+
+  <label for="inhoud">Inhoud (HTML toegestaan)</label>
+  <textarea name="inhoud" id="inhoud" rows="10">{{ post.inhoud if post else '' }}</textarea>
+
+  <label for="video_url">Video-URL (optioneel)</label>
+  <input type="url" name="video_url" id="video_url" value="{{ post.video_url if post else '' }}">
+
+  <label for="afbeelding">Afbeelding uploaden (laat leeg om bestaande te behouden)</label>
+  <input type="file" name="afbeelding" id="afbeelding">
+
+  {% if post and post.afbeelding %}
+    <p>Huidige afbeelding: <strong>{{ post.afbeelding }}</strong></p>
+    <img src="{{ url_for('static', filename='uploads/' ~ post.afbeelding) }}" alt="Huidige afbeelding" style="max-width: 150px;">
+  {% endif %}
+
+  <button type="submit">
+    {{ 'Update' if post else 'Publiceer' }}
+  </button>
+</form>
+
+  </div>
+
+</body>
+</html>
+

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <title>Blogbeheer | Admin</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 2rem auto;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+    th {
+      background-color: #f4cd00;
+      color: white;
+    }
+    .acties a, .acties form {
+      display: inline-block;
+      margin-right: 10px;
+    }
+    .btn-verwijder {
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .btn-verwijder:hover {
+      background-color: #c0392b;
+    }
+    .btn-bewerk {
+      background-color: #45a049;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 4px;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h1 style="text-align: center;">Beheer blogberichten</h1>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Titel</th>
+        <th>Datum</th>
+        <th>Auteur</th>
+        <th>Acties</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for post in posts %}
+      <tr>
+        <td>{{ post.titel }}</td>
+        <td>{{ post.datum.strftime('%d %b %Y').lstrip('0') }}</td>
+        <td>{{ post.auteur.username if post.auteur else 'Onbekend' }}</td>
+        <td class="acties">
+          <a href="{{ url_for('blog_bewerken', post_id=post.id) }}" class="btn-bewerk">✏️ Bewerken</a>
+          <form method="POST" action="{{ url_for('blog_verwijderen', post_id=post.id) }}" onsubmit="return confirm('Weet je zeker dat je dit blogbericht wilt verwijderen?');">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">   
+            <button type="submit" class="btn-verwijder">🗑️ Verwijderen</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+</body>
+</html>

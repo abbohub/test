@@ -9,7 +9,7 @@
   <link rel="canonical" href="{{ request.url }}">
 
   <!-- Title & Meta description -->
-  <title>{{ page_title or "AbboHub - Vind en vergelijk abonnementen" }}</title>
+  <title>{{ page_title or "AbboHub - Vind en vergelijk product-abonnementen" }}</title>
   <meta name="description" content="{{ page_description or 'Bij AbboHub vind je snel en eenvoudig alle abonnementen in diverse categorieën. Vergelijk, filter en vind het abonnement dat bij jou past!' }}">
 
   <!-- Favicon -->
@@ -17,7 +17,7 @@
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
 
   <!-- Open Graph -->
-  <meta property="og:title" content="{{ page_title or 'AbboHub - Vergelijk abonnementen eenvoudig' }}">
+  <meta property="og:title" content="{{ page_title or 'AbboHub - Vergelijk product-abonnementen eenvoudig' }}">
   <meta property="og:description" content="{{ page_description or 'Vind het abonnement dat bij jou past.' }}">
   <meta property="og:image" content="{{ url_for('static', filename='logo.png', _external=True) }}">
   <meta property="og:url" content="{{ request.url }}">
@@ -95,6 +95,7 @@
         <li><a href="{{ url_for('login') }}">Inloggen</a></li>
       {% endif %}
       <li><a href="/contact">Contact</a></li>
+      <li><a href="{{ url_for('blog_overzicht') }}">Abbohub Research</a></li>
     </ul>
   </nav>
 
