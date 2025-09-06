@@ -32,6 +32,7 @@ from sqlalchemy.orm import joinedload
 from flask_wtf.csrf import CSRFProtect
 from flask import send_from_directory
 from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import flash, Response, render_template, redirect, request, url_for
 from flask import abort
 import sqlite3
 import os
@@ -1129,20 +1130,85 @@ def blog_verwijderen(post_id):
 # ---------------------------------------
 # Routes: Abonnementen vergelijken (publiek)
 # ---------------------------------------
+# ---- helpers ----
+def _normalize_combo(slugs):
+    """Sorteer en plak slugs als a-vs-b[-vs-c]."""
+    return "-vs-".join(sorted(s.strip() for s in slugs if s and s.strip()))
+
+def slug_leaf(s: str) -> str:
+    return s.strip('/').split('/')[-1]
+
+def _normalize_combo(slugs):
+    return "-vs-".join(sorted(s.strip() for s in slugs if s and s.strip()))
+
+
 @app.route('/vergelijk')
 def vergelijk():
-    # Lees slugs vanuit querystring, bijv. ?abonnementen=hello-fresh,green-chef
     slugs_string = request.args.get('abonnementen', '')
-    geselecteerde_abonnementen = []
+    slugs = [s for s in slugs_string.split(',') if s.strip()]
+    if slugs:
+        abs_ = Abonnement.query.filter(Abonnement.slug.in_(slugs)).all()
+        if len(abs_) >= 2:
+            cat_ids = {a.subcategorie.categorie_id for a in abs_ if a.subcategorie and a.subcategorie.categorie_id}
+            if len(cat_ids) == 1:
+                combo = _normalize_combo([slug_leaf(a.slug) for a in abs_])
+                return redirect(url_for('vergelijk_flat', combo=combo), code=301)
+            else:
+                flash("Je kunt alleen abonnementen binnen dezelfde categorie vergelijken.", "error")
+                return render_template('vergelijk.html',
+                                       abonnementen=[],
+                                       categorie=None,
+                                       indexable=False,
+                                       canonical=url_for('vergelijk', _external=True)), 200
 
-    if slugs_string:
-        slugs = [slug.strip() for slug in slugs_string.split(',') if slug.strip()]
-        if slugs:
-            geselecteerde_abonnementen = Abonnement.query.filter(Abonnement.slug.in_(slugs)).all()
+    # Lege of 1 item
+    flash("Selecteer minimaal 2 abonnementen om te vergelijken.", "warning")
+    return render_template('vergelijk.html',
+                           abonnementen=[],
+                           categorie=None,
+                           indexable=False,
+                           canonical=url_for('vergelijk', _external=True)), 200
 
-    return render_template('vergelijk.html', abonnementen=geselecteerde_abonnementen)
+# ---- pretty URL: /vergelijk/<subcat>/<slug1>-vs-<slug2>[-vs-...]/
+@app.route('/vergelijk/<path:combo>/')
+def vergelijk_flat(combo):
+    leaves = [slug_leaf(x) for x in combo.strip('/').split('-vs-') if x]
+    if not leaves:
+        flash("Selecteer minimaal 2 abonnementen om te vergelijken.", "warning")
+        return render_template('vergelijk.html',
+                               abonnementen=[],
+                               categorie=None,
+                               indexable=False,
+                               canonical=url_for('vergelijk', _external=True)), 200
 
+    abs_all = Abonnement.query.all()
+    leaf_map = {slug_leaf(a.slug): a for a in abs_all}
+    abonnementen = [leaf_map[l] for l in leaves if l in leaf_map]
 
+    # => VALIDATIE: zelfde CATEGORIE
+    cat_ids = {a.subcategorie.categorie_id for a in abonnementen if a.subcategorie and a.subcategorie.categorie_id} if abonnementen else set()
+    valid = len(abonnementen) >= 2 and len(cat_ids) == 1
+
+    if not valid:
+        flash("Je kunt alleen abonnementen binnen dezelfde categorie vergelijken.", "error")
+        return render_template('vergelijk.html',
+                               abonnementen=[],
+                               categorie=None,
+                               indexable=False,
+                               canonical=url_for('vergelijk', _external=True)), 200
+
+    categorie = Categorie.query.get(next(iter(cat_ids)))
+    normalized_combo = _normalize_combo([slug_leaf(a.slug) for a in abonnementen])
+
+    if combo != normalized_combo:
+        return redirect(url_for('vergelijk_flat', combo=normalized_combo), code=301)
+
+    canonical = url_for('vergelijk_flat', combo=normalized_combo, _external=True)
+    return render_template('vergelijk.html',
+                           abonnementen=abonnementen,
+                           categorie=categorie,
+                           indexable=True,
+                           canonical=canonical), 200
 
 @app.route('/update_comparison', methods=['POST'])
 def update_comparison():
@@ -1416,76 +1482,115 @@ def sitemap():
     base_url = 'https://abbohub.nl'
     pages = []
 
-    # 1. Homepage
-    pages.append({
-        'loc': f"{base_url}/",
-        'changefreq': 'weekly',
-        'priority': '1.0'
-    })
+    def slug_leaf(s: str) -> str:
+        return s.strip('/').split('/')[-1]
 
-    # 2. Categorieën en subcategorieën
-    categorieën = Categorie.query.all()
-    for cat in categorieën:
-        if not cat.slug:
+    def _normalize_combo(slugs):
+        return "-vs-".join(sorted(s.strip() for s in slugs if s and s.strip()))
+
+    def iso_or_none(dt):
+        try:
+            if isinstance(dt, datetime):
+                return dt.date().isoformat()
+            return dt.isoformat() if hasattr(dt, 'isoformat') else None
+        except Exception:
+            return None
+
+    # 1) Home
+    pages.append({'loc': f"{base_url}/", 'changefreq': 'weekly', 'priority': '1.0', 'lastmod': None})
+
+    # 2) Categorieën & subcategorieën
+    cats = Categorie.query.all()
+    for cat in cats:
+        if not getattr(cat, 'slug', None):
             continue
         pages.append({
             'loc': f"{base_url}/categorie/{cat.slug}/",
             'changefreq': 'weekly',
-            'priority': '0.8'
+            'priority': '0.8',
+            'lastmod': iso_or_none(getattr(cat, 'updated_at', None))
         })
-        subcategorieën = Subcategorie.query.filter_by(categorie_id=cat.id).all()
-        for sub in subcategorieën:
-            if not sub.slug:
+
+        subs = Subcategorie.query.filter_by(categorie_id=cat.id).all()
+        for sub in subs:
+            if not getattr(sub, 'slug', None):
                 continue
             pages.append({
                 'loc': f"{base_url}/categorie/{cat.slug}/{sub.slug}/",
                 'changefreq': 'weekly',
-                'priority': '0.7'
+                'priority': '0.7',
+                'lastmod': iso_or_none(getattr(sub, 'updated_at', None))
             })
 
-    # 3. Abonnement-detailpagina's
+    # 3) Review-detailpagina's
     abonnementen = Abonnement.query.all()
     for ab in abonnementen:
-        if ab.slug:
-            url = f"{base_url}/review/{ab.slug}"
+        if getattr(ab, 'slug', None):
             pages.append({
-                'loc': url,
+                'loc': f"{base_url}/review/{ab.slug}",
                 'changefreq': 'monthly',
-                'priority': '0.6'
+                'priority': '0.6',
+                'lastmod': iso_or_none(getattr(ab, 'updated_at', None) or getattr(ab, 'published_at', None))
             })
 
-    # 4. Blog overzicht
-    pages.append({
-        'loc': f"{base_url}/blog/",
-        'changefreq': 'weekly',
-        'priority': '0.7'
-    })
+    # 3b) Vergelijk-URL's per CATEGORIE (plat patroon /vergelijk/<combo>/)
+    seen_combos = set()
+    for cat in cats:
+        # top-N per categorie (pas aan: volgorde/score/prijs)
+        abs_cat = (
+            Abonnement.query
+            .join(Subcategorie, Abonnement.subcategorie_id == Subcategorie.id)
+            .filter(Subcategorie.categorie_id == cat.id)
+            .order_by(Abonnement.volgorde.asc())   # evt .asc().nullslast()
+            .limit(3)
+            .all()
+        )
+        # pairwise
+        for i in range(len(abs_cat)):
+            for j in range(i+1, len(abs_cat)):
+                leaf_i = slug_leaf(abs_cat[i].slug)
+                leaf_j = slug_leaf(abs_cat[j].slug)
+                combo = _normalize_combo([leaf_i, leaf_j])
+                if combo in seen_combos:
+                    continue
+                seen_combos.add(combo)
+                pages.append({
+                    'loc': f"{base_url}/vergelijk/{combo}/",
+                    'changefreq': 'weekly',
+                    'priority': '0.50',
+                    'lastmod': max(
+                        iso_or_none(getattr(abs_cat[i], 'updated_at', None)),
+                        iso_or_none(getattr(abs_cat[j], 'updated_at', None))
+                    ) or None
+                })
 
-    # 5. Blog detailpagina's
+    # 4) Blog overzicht & details
+    pages.append({'loc': f"{base_url}/blog/", 'changefreq': 'weekly', 'priority': '0.7', 'lastmod': None})
     try:
         blogposts = BlogPost.query.all()
         for post in blogposts:
-            if post.slug:
-                url = f"{base_url}/blog/{post.slug}/"
+            if getattr(post, 'slug', None):
                 pages.append({
-                    'loc': url,
+                    'loc': f"{base_url}/blog/{post.slug}/",
                     'changefreq': 'monthly',
-                    'priority': '0.6'
+                    'priority': '0.6',
+                    'lastmod': iso_or_none(getattr(post, 'updated_at', None) or getattr(post, 'published_at', None))
                 })
     except Exception as e:
         print("Geen BlogPost model gevonden:", e)
 
-    # XML bouwen
-    sitemap_xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
-    sitemap_xml += '<urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">\n'
-    for page in pages:
+    # XML
+    sitemap_xml  = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    sitemap_xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    for p in pages:
         sitemap_xml += '  <url>\n'
-        sitemap_xml += f"    <loc>{page['loc']}</loc>\n"
-        sitemap_xml += f"    <changefreq>{page['changefreq']}</changefreq>\n"
-        sitemap_xml += f"    <priority>{page['priority']}</priority>\n"
+        sitemap_xml += f"    <loc>{p['loc']}</loc>\n"
+        if p.get('lastmod'):
+            sitemap_xml += f"    <lastmod>{p['lastmod']}</lastmod>\n"
+        sitemap_xml += f"    <changefreq>{p['changefreq']}</changefreq>\n"
+        sitemap_xml += f"    <priority>{p['priority']}</priority>\n"
         sitemap_xml += '  </url>\n'
     sitemap_xml += '</urlset>'
-
     return Response(sitemap_xml, mimetype='application/xml')
 
 @app.route('/robots.txt')
