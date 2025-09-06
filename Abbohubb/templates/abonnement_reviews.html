@@ -53,6 +53,18 @@
 <body>
   <!-- Header met de abonnementsnaam -->
   <header>
+      <nav class="main-nav" aria-label="Hoofdnavigatie">
+    <ul>
+      <li><a href="{{ url_for('index') }}">Home</a></li>
+      {% if current_user.is_authenticated %}
+        <li><a href="{{ url_for('logout') }}">Uitloggen</a></li>
+      {% else %}
+        <li><a href="{{ url_for('login') }}">Inloggen</a></li>
+      {% endif %}
+      <li><a href="/contact">Contact</a></li>
+      <li><a href="{{ url_for('blog_overzicht') }}">Abbohub Research</a></li>
+    </ul>
+  </nav>
     <h1>{{ abonnement.naam }}</h1>
     <p>Ontdek alles wat dit abonnement te bieden heeft</p>
     

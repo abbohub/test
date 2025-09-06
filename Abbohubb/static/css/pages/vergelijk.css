@@ -1,124 +1,281 @@
-        /* Algemene stijl */
-        body {
-            font-family: 'Arial', sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 0;
-            background-color: #f3e6cc;
-            color: #333;
-        }
+/* =======================
+   Basis / Thema-variabelen
+   ======================= */
+*, *::before, *::after { box-sizing: border-box; }
+:root{
+  --bg:#f3e6cc; --text:#333; --muted:#888;
+  --primary:#8968cd; --primary-contrast:#fff;
+  --cta:#f4cd00; --cta-hover:#45a049;
+  --border:#ddd; --card:#fff;
 
-        /* Hoofdnavigatie */
+  /* Tabelkolommen */
+  --col-label:160px;     /* kolom 1 (rijlabels) */
+  --col-provider:220px;  /* kolommen 2+ (aanbieders) */
+}
+html, body { height:100%; }
+body { margin:0; font-family:Arial,sans-serif; line-height:1.6; background:var(--bg); color:var(--text); }
 
-        .flash-container {
-            max-width: 1200px;
-            margin: 10px auto;
-            padding: 0 20px;
-        }
-        .flash-message {
-            margin: 5px 0;
-            padding: 10px;
-            border-radius: 5px;
-        }
-        .flash-success {
-            background-color: #d4edda;
-            color: #155724;
-        }
-        .flash-danger {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
+/* =======================
+   Toegankelijkheid
+   ======================= */
+.skip-link{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;}
+.skip-link:focus{position:fixed;left:16px;top:16px;background:#fff;color:#000;padding:8px 12px;border-radius:6px;z-index:9999}
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
+/* =======================
+   Header / Navigatie
+   ======================= */
+.page-header{padding:16px 20px;}
+.main-nav ul{list-style:none;margin:0 0 8px;padding:0;display:flex;gap:12px;flex-wrap:wrap}
+.main-nav a{color:#faf7f7;text-decoration:none;font-weight:bold}
+.main-nav a:hover,.main-nav a:focus{color:#4CAF50;text-decoration:underline}
 
-        /* Tabelstijl */
-        .vergelijk-tabel {
-            width: 100%; /* Zorgt ervoor dat de tabel de volledige breedte gebruikt */
-            border-collapse: collapse; /* Verwijdert dubbele randen */
-            background-color: white;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            table-layout: fixed; /* Zorgt ervoor dat alle kolommen even breed zijn */
-        }
-        .vergelijk-tabel caption {
-            caption-side: top;
-            padding: 10px;
-            font-weight: bold;
-        }
-        .vergelijk-tabel thead {
-            background-color: #8968cd;
-            color: white;
-        }
-        .vergelijk-tabel th, .vergelijk-tabel td {
-            padding: 10px; /* Binnenruimte voor cellen */
-            text-align: center; /* Centraal uitlijnen van tekst */
-            border: 1px solid #ddd; /* Voeg randen toe */
-            word-wrap: break-word; /* Zorgt ervoor dat tekst in een cel wordt afgebroken als deze te lang is */
-        }
-        .vergelijk-tabel th {
-            font-size: 1rem;
-        }
-        .vergelijk-tabel tbody tr:nth-child(odd) {
-            background-color: #f2f2f2;
-        }
-        .vergelijk-tabel tbody tr:hover {
-            background-color: #e9ffe9;
-        }
-        .vergelijk-tabel a {
-            color: #8968cd;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        .vergelijk-tabel a:hover {
-            text-decoration: underline;
-        }
+.zoek-filter-container h1{margin:8px 0 6px}
+.compare-actions{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin-top:.5rem}
+.btn,.select{border-radius:6px;border:1px solid transparent}
+.btn{display:inline-block;padding:10px 16px;background:var(--cta);color:#fff;font-weight:bold;font-size:1rem;cursor:pointer;transition:.2s background,.1s transform}
+.btn:hover,.btn:focus{background:var(--cta-hover);transform:translateY(.5px)}
+.select{padding:8px;border-color:var(--border);background:#fff}
+.pin-label{display:inline-flex;gap:6px;align-items:center;color:#333}
 
-        .btn {
-            display: inline-block;
-            padding: 10px 20px;
-            margin: 10px 0;
-            background-color: #f4cd00;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 1rem;
-        }
+/* =======================
+   Breadcrumb / Terug-link
+   ======================= */
+.breadcrumb{display:flex;align-items:center;gap:.5rem;margin-top:8px;color:#666}
+.back-link{color:var(--primary);font-weight:bold;text-decoration:none}
+.back-link:hover{text-decoration:underline}
 
-        .btn:hover {
-            background-color: #45a049;
-        }
-        
-        .badge {
-    display: inline-block;
-    background-color: #cd95ccbd;
-    color: white;
-    padding: 5px 10px;
-    font-size: 0.85rem;
-    border-radius: 12px;
-    margin: 2px;
-    text-align: center;
+/* =======================
+   Flash-meldingen
+   ======================= */
+.flash-container{max-width:1200px;margin:10px auto;padding:0 20px}
+.flash-message{margin:5px 0;padding:10px;border-radius:5px}
+.flash-success{background:#d4edda;color:#155724}
+.flash-danger{background:#f8d7da;color:#721c24}
+
+/* =======================
+   Layout wrappers
+   ======================= */
+.container{max-width:1200px;margin:0 auto;padding:20px}
+.page-wrapper{max-width:1200px;margin:0 auto;padding:10px 10px}
+.page-layout{display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start;justify-content:space-between;min-width:0}
+.page-layout>*{min-width:0} /* belangrijk voor interne overflow */
+
+/* =======================
+   Vergelijk-tabel
+   ======================= */
+.vergelijk-tabel-wrap{
+  background:var(--card);
+  border-radius:8px;
+  box-shadow:0 4px 6px rgba(0,0,0,.1);
+  position:relative;
+
+  /* ENIGE horizontale scroller */
+  overflow-x:auto !important;
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-x pinch-zoom;
+  overscroll-behavior-x:contain;
+
+  min-width:0; max-width:100%;
 }
 
+.vergelijk-tabel{
+  width:100%;
+  border-collapse:collapse;
+  background:#fff;
+  table-layout:fixed;
+  /* breed genoeg zodat je kunt swipen: label + 2 aanbieders minimaal in beeld */
+  min-width:calc(var(--col-label) + var(--col-provider)*2);
+}
 
-        /* Responsief ontwerp */
-        @media (max-width: 768px) {
-            nav li {
-                margin: 0 0.5rem;
-            }
-            header h1 {
-                font-size: 1.5rem;
-            }
-            header p {
-                font-size: 1rem;
-            }
-            .vergelijk-tabel th,
-            .vergelijk-tabel td {
-                font-size: 0.9rem;
-                padding: 10px;
-            }
-        } 
+.vergelijk-tabel caption{
+  caption-side:top; padding:10px; font-weight:bold; text-align:left;
+  margin:.5rem 0 1rem; color:#111;
+}
+.vergelijk-tabel thead{background:var(--primary);color:var(--primary-contrast)}
+.vergelijk-tabel th,.vergelijk-tabel td{
+  padding:10px; text-align:center; border:1px solid var(--border);
+  word-wrap:break-word; font-size:1rem;
+}
+.vergelijk-tabel tbody tr:nth-child(odd){background:#f2f2f2}
+.vergelijk-tabel tbody tr:hover{background:#e9ffe9}
+
+/* Sticky header bovenin (prettig bij swipen) */
+.vergelijk-tabel thead th{
+  position:sticky; top:0; z-index:6;
+  background:var(--primary); color:var(--primary-contrast);
+}
+
+/* Kolom 1 (labelkolom) vast links, inclusief head-kruispunt */
+.vergelijk-tabel .first-col,
+.vergelijk-tabel tbody th[scope="row"]{
+  position:sticky; left:0; z-index:7;
+  width:var(--col-label); min-width:var(--col-label); max-width:var(--col-label);
+  background:#fff; text-align:left; white-space:nowrap; text-overflow:ellipsis; overflow:hidden;
+}
+.vergelijk-tabel thead .first-col{ background:var(--primary); color:var(--primary-contrast); z-index:8; }
+
+/* Kolommen 2+ vaste breedte = voorspelbaar swipen */
+.vergelijk-tabel thead th:not(.first-col),
+.vergelijk-tabel tbody td{
+  width:var(--col-provider); min-width:var(--col-provider); max-width:var(--col-provider);
+  word-break:break-word;
+}
+
+/* Providerkop compact */
+.provider-cell{display:flex;align-items:center;justify-content:center;gap:8px}
+.provider-heading{font-weight:700;color:#fff;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.remove-col{margin-left:.5rem;border:none;background:transparent;font-size:1.1rem;line-height:1;cursor:pointer;color:rgba(255,255,255,.85)}
+.remove-col:hover{color:#fff}
+
+/* Badges / labels */
+.row-label{color:#111;font-weight:600}
+.badge{display:inline-block;background:#cd95ccbd;color:#fff;padding:5px 10px;font-size:.85rem;border-radius:12px;margin:2px;text-align:center}
+.muted{color:var(--muted)}
+
+/* Sterren & score */
+.ster-rating{display:inline-flex;gap:.125rem}
+.vol-ster,.halve-ster,.leeg-ster{font-size:1rem;line-height:1}
+.vol-ster{color:#f5a623}.leeg-ster{color:#ccc}
+.halve-ster{position:relative;color:#ccc}
+.halve-ster::before{content:'★';position:absolute;left:0;width:50%;overflow:hidden;color:#f5a623}
+.score-tekst{margin-left:6px;color:#555}
+
+/* Links in tabel */
+.vergelijk-tabel a{color:var(--primary);font-weight:bold;text-decoration:none}
+.vergelijk-tabel a:hover{text-decoration:underline}
+
+/* CTA-link als knop */
+.vergelijk-tabel a.visit-website{
+  background:var(--cta); color:#fff; padding:8px 10px; border-radius:6px;
+  display:inline-block; text-decoration:none; transition:background .2s;
+}
+.vergelijk-tabel a.visit-website:hover,.vergelijk-tabel a.visit-website:focus{background:var(--cta-hover);text-decoration:none}
+
+/* Verschillen-highlight */
+.diff-cell{outline:2px solid rgba(137,104,205,.15);background:#f7f3ff}
+
+/* Focus */
+a:focus,button:focus,select:focus{outline:2px solid var(--primary);outline-offset:2px}
+
+/* Disclaimer */
+.disclaimer{margin-top:12px;color:var(--muted);font-size:.95rem}
+
+/* =======================
+   Footer
+   ======================= */
+.footer-nav ul{list-style:none;padding:0;display:flex;gap:12px;flex-wrap:wrap}
+.footer-nav a{color:#6b7280;text-decoration:none}
+.footer-nav a:hover{color:#374151;text-decoration:underline}
+
+/* =======================
+   Mobiel (UX) — alleen tabel scrolt
+   ======================= */
+@media (max-width:900px){
+  /* Pagina zelf mag NOOIT horizontaal scrollen */
+  html,body{overflow-x:hidden;width:100%;max-width:100%}
+  .page-header,.zoek-filter-container,.breadcrumb,.flash-container,.container,.page-wrapper,.page-layout{
+    width:100%;max-width:100vw;box-sizing:border-box;overflow-x:hidden;
+  }
+}
+
+@media (max-width:768px){
+  /* Compactere tabel */
+  .vergelijk-tabel{min-width:calc(var(--col-label) + var(--col-provider)*2);font-size:.95rem}
+  .vergelijk-tabel th,.vergelijk-tabel td{padding:8px 10px}
+  .vergelijk-tabel a.visit-website{display:block;width:100%;text-align:center}
+  .badge{font-size:.8rem;padding:3px 8px}
+  .score-tekst{display:block;margin-top:2px;font-size:.85rem}
+
+  /* Scroll-hint (fade + label) – verdwijnt zodra gescrold (JS voegt .hide-hint) */
+  .vergelijk-tabel-wrap::before{
+    content:""; position:absolute; right:0; top:0; bottom:0; width:26px;
+    background:linear-gradient(to left, rgba(243,230,204,1), rgba(243,230,204,0));
+    pointer-events:none; transition:opacity .2s;
+  }
+  .vergelijk-tabel-wrap::after{
+    content:"← veeg →"; position:absolute; right:6px; bottom:6px;
+    font-size:12px; background:rgba(0,0,0,.55); color:#fff;
+    padding:4px 6px; border-radius:12px; pointer-events:none; transition:opacity .2s;
+  }
+  .vergelijk-tabel-wrap.hide-hint::before,
+  .vergelijk-tabel-wrap.hide-hint::after{opacity:0}
+}
+
+/* Kleinere devices: smalle kolommen */
+@media (max-width:480px){
+  :root{ --col-label:140px; --col-provider:180px; }
+}
+
+/* =======================
+   Media / embeds guard
+   ======================= */
+img,svg,video,iframe{max-width:100%;height:auto;display:block}
+
+/* ==== Compare actions: nette grid + consistente knoppen ==== */
+.compare-actions{
+  display:grid;
+  grid-template-columns: 1fr 1fr;   /* mobiel: 2 kolommen */
+  gap:12px;
+  align-items:stretch;
+  width:100%;
+}
+.compare-actions .btn,
+.compare-actions .select{
+  width:100%;
+  min-height:44px;                  /* grote tap targets */
+  font-size:0.95rem;
+}
+
+/* Pin dropdown krijgt volle breedte op mobiel */
+.compare-actions .pin-label{
+  grid-column:1 / -1;
+  display:flex; gap:8px; align-items:center;
+}
+.compare-actions .pin-label span{ white-space:nowrap; }
+
+/* Variaties voor hiërarchie (hergebruikt je kleuren) */
+.btn.btn--secondary{
+  background:#fff; color:var(--primary);
+  border-color:var(--primary);
+}
+.btn.btn--secondary:hover,
+.btn.btn--secondary:focus{
+  background:rgba(137,104,205,.08);
+}
+
+.btn.btn--ghost{
+  background:transparent;
+  color:#fff;                       /* in paarse card goed contrast */
+  border-color:rgba(255,255,255,.6);
+}
+.btn.btn--ghost:hover,
+.btn.btn--ghost:focus{
+  background:rgba(255,255,255,.08);
+  border-color:#fff;
+}
+
+/* Tablet/desktop: 4 kolommen en pin naast knoppen */
+@media (min-width: 768px){
+  .compare-actions{
+    grid-template-columns: repeat(4, minmax(0,1fr));
+  }
+  .compare-actions .pin-label{ grid-column:auto; }
+}
+
+/* Optioneel: iconen wat lucht geven */
+.compare-actions .btn::first-letter,
+.compare-actions .pin-label span::first-letter{ margin-right:2px; }
+
+/* Zorg dat de kaart/sectie nooit breder uitsteekt */
+.zoek-filter-container{ max-width:100%; box-sizing:border-box; overflow:hidden; }
+/* Tabel: horizontaal swipen, maar verticaal gewoon de pagina laten scrollen */
+.vergelijk-tabel-wrap {
+  overflow-x: auto;            /* alleen X scrollt in de wrapper */
+  overflow-y: visible;         /* géén eigen Y-scroll */
+  -webkit-overflow-scrolling: touch;
+  touch-action: auto !important;         /* was: pan-x ... -> blokkeert verticaal */
+  overscroll-behavior-x: contain;        /* voorkom horizontale “rubber band” */
+}
+
+.flash-message.flash-error { background:#ffe8e8; color:#b20000; border:1px solid #f5b5b5; padding:.6rem .8rem; border-radius:.5rem; }
+.flash-message.flash-warning { background:#fff6e5; color:#8a5400; border:1px solid #ffd28a; padding:.6rem .8rem; border-radius:.5rem; }
