@@ -8,6 +8,10 @@ from flask import Response
 from PIL import Image
 from flask import current_app
 from sqlalchemy import func, case
+from datetime import datetime, timezone
+from xml.sax.saxutils import escape
+from flask import Response
+
 
 # Alleen nodig als je environment variables gebruikt
 # (Bijvoorbeeld SECRET_KEY uit .env)
@@ -51,6 +55,12 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, f1_score
 from slugify import slugify
 from flask import redirect, url_for, abort
+from flask import redirect, request
+from flask import Flask
+
+app = Flask(__name__)
+app.url_map.strict_slashes = False   # zet dit meteen na je app = Flask(...)
+
 
 # Maak de Flask-app aan
 app = Flask(__name__, static_url_path='/static', static_folder='static')
@@ -572,12 +582,14 @@ def abonnement_reviews(slug):
         page_description=page_description
     )
 
-@app.route('/blog')
+@app.route('/blog', strict_slashes=False)
+@app.route('/blog/', strict_slashes=False)
 def blog_overzicht():
     posts = BlogPost.query.order_by(BlogPost.datum.desc()).all()
     return render_template('blog_overzicht.html', posts=posts)
 
-@app.route('/blog/<slug>')
+@app.route('/blog/<slug>', strict_slashes=False)
+@app.route('/blog/<slug>/', strict_slashes=False)
 def blog_detail(slug):
     post = BlogPost.query.filter_by(slug=slug).first_or_404()
     return render_template('blog_detail.html', post=post)
@@ -1476,7 +1488,13 @@ def generate_category_slugs():
 # ---------------------------------------
 # Google optimalisatie
 # ---------------------------------------
-
+@app.before_request
+def enforce_trailing_slash():
+    # Alleen voor blog-sectie
+    if request.path.startswith("/blog") and not request.path.endswith("/"):
+        # redirect naar versie met slash
+        return redirect(request.path + "/", code=301)
+    
 @app.route('/sitemap.xml', methods=['GET'])
 def sitemap():
     base_url = 'https://abbohub.nl'
@@ -1490,11 +1508,35 @@ def sitemap():
 
     def iso_or_none(dt):
         try:
+            if not dt:
+                return None
             if isinstance(dt, datetime):
-                return dt.date().isoformat()
-            return dt.isoformat() if hasattr(dt, 'isoformat') else None
+                # force UTC
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=timezone.utc)
+                else:
+                    dt = dt.astimezone(timezone.utc)
+                return dt.isoformat(timespec='seconds')
+            # date object -> make datetime at 00:00 UTC
+            if hasattr(dt, 'isoformat') and hasattr(dt, 'year'):
+                return datetime(dt.year, dt.month, dt.day, tzinfo=timezone.utc).isoformat(timespec='seconds')
         except Exception:
+            pass
+        return None
+
+    def max_iso(*values):
+        # values are ISO strings or None; return max as ISO or None
+        parsed = []
+        for v in values:
+            if not v:
+                continue
+            try:
+                parsed.append(datetime.fromisoformat(v.replace('Z', '+00:00')))
+            except Exception:
+                pass
+        if not parsed:
             return None
+        return max(parsed).astimezone(timezone.utc).isoformat(timespec='seconds')
 
     # 1) Home
     pages.append({'loc': f"{base_url}/", 'changefreq': 'weekly', 'priority': '1.0', 'lastmod': None})
@@ -1502,10 +1544,11 @@ def sitemap():
     # 2) Categorieën & subcategorieën
     cats = Categorie.query.all()
     for cat in cats:
-        if not getattr(cat, 'slug', None):
+        slug = getattr(cat, 'slug', None)
+        if not slug:
             continue
         pages.append({
-            'loc': f"{base_url}/categorie/{cat.slug}/",
+            'loc': f"{base_url}/categorie/{slug}/",
             'changefreq': 'weekly',
             'priority': '0.8',
             'lastmod': iso_or_none(getattr(cat, 'updated_at', None))
@@ -1513,10 +1556,11 @@ def sitemap():
 
         subs = Subcategorie.query.filter_by(categorie_id=cat.id).all()
         for sub in subs:
-            if not getattr(sub, 'slug', None):
+            sub_slug = getattr(sub, 'slug', None)
+            if not sub_slug:
                 continue
             pages.append({
-                'loc': f"{base_url}/categorie/{cat.slug}/{sub.slug}/",
+                'loc': f"{base_url}/categorie/{slug}/{sub_slug}/",
                 'changefreq': 'weekly',
                 'priority': '0.7',
                 'lastmod': iso_or_none(getattr(sub, 'updated_at', None))
@@ -1525,66 +1569,72 @@ def sitemap():
     # 3) Review-detailpagina's
     abonnementen = Abonnement.query.all()
     for ab in abonnementen:
-        if getattr(ab, 'slug', None):
+        ab_slug = getattr(ab, 'slug', None)
+        if ab_slug:
             pages.append({
-                'loc': f"{base_url}/review/{ab.slug}",
+                'loc': f"{base_url}/review/{ab_slug}",
                 'changefreq': 'monthly',
                 'priority': '0.6',
                 'lastmod': iso_or_none(getattr(ab, 'updated_at', None) or getattr(ab, 'published_at', None))
             })
 
-    # 3b) Vergelijk-URL's per CATEGORIE (plat patroon /vergelijk/<combo>/)
+    # 3b) Vergelijk-URL's per categorie
     seen_combos = set()
     for cat in cats:
-        # top-N per categorie (pas aan: volgorde/score/prijs)
         abs_cat = (
             Abonnement.query
             .join(Subcategorie, Abonnement.subcategorie_id == Subcategorie.id)
             .filter(Subcategorie.categorie_id == cat.id)
-            .order_by(Abonnement.volgorde.asc())   # evt .asc().nullslast()
+            .order_by(Abonnement.volgorde.asc())
             .limit(3)
             .all()
         )
-        # pairwise
         for i in range(len(abs_cat)):
             for j in range(i+1, len(abs_cat)):
-                leaf_i = slug_leaf(abs_cat[i].slug)
-                leaf_j = slug_leaf(abs_cat[j].slug)
+                leaf_i = slug_leaf(abs_cat[i].slug or '')
+                leaf_j = slug_leaf(abs_cat[j].slug or '')
                 combo = _normalize_combo([leaf_i, leaf_j])
-                if combo in seen_combos:
+                if not combo or combo in seen_combos:
                     continue
                 seen_combos.add(combo)
+                lastmod_i = iso_or_none(getattr(abs_cat[i], 'updated_at', None) or getattr(abs_cat[i], 'published_at', None))
+                lastmod_j = iso_or_none(getattr(abs_cat[j], 'updated_at', None) or getattr(abs_cat[j], 'published_at', None))
                 pages.append({
                     'loc': f"{base_url}/vergelijk/{combo}/",
                     'changefreq': 'weekly',
                     'priority': '0.50',
-                    'lastmod': max(
-                        iso_or_none(getattr(abs_cat[i], 'updated_at', None)),
-                        iso_or_none(getattr(abs_cat[j], 'updated_at', None))
-                    ) or None
+                    'lastmod': max_iso(lastmod_i, lastmod_j)
                 })
 
-    # 4) Blog overzicht & details
+    # 4) Blog
     pages.append({'loc': f"{base_url}/blog/", 'changefreq': 'weekly', 'priority': '0.7', 'lastmod': None})
     try:
         blogposts = BlogPost.query.all()
+        latest_blog = None
         for post in blogposts:
-            if getattr(post, 'slug', None):
+            pslug = getattr(post, 'slug', None)
+            p_last = iso_or_none(getattr(post, 'updated_at', None) or getattr(post, 'published_at', None))
+            latest_blog = max_iso(latest_blog, p_last)
+            if pslug:
                 pages.append({
-                    'loc': f"{base_url}/blog/{post.slug}/",
+                    'loc': f"{base_url}/blog/{pslug}/",
                     'changefreq': 'monthly',
                     'priority': '0.6',
-                    'lastmod': iso_or_none(getattr(post, 'updated_at', None) or getattr(post, 'published_at', None))
+                    'lastmod': p_last
                 })
+        # lastmod for blog overview = meest recente post
+        if latest_blog:
+            pages[ - (len(blogposts) + 1) ] = { **pages[ - (len(blogposts) + 1) ], 'lastmod': latest_blog }
     except Exception as e:
         print("Geen BlogPost model gevonden:", e)
 
-    # XML
+    # XML opbouwen (escaped)
     sitemap_xml  = '<?xml version="1.0" encoding="UTF-8"?>\n'
     sitemap_xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     for p in pages:
+        loc = escape(p['loc'])
         sitemap_xml += '  <url>\n'
-        sitemap_xml += f"    <loc>{p['loc']}</loc>\n"
+        sitemap_xml += f"    <loc>{loc}</loc>\n"
         if p.get('lastmod'):
             sitemap_xml += f"    <lastmod>{p['lastmod']}</lastmod>\n"
         sitemap_xml += f"    <changefreq>{p['changefreq']}</changefreq>\n"
