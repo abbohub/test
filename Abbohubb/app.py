@@ -1586,7 +1586,7 @@ def sitemap():
             .join(Subcategorie, Abonnement.subcategorie_id == Subcategorie.id)
             .filter(Subcategorie.categorie_id == cat.id)
             .order_by(Abonnement.volgorde.asc())
-            .limit(3)
+            .limit(5)
             .all()
         )
         for i in range(len(abs_cat)):
@@ -1654,6 +1654,10 @@ def favicon():
 @app.route('/ads.txt')
 def ads():
   return send_from_directory(os.path.dirname(__file__), 'ads.txt', mimetype='text/plain')
+
+@app.route('/d2cb9643c6e6cd8.html')
+def verify_daisycon():
+    return send_from_directory(os.path.join(app.root_path, 'static', 'verification'), 'd2cb9643c6e6cd8.html')
 
 # --------user tracking---------
 
