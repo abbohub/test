@@ -262,3 +262,53 @@ a.visit-website:focus {
     height: 100%;
   }
 }
+
+/* =======================
+   Breadcrumb
+   ======================= */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  font-size: 0.95rem;
+  margin: 0;
+  padding: 0;
+}
+
+.breadcrumb ol {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.breadcrumb li {
+  display: flex;
+  align-items: center;
+}
+
+/* Links en actieve pagina */
+.breadcrumb a,
+.breadcrumb [aria-current="page"] {
+  color: #7a42c8;     /* paars */
+  font-weight: 600;
+  text-decoration: none;
+}
+.breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+/* Pijltje tussen items */
+.breadcrumb li + li::before {
+  content: "›";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #7a42c8;
+  font-weight: 500;
+  opacity: 0.9;
+  margin: 0 0.15rem;       /* veel compacter dan 0.3 of 0.6 */
+  line-height: 1;          /* zorgt dat het pijltje in het midden staat */
+  transform: translateY(0.02em); /* mini-optische correctie */
+}

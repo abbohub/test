@@ -145,3 +145,43 @@ main {
   margin-bottom: 1rem;
 }
 
+/* =======================
+   Breadcrumb / Terug-link
+   ======================= */
+.breadcrumb{display:flex;align-items:center;gap:.5rem;color:#8968cd}
+.back-link{color:var(--primary);font-weight:bold;text-decoration:none}
+.back-link:hover{text-decoration:underline}
+.breadcrumb {
+  font-size: 0.95rem;
+}
+
+.breadcrumb .back-link {
+  color: #7a42c8;        /* zelfde paars */
+  font-weight: 600;      /* bold */
+  text-decoration: none;
+  margin-right: 0.3rem;
+}
+
+.breadcrumb .back-link:hover {
+  text-decoration: underline;
+}
+
+.breadcrumb span[aria-hidden="true"] {
+  margin: 0 0.3rem;
+  color: #7a42c8;        /* pijltje in dezelfde kleur */
+}
+.breadcrumb a {
+  color: #7a42c8;   /* paars */
+  font-weight: 600; /* bold, net als Home */
+  text-decoration: none;
+}
+
+.breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+.breadcrumb span[aria-current="page"] {
+  color: #7a42c8;   /* laatste item ook paars */
+  font-weight: 600;
+}
+
