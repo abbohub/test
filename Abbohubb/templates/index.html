@@ -70,6 +70,43 @@
 }
 </script>
 {% endif %}
+{# ---- Breadcrumbs JSON-LD (alleen tonen bij actief filter) ---- #}
+  {% if actieve_subcategorie or actieve_categorie %}
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"BreadcrumbList",
+    "itemListElement":[
+      {
+        "@type":"ListItem",
+        "position":1,
+        "name":"Home",
+        "item":"{{ url_for('index', _external=True) }}"
+      }
+      {% if actieve_subcategorie %}
+      ,{
+        "@type":"ListItem",
+        "position":2,
+        "name": {{ (actieve_subcategorie.categorie.naam if actieve_subcategorie.categorie else "Categorie") | tojson }},
+        "item":"{{ url_for('abonnement_overzicht', categorie_slug=actieve_subcategorie.categorie.slug, _external=True) if actieve_subcategorie.categorie else url_for('index', _external=True) }}"
+      },{
+        "@type":"ListItem",
+        "position":3,
+        "name": {{ actieve_subcategorie.naam | tojson }},
+        "item":"{{ url_for('abonnement_overzicht', categorie_slug=actieve_subcategorie.categorie.slug, subcategorie_slug=actieve_subcategorie.slug, _external=True) }}"
+      }
+      {% elif actieve_categorie %}
+      ,{
+        "@type":"ListItem",
+        "position":2,
+        "name": {{ actieve_categorie.naam | tojson }},
+        "item":"{{ url_for('abonnement_overzicht', categorie_slug=actieve_categorie.slug, _external=True) }}"
+      }
+      {% endif %}
+    ]
+  }
+  </script>
+  {% endif %}
 </head>
 
 <body>
@@ -85,70 +122,63 @@
 {% endif %}
 
 <!-- HEADER -->
-<header>
-  <nav class="main-nav" aria-label="Hoofdnavigatie">
-    <ul>
-      <li><a href="{{ url_for('index') }}">Home</a></li>
-      {% if current_user.is_authenticated %}
-        <li><a href="{{ url_for('logout') }}">Uitloggen</a></li>
-      {% else %}
-        <li><a href="{{ url_for('login') }}">Inloggen</a></li>
-      {% endif %}
-      <li><a href="/contact">Contact</a></li>
-      <li><a href="{{ url_for('blog_overzicht') }}">Abbohub Research</a></li>
-    </ul>
-  </nav>
-
-  <div class="zoek-filter-container">
-    <h1>AbboHub abonnementen</h1>
-    <div class="search-row">
-      <form method="GET" action="{{ url_for('index') }}" class="zoek-filter-form">
-        <input 
-          type="text" 
-          name="zoekterm" 
-          placeholder="Zoek abonnementen..." 
-          value="{{ zoekterm }}" 
-          aria-label="Zoek abonnementen"
-        >
-      </form>
-
-      <div class="button-container">
-        <div class="dropdown-container">
-          <button type="button" class="dropdown-button">Categorieën</button>
-          <div class="dropdown-menu">
-            <div class="dropdown-item">
-              <a href="{{ url_for('index') }}">Alle categorieën</a>
-            </div>
-            {% for cat in unieke_categorieën %}
-              <div class="dropdown-item">
-                <span class="category-button">{{ cat.naam }}</span>
-                <div class="sub-dropdown">
-                  <a href="{{ url_for('abonnement_overzicht', categorie_slug=cat.naam|slugify) }}">{{ cat.naam }}</a>
-                  {% for subcat in unieke_subcategorieën if subcat.categorie_id == cat.id %}
-                  <a href="{{ url_for('abonnement_overzicht', categorie_slug=cat.naam|slugify, subcategorie_slug=subcat.naam|slugify) }}">
-                    {{ subcat.naam }}
-                  </a>
-                  {% endfor %}
-                </div>
-              </div>
-            {% endfor %}
-          </div>
-        </div>
-
-        <a href="{{ url_for('vergelijk') }}" class="btn btn-compare" id="vergelijk-knop">
-          Vergelijk
-        </a>
-
-        {% if actieve_subcategorie %}
-          <a href="javascript:void(0)" onclick="toggleSidebar()" class="btn btn-compare">Categorie Info</a>
-        {% elif actieve_categorie %}
-          <a href="javascript:void(0)" onclick="toggleSidebar()" class="btn btn-compare">Categorie Info</a>
+<!-- HEADER -->
+  <header>
+    <nav class="main-nav" aria-label="Hoofdnavigatie">
+      <ul>
+        <li><a href="{{ url_for('index') }}">Home</a></li>
+        {% if current_user.is_authenticated %}
+          <li><a href="{{ url_for('logout') }}">Uitloggen</a></li>
+        {% else %}
+          <li><a href="{{ url_for('login') }}">Inloggen</a></li>
         {% endif %}
+        <li><a href="/contact">Contact</a></li>
+        <li><a href="{{ url_for('blog_overzicht') }}">Abbohub Research</a></li>
+      </ul>
+    </nav>
+
+    <div class="zoek-filter-container">
+      <h1>AbboHub abonnementen</h1>
+      <div class="search-row">
+        <form method="GET" action="{{ url_for('index') }}" class="zoek-filter-form">
+          <input 
+            type="text" 
+            name="zoekterm" 
+            placeholder="Zoek abonnementen..." 
+            value="{{ zoekterm }}" 
+            aria-label="Zoek abonnementen">
+        </form>
+
+        <div class="button-container">
+          <div class="dropdown-container">
+            <button type="button" class="dropdown-button">Categorieën</button>
+            <div class="dropdown-menu">
+              <div class="dropdown-item">
+                <a href="{{ url_for('index') }}">Alle categorieën</a>
+              </div>
+              {% for cat in unieke_categorieën %}
+                <div class="dropdown-item">
+                  <span class="category-button">{{ cat.naam }}</span>
+                  <div class="sub-dropdown">
+                    <a href="{{ url_for('abonnement_overzicht', categorie_slug=cat.naam|slugify) }}">{{ cat.naam }}</a>
+                    {% for subcat in unieke_subcategorieën if subcat.categorie_id == cat.id %}
+                      <a href="{{ url_for('abonnement_overzicht', categorie_slug=cat.naam|slugify, subcategorie_slug=subcat.naam|slugify) }}">{{ subcat.naam }}</a>
+                    {% endfor %}
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+
+          <a href="{{ url_for('vergelijk') }}" class="btn btn-compare" id="vergelijk-knop">Vergelijk</a>
+
+          {% if actieve_subcategorie or actieve_categorie %}
+            <a href="javascript:void(0)" onclick="toggleSidebar()" class="btn btn-compare">Categorie Info</a>
+          {% endif %}
+        </div>
       </div>
     </div>
-  </div>
-</header>
-
+  </header>
 {% if actieve_subcategorie or actieve_categorie %}
 <!-- Mobiele overlay -->
 <div id="categorieOverlayMobile" class="categorie-overlay-mobile">
@@ -187,6 +217,23 @@
 
 {% endif %}
 <main>
+        {# On-page breadcrumb (alleen tonen bij actief filter) #}
+{% if actieve_subcategorie or actieve_categorie %}
+<nav class="breadcrumb" aria-label="Broodkruimelpad">
+  <a href="{{ url_for('index') }}" class="back-link">Home</a>
+  <span aria-hidden="true">›</span>
+  {% if actieve_subcategorie %}
+    <a href="{{ url_for('abonnement_overzicht', categorie_slug=actieve_subcategorie.categorie.slug) }}">
+      {{ actieve_subcategorie.categorie.naam }}
+    </a>
+    <span aria-hidden="true">›</span>
+    <span aria-current="page">{{ actieve_subcategorie.naam }}</span>
+  {% elif actieve_categorie %}
+    <span aria-current="page">{{ actieve_categorie.naam }}</span>
+  {% endif %}
+</nav>
+{% endif %}
+
 {% if actieve_subcategorie or actieve_categorie %}
 <!-- Verborgen SEO-tekst zodat AI/zoekmachines de categorie-info kunnen indexeren -->
 <section class="categorie-seo-info" aria-hidden="true" style="position:absolute; left:-9999px; top:auto; width:1px; height:1px; overflow:hidden;">

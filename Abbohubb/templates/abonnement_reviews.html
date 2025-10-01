@@ -1,5 +1,7 @@
 <!DOCTYPE html>
 <html lang="nl">
+<!DOCTYPE html>
+<html lang="nl">
 <head>
   <!-- Vendor scripts (End Google Tag Manager) -->
   <script src="{{ url_for('static', filename='js/vendor.js') }}"></script>
@@ -13,16 +15,16 @@
   <!-- Dynamische SEO -->
   <title>{{ page_title or abonnement.naam ~ ' - Abonnementsinformatie | AbboHub' }}</title>
   <meta name="description"
-      content="{{ page_description
-         or (abonnement.get_average_score() is defined
-             and (abonnement.get_average_score() ~ ' uit 5 sterren van '
-                  ~ abonnement.reviews|length
-                  ~ ' gebruikers voor '
-                  ~ abonnement.naam
-                  ~ '. Ontdek prijzen, voordelen en echte ervaringen op AbboHub!')
-             or ('Lees alles over het '
-                 ~ abonnement.naam
-                 ~ '-abonnement: prijzen, voordelen en gebruikerservaringen.')) }}">
+        content="{{ page_description
+           or (abonnement.get_average_score() is defined
+               and (abonnement.get_average_score() ~ ' uit 5 sterren van '
+                    ~ abonnement.reviews|length
+                    ~ ' gebruikers voor '
+                    ~ abonnement.naam
+                    ~ '. Ontdek prijzen, voordelen en echte ervaringen op AbboHub!')
+               or ('Lees alles over het '
+                   ~ abonnement.naam
+                   ~ '-abonnement: prijzen, voordelen en gebruikerservaringen.')) }}">
 
   <!-- Open Graph -->
   <meta property="og:title" content="{{ page_title or abonnement.naam }}">
@@ -43,43 +45,94 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/pages/abonnement-reviews.css') }}">
 
+  {# ---- Bepaal categorie/subcategorie voor breadcrumbs ---- #}
+  {% set categorie = (abonnement.subcategorie.categorie if abonnement.subcategorie and abonnement.subcategorie.categorie else abonnement.categorie) %}
+  {% set subcategorie = (abonnement.subcategorie if abonnement.subcategorie else None) %}
+
+  {# ---- Breadcrumbs JSON-LD ---- #}
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"BreadcrumbList",
+    "itemListElement":[
+      {
+        "@type":"ListItem",
+        "position":1,
+        "name":"Home",
+        "item":"{{ url_for('index', _external=True) }}"
+      }
+      {% if categorie %},
+      {
+        "@type":"ListItem",
+        "position":2,
+        "name": {{ categorie.naam | tojson }},
+        "item":"{{ url_for('abonnement_overzicht', categorie_slug=categorie.slug, _external=True) }}"
+      }{% endif %}
+      {% if subcategorie %},
+      {
+        "@type":"ListItem",
+        "position":3,
+        "name": {{ subcategorie.naam | tojson }},
+        "item":"{{ url_for('abonnement_overzicht', categorie_slug=categorie.slug, subcategorie_slug=subcategorie.slug, _external=True) }}"
+      }{% endif %},
+      {
+        "@type":"ListItem",
+        "position": {{ 3 if not subcategorie and categorie else (4 if subcategorie else 2) }},
+        "name": {{ abonnement.naam | tojson }},
+        "item":"{{ request.base_url }}"
+      }
+    ]
+  }
+  </script>
 </head>
+
 <!-- Google Tag Manager & adsense (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NRGH8P6W"
   height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5139039913201131"
-     crossorigin="anonymous"></script>
-  <!-- End Google Tag Manager (noscript) -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5139039913201131"
+  crossorigin="anonymous"></script>
+<!-- End Google Tag Manager (noscript) -->
+
 <body>
   <!-- Header met de abonnementsnaam -->
   <header>
-      <nav class="main-nav" aria-label="Hoofdnavigatie">
-    <ul>
-      <li><a href="{{ url_for('index') }}">Home</a></li>
-      {% if current_user.is_authenticated %}
-        <li><a href="{{ url_for('logout') }}">Uitloggen</a></li>
-      {% else %}
-        <li><a href="{{ url_for('login') }}">Inloggen</a></li>
-      {% endif %}
-      <li><a href="/contact">Contact</a></li>
-      <li><a href="{{ url_for('blog_overzicht') }}">Abbohub Research</a></li>
-    </ul>
-  </nav>
+    <nav class="main-nav" aria-label="Hoofdnavigatie">
+      <ul>
+        <li><a href="{{ url_for('index') }}">Home</a></li>
+        {% if current_user.is_authenticated %}
+          <li><a href="{{ url_for('logout') }}">Uitloggen</a></li>
+        {% else %}
+          <li><a href="{{ url_for('login') }}">Inloggen</a></li>
+        {% endif %}
+        <li><a href="/contact">Contact</a></li>
+        <li><a href="{{ url_for('blog_overzicht') }}">Abbohub Research</a></li>
+      </ul>
+    </nav>
     <h1>{{ abonnement.naam }}</h1>
     <p>Ontdek alles wat dit abonnement te bieden heeft</p>
-    
   </header>
-    <!-- Terug naar overzicht link -->
-    <a href="{{ url_for('index') }}" class="back-link">&larr; Terug naar overzicht</a>
-<div class="page-wrapper" style="max-width: 1200px; margin: 0 auto; padding: 40px 20px;">
+<div class="bc-container">
+  <nav class="breadcrumb" aria-label="Broodkruimelpad">
+    <ol>
+      <li><a href="{{ url_for('index') }}">Home</a></li>
+      {% if categorie %}
+        <li><a href="{{ url_for('abonnement_overzicht', categorie_slug=categorie.slug) }}">{{ categorie.naam }}</a></li>
+      {% endif %}
+      {% if subcategorie %}
+        <li><a href="{{ url_for('abonnement_overzicht', categorie_slug=categorie.slug, subcategorie_slug=subcategorie.slug) }}">{{ subcategorie.naam }}</a></li>
+      {% endif %}
+      <li aria-current="page">{{ abonnement.naam }}</li>
+    </ol>
+  </nav>
+</div>
+  <div class="page-wrapper" style="max-width: 1200px; margin: 0 auto; padding: 40px 20px;">
+    <div class="page-layout" style="display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start; justify-content: space-between;">
 
-  <div class="page-layout" style="display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start; justify-content: space-between;">
-
-    <!-- MAIN CONTENT -->
-    <main class="main-content" style="flex: 1 1 65%; min-width: 320px;">
-      <section class="card">
-        <h2>Abonnementsgegevens</h2>
-        <table>
+      <!-- MAIN CONTENT -->
+      <main class="main-content" style="flex: 1 1 65%; min-width: 320px;">
+        <section class="card">
+          <h2>Abonnementsgegevens</h2>
+          <table>
           <tr><th>Frequentie Bezorging</th><td>{{ abonnement.frequentie_bezorging }}</td></tr>
           <tr><th>Contractduur</th><td>{{ abonnement.contractduur }}</td></tr>
           <tr><th>Prijs vanaf</th><td>€{{ abonnement.prijs_vanaf }}</td></tr>
