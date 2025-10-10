@@ -1,7 +1,5 @@
 <!DOCTYPE html>
 <html lang="nl">
-<!DOCTYPE html>
-<html lang="nl">
 <head>
   <!-- Vendor scripts (End Google Tag Manager) -->
   <script src="{{ url_for('static', filename='js/vendor.js') }}"></script>
@@ -10,26 +8,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Canonical -->
-  <link rel="canonical" href="{{ request.url }}">
+  <link rel="canonical" href="{{ request.base_url }}">
 
   <!-- Dynamische SEO -->
-  <title>{{ page_title or abonnement.naam ~ ' - Abonnementsinformatie | AbboHub' }}</title>
-  <meta name="description"
-        content="{{ page_description
-           or (abonnement.get_average_score() is defined
-               and (abonnement.get_average_score() ~ ' uit 5 sterren van '
-                    ~ abonnement.reviews|length
-                    ~ ' gebruikers voor '
-                    ~ abonnement.naam
-                    ~ '. Ontdek prijzen, voordelen en echte ervaringen op AbboHub!')
-               or ('Lees alles over het '
-                   ~ abonnement.naam
-                   ~ '-abonnement: prijzen, voordelen en gebruikerservaringen.')) }}">
+<title>
+  {{ page_title
+     or abonnement.naam ~ ' abonnement: prijzen, opzeggen & ervaringen (2025) | AbboHub' }}
+</title>
+
+<meta name="description" content="{{
+  page_description
+  or (
+    'Alles over ' ~ abonnement.naam ~ ': prijzen vanaf €' ~ abonnement.prijs_vanaf
+    ~ ', opzeggen/pauzeren en echte ervaringen. Vergelijk alternatieven en bespaar tijd.'
+  )
+}}">
+
 
   <!-- Open Graph -->
-  <meta property="og:title" content="{{ page_title or abonnement.naam }}">
-  <meta property="og:description" content="{{ page_description or 'Lees reviews en informatie over ' ~ abonnement.naam ~ ' op AbboHub.' }}">
-  <meta property="og:image" content="{{ url_for('static', filename='logo.png', _external=True) }}">
+  <meta property="og:title" content="{{ page_title or (abonnement.naam ~ ' abonnement: prijzen, opzeggen & ervaringen (2025)') }}">
+  <meta property="og:description" content="{{ page_description or ('Prijzen vanaf €' ~ abonnement.prijs_vanaf ~ ', opzeggen/pauzeren en ervaringen. Vergelijk snel op AbboHub.') }}">
+  <meta property="og:image" content="{% if abonnement.fotos and abonnement.fotos[0] %}{{ url_for('static', filename='uploads/' ~ abonnement.fotos[0].bestandsnaam, _external=True) }}{% else %}{{ url_for('static', filename='logo.png', _external=True) }}{% endif %}">
   <meta property="og:url" content="{{ request.url }}">
   <meta property="og:type" content="article">
 
@@ -108,8 +107,8 @@
         <li><a href="{{ url_for('blog_overzicht') }}">Abbohub Research</a></li>
       </ul>
     </nav>
-    <h1>{{ abonnement.naam }}</h1>
-    <p>Ontdek alles wat dit abonnement te bieden heeft</p>
+<h1>{{ abonnement.naam }} review (2025): prijzen, ervaringen & aanbiedingen</h1>
+<p class="lede">Alles wat je moet weten: prijs, voorwaarden, opzeggen en reviews. Vergelijk alternatieven in 1 minuut.</p>
   </header>
 <div class="bc-container">
   <nav class="breadcrumb" aria-label="Broodkruimelpad">
@@ -135,6 +134,7 @@
           <table>
           <tr><th>Frequentie Bezorging</th><td>{{ abonnement.frequentie_bezorging }}</td></tr>
           <tr><th>Contractduur</th><td>{{ abonnement.contractduur }}</td></tr>
+          <tr><th>Aanbieding & kortingscode</th><td>{{ abonnement.aanbiedingen }}</td></tr>
           <tr><th>Prijs vanaf</th><td>€{{ abonnement.prijs_vanaf }}</td></tr>
           {% if abonnement.prijs_tot %}
           <tr><th>Prijs tot</th><td>€{{ abonnement.prijs_tot }}</td></tr>
@@ -165,7 +165,7 @@
             <td><a class="visit-website"
    href="{{ url_for('outbound', ab_id=abonnement.id) }}?from={{ request.path }}"
    target="_blank"
-   rel="sponsored nofollow"
+   rel="sponsored nofollow noreferrer"
    data-abonnement="{{ abonnement.naam }}">
   Bezoek aanbieder
 </a>
@@ -173,28 +173,30 @@
           </tr>
         </table>
 </section>
+  <!-- Foto's van het abonnement -->
+  {% if abonnement.fotos %}
+  <section class="card">
+    <h3>Productfoto's</h3>
+    <div class="product-photos">
+      {% for foto in abonnement.fotos %}
+        <img src="{{ url_for('static', filename='uploads/' ~ foto.bestandsnaam) }}"
+            alt="Foto van {{ abonnement.naam }}"
+            class="product-photo"
+            onclick="openLightbox('{{ url_for('static', filename='uploads/' ~ foto.bestandsnaam) }}')"
+            loading="lazy">
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
 <div style="white-space: pre-wrap;">
   <section class="card text-section"><h3>Wat is {{ abonnement.naam }}?</h3><p>{{ abonnement.wat_is_het_abonnement }}</p></section>
   <section class="card text-section"><h3>Waarom kiezen voor {{ abonnement.naam }}?</h3><p>{{ abonnement.waarom_kiezen }}</p></section>
   <section class="card text-section"><h3>Hoe werkt het?</h3><p>{{ abonnement.hoe_werkt_het }}</p></section>
+   <section class="card text-section"><h3>Opzeggen</h3><p>{{ abonnement.annuleringsvoorwaarden }}</p></section>         
   <section class="card text-section"><h3>Past {{ abonnement.naam }} bij jou?</h3><p>{{ abonnement.past_dit_bij_jou }}</p></section>
 </div>   
 
-<!-- Foto's van het abonnement -->
-{% if abonnement.fotos %}
-<section class="card">
-  <h3>Productfoto's</h3>
-  <div class="product-photos">
-    {% for foto in abonnement.fotos %}
-      <img src="{{ url_for('static', filename='uploads/' ~ foto.bestandsnaam) }}"
-           alt="Foto van {{ abonnement.naam }}"
-           class="product-photo"
-           onclick="openLightbox('{{ url_for('static', filename='uploads/' ~ foto.bestandsnaam) }}')"
-           loading="lazy">
-    {% endfor %}
-  </div>
-</section>
-{% endif %}
+
 
 <!-- YouTube-video -->
 {% if abonnement.youtube_url %}
@@ -220,7 +222,6 @@
     </div>
   </section>
 {% endif %}
-
 
 <!-- Lightbox -->
 <div id="lightbox" onclick="closeLightbox()">
@@ -253,8 +254,59 @@
     <span class="score-tekst">{{ score }} ({{ abonnement.reviews|length }} beoordelingen)</span>
   </td>
 </tr>  
+<!-- Formulier om een review toe te voegen -->
+  <div class="review-form">
+    <h3>Schrijf een review</h3>
+    <form method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      
+      <label for="naam">Uw naam:</label>
+      <input type="text" name="naam" id="naam" placeholder="Vul hier uw naam in" required>
+
+      <label>Score:</label>
+      <div class="star-rating" id="rating-stars">
+        {% for i in range(1, 6) %}
+          <span class="star">
+            <span class="half left" data-value="{{ i - 0.5 }}"></span>
+            <span class="half right" data-value="{{ i }}"></span>
+          </span>
+        {% endfor %}
+      </div>
+      <input type="hidden" name="score" id="score" required>
+      
+      <label for="comment">Opmerking (optioneel):</label>
+      <textarea name="comment" id="comment" placeholder="Deel uw mening over het abonnement..."></textarea>
+
+      <button type="submit">Review toevoegen</button>
+    </form>
+  </div>
+
+  <!-- Overzicht van reeds ingediende reviews -->
+  <div class="reviews">
+    {% if abonnement.reviews %}
+      {% for review in abonnement.reviews %}
+        <div class="review">
+          <p><strong>{{ review.naam }}</strong></p>
+          <p><strong>Score:</strong> {{ review.score }} / 5</p>
+          <p>{{ review.comment }}</p>
+          <p><small>Geplaatst op: {{ review.created_at.strftime('%d-%m-%Y %H:%M') }}</small></p>
+
+          {% if is_admin %}
+            <form method="POST" style="display:inline;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="delete_review_id" value="{{ review.id }}">
+              <button type="submit" class="btn-delete">Verwijderen</button>
+            </form>
+          {% endif %}
+        </div>
+      {% endfor %}
+    {% else %}
+      <p>Er zijn nog geen reviews voor dit abonnement.</p>
+    {% endif %}
+  </div>
+</section>   
   <!-- Structured data voor SEO -->
-  {% if gemiddelde_score is not none and abonnement.reviews %}
+ {% if gemiddelde_score is not none and abonnement.reviews %}
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -345,61 +397,31 @@
   }
 }
 </script>
+{% endif %}
 
-
-  {% endif %}
-
-  <!-- Formulier om een review toe te voegen -->
-  <div class="review-form">
-    <h3>Schrijf een review</h3>
-    <form method="POST">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      
-      <label for="naam">Uw naam:</label>
-      <input type="text" name="naam" id="naam" placeholder="Vul hier uw naam in" required>
-
-      <label>Score:</label>
-      <div class="star-rating" id="rating-stars">
-        {% for i in range(1, 6) %}
-          <span class="star">
-            <span class="half left" data-value="{{ i - 0.5 }}"></span>
-            <span class="half right" data-value="{{ i }}"></span>
-          </span>
-        {% endfor %}
-      </div>
-      <input type="hidden" name="score" id="score" required>
-      
-      <label for="comment">Opmerking (optioneel):</label>
-      <textarea name="comment" id="comment" placeholder="Deel uw mening over het abonnement..."></textarea>
-
-      <button type="submit">Review toevoegen</button>
-    </form>
-  </div>
-
-  <!-- Overzicht van reeds ingediende reviews -->
-  <div class="reviews">
-    {% if abonnement.reviews %}
-      {% for review in abonnement.reviews %}
-        <div class="review">
-          <p><strong>{{ review.naam }}</strong></p>
-          <p><strong>Score:</strong> {{ review.score }} / 5</p>
-          <p>{{ review.comment }}</p>
-          <p><small>Geplaatst op: {{ review.created_at.strftime('%d-%m-%Y %H:%M') }}</small></p>
-
-          {% if is_admin %}
-            <form method="POST" style="display:inline;">
-              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-              <input type="hidden" name="delete_review_id" value="{{ review.id }}">
-              <button type="submit" class="btn-delete">Verwijderen</button>
-            </form>
-          {% endif %}
-        </div>
-      {% endfor %}
-    {% else %}
-      <p>Er zijn nog geen reviews voor dit abonnement.</p>
-    {% endif %}
-  </div>
-</section> 
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"FAQPage",
+  "mainEntity":[
+    {
+      "@type":"Question",
+      "name":"Wat kost {{ abonnement.naam }} per maand?",
+      "acceptedAnswer":{"@type":"Answer","text":"Vanaf €{{ abonnement.prijs_vanaf }}{{ abonnement.prijs_tot and (' tot €' ~ abonnement.prijs_tot) or '' }} per maand, afhankelijk van pakket."}
+    },
+    {
+      "@type":"Question",
+      "name":"Kan ik {{ abonnement.naam }} pauzeren of opzeggen?",
+      "acceptedAnswer":{"@type":"Answer","text":"Ja, pauzeren en opzeggen kan. Contractduur: {{ abonnement.contractduur }}. Check de voorwaarden bij de aanbieder."}
+    },
+    {
+      "@type":"Question",
+      "name":"Voor wie is {{ abonnement.naam }} geschikt?",
+      "acceptedAnswer":{"@type":"Answer","text":"{{ abonnement.past_dit_bij_jou | striptags | truncate(280, True, '…') }}"}
+    }
+  ]
+}
+</script> 
     </main>
 <!-- SIDEBAR -->
 <aside class="sidebar" style="flex: 1 1 30%; max-width: 360px;">
