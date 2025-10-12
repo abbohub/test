@@ -113,3 +113,26 @@ document.addEventListener("DOMContentLoaded", function () {
     );
   }
 });
+  // 1) Datalayer fallback zodat er geen fout ontstaat als GTM niet geladen is
+  window.dataLayer = window.dataLayer || [];
+
+  // 2) Eén event listener voor alle affiliate-links met class .js-aff-link
+  document.addEventListener('click', function (e) {
+    const el = e.target.closest('.js-aff-link');
+    if (!el) return;
+
+    // Bouw veilig het event object vanuit data-attributen
+    const evt = {
+      event: 'affiliate_click',
+      affiliation: 'AbboHub',
+      abonnement_naam: el.dataset.abonnement || '',
+      abonnement_slug: el.dataset.abonnementSlug || '',
+      categorie: el.dataset.categorie || '',
+      categorie_slug: el.dataset.categorieSlug || '',
+      subcategorie: el.dataset.subcategorie || '',
+      subcategorie_slug: el.dataset.subcategorieSlug || '',
+      link_url: el.getAttribute('href') || ''
+    };
+
+    window.dataLayer.push(evt);
+  }, { passive: true });
