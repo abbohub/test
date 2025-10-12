@@ -6,14 +6,16 @@
 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  
   <!-- Canonical -->
+  <link rel="alternate" hreflang="nl-NL" href="{{ request.base_url }}">
+  <link rel="alternate" hreflang="x-default" href="{{ request.base_url }}">
   <link rel="canonical" href="{{ request.base_url }}">
 
   <!-- Dynamische SEO -->
 <title>
   {{ page_title
-     or abonnement.naam ~ ' abonnement: prijzen, opzeggen & ervaringen (2025) | AbboHub' }}
+     or abonnement.naam ~ ' review (2025): prijzen, ervaringen & aanbiedingen' }}
 </title>
 
 <meta name="description" content="{{
@@ -129,50 +131,89 @@
 
       <!-- MAIN CONTENT -->
       <main class="main-content" style="flex: 1 1 65%; min-width: 320px;">
-        <section class="card">
-          <h2>Abonnementsgegevens</h2>
-          <table>
-          <tr><th>Frequentie Bezorging</th><td>{{ abonnement.frequentie_bezorging }}</td></tr>
-          <tr><th>Contractduur</th><td>{{ abonnement.contractduur }}</td></tr>
-          <tr><th>Aanbieding & kortingscode</th><td>{{ abonnement.aanbiedingen }}</td></tr>
-          <tr><th>Prijs vanaf</th><td>€{{ abonnement.prijs_vanaf }}</td></tr>
-          {% if abonnement.prijs_tot %}
-          <tr><th>Prijs tot</th><td>€{{ abonnement.prijs_tot }}</td></tr>
-          {% endif %}
-          <tr><th>Doelgroep</th>
-            <td>{% for doelgroep in abonnement.doelgroepen %}<span class="badge">{{ doelgroep.naam }}</span>{% endfor %}</td>
-          </tr>
-          <tr><th>Tags</th>
-            <td>{% for tag in abonnement.tags %}<span class="badge">{{ tag.naam }}</span>{% endfor %}</td>
-          </tr>
-          <tr>
-            <th>Gemiddelde Beoordeling</th>
-            <td>
-              {% set score = abonnement.get_average_score() %}
-              {% set volle = score | int %}
-              {% set halve = (score - volle) >= 0.25 and (score - volle) < 0.75 %}
-              {% set leeg = 5 - volle - (1 if halve else 0) %}
-              <span class="ster-rating">
-                {% for _ in range(volle) %}<span class="vol-ster">★</span>{% endfor %}
-                {% if halve %}<span class="halve-ster">★</span>{% endif %}
-                {% for _ in range(leeg) %}<span class="leeg-ster">☆</span>{% endfor %}
-              </span>
-              <span class="score-tekst">{{ score }} ({{ abonnement.reviews|length }} beoordelingen)</span>
-            </td>
-          </tr>
-          <tr>
-            <th>Bezoek Website</th>
-            <td><a class="visit-website"
-   href="{{ url_for('outbound', ab_id=abonnement.id) }}?from={{ request.path }}"
-   target="_blank"
-   rel="sponsored nofollow noreferrer"
-   data-abonnement="{{ abonnement.naam }}">
-  Bezoek aanbieder
-</a>
-</td>
-          </tr>
-        </table>
+        <section class="card" id="kosten">
+  <h2>Abonnementsgegevens</h2>
+  <table>
+    <tbody>
+      <tr>
+        <th scope="row">Frequentie Bezorging</th>
+        <td>{{ abonnement.frequentie_bezorging }}</td>
+      </tr>
+      <tr>
+        <th scope="row">Contractduur</th>
+        <td>{{ abonnement.contractduur }}</td>
+      </tr>
+      <tr>
+        <th scope="row">Aanbieding &amp; kortingscode</th>
+        <td>{{ abonnement.aanbiedingen }}</td>
+      </tr>
+      <tr>
+        <th scope="row">Prijs vanaf</th>
+        <td>€{{ abonnement.prijs_vanaf }}</td>
+      </tr>
+      {% if abonnement.prijs_tot %}
+      <tr>
+        <th scope="row">Prijs tot</th>
+        <td>€{{ abonnement.prijs_tot }}</td>
+      </tr>
+      {% endif %}
+      <tr>
+        <th scope="row">Doelgroep</th>
+        <td>
+          {% for doelgroep in abonnement.doelgroepen %}
+            <span class="badge">{{ doelgroep.naam }}</span>
+          {% endfor %}
+        </td>
+      </tr>
+      <tr>
+        <th scope="row">Tags</th>
+        <td>
+          {% for tag in abonnement.tags %}
+            <span class="badge">{{ tag.naam }}</span>
+          {% endfor %}
+        </td>
+      </tr>
+      <tr>
+        <th scope="row">Gemiddelde beoordeling</th>
+        <td>
+          {% set score = abonnement.get_average_score() %}
+          {% set volle = score | int %}
+          {% set halve = (score - volle) >= 0.25 and (score - volle) < 0.75 %}
+          {% set leeg = 5 - volle - (1 if halve else 0) %}
+
+          <span class="ster-rating" aria-label="Gemiddelde beoordeling: {{ score }} van 5">
+            {% for _ in range(volle) %}<span class="vol-ster">★</span>{% endfor %}
+            {% if halve %}<span class="halve-ster">★</span>{% endif %}
+            {% for _ in range(leeg) %}<span class="leeg-ster">☆</span>{% endfor %}
+          </span>
+          <span class="score-tekst">{{ score }} ({{ abonnement.reviews|length }} beoordelingen)</span>
+        </td>
+      </tr>
+      <tr>
+        <th scope="row">Bezoek website</th>
+        <td>
+          <a
+            class="visit-website js-aff-link"
+            href="{{ url_for('outbound', ab_id=abonnement.id) }}?from={{ request.path }}&amp;utm_source=abbohub&amp;utm_medium=review&amp;utm_campaign={{ abonnement.slug }}"
+            target="_blank"
+            rel="sponsored nofollow noreferrer"
+            aria-label="Bezoek {{ abonnement.naam | e }} – opent in nieuw tabblad"
+            data-abonnement="{{ abonnement.naam | e }}"
+            data-abonnement-slug="{{ abonnement.slug | e }}"
+            data-categorie="{{ (categorie.naam if categorie else '') | e }}"
+            data-categorie-slug="{{ (categorie.slug if categorie else '') | e }}"
+            data-subcategorie="{{ (subcategorie.naam if subcategorie else '') | e }}"
+            data-subcategorie-slug="{{ (subcategorie.slug if subcategorie else '') | e }}"
+            data-affid="{{ abonnement.id }}"
+          >
+            Bezoek aanbieder
+          </a>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </section>
+
   <!-- Foto's van het abonnement -->
   {% if abonnement.fotos %}
   <section class="card">
@@ -188,6 +229,7 @@
     </div>
   </section>
   {% endif %}
+
 <div style="white-space: pre-wrap;">
   <section class="card text-section"><h3>Wat is {{ abonnement.naam }}?</h3><p>{{ abonnement.wat_is_het_abonnement }}</p></section>
   <section class="card text-section"><h3>Waarom kiezen voor {{ abonnement.naam }}?</h3><p>{{ abonnement.waarom_kiezen }}</p></section>
@@ -282,6 +324,7 @@
   </div>
 
   <!-- Overzicht van reeds ingediende reviews -->
+     <!-- Overzicht van reeds ingediende reviews -->
   <div class="reviews">
     {% if abonnement.reviews %}
       {% for review in abonnement.reviews %}
@@ -304,64 +347,36 @@
       <p>Er zijn nog geen reviews voor dit abonnement.</p>
     {% endif %}
   </div>
-</section>   
-  <!-- Structured data voor SEO -->
- {% if gemiddelde_score is not none and abonnement.reviews %}
+</section>
+
+  <div class="reviews">
+    {% if abonnement.reviews %}
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": ["Product", "SubscriptionService"],
-  "name": "{{ abonnement.naam | e }}",
-  "description": "{{ abonnement.wat_is_het_abonnement | e }}",
-  "image": "{{ url_for('static', filename='logo.png', _external=True) }}",
-  "url": "{{ request.url }}",
+  "name": {{ abonnement.naam | tojson }},
+  "description": {{ (abonnement.wat_is_het_abonnement or '') | striptags | truncate(280, True, '…') | tojson }},
+  "image": {% if abonnement.fotos and abonnement.fotos[0] %}
+             {{ url_for('static', filename='uploads/' ~ abonnement.fotos[0].bestandsnaam, _external=True) | tojson }}
+           {% else %}
+             {{ url_for('static', filename='logo.png', _external=True) | tojson }}
+           {% endif %},
+  "url": {{ request.url | tojson }},
+  "brand": { "@type":"Brand", "name": {{ abonnement.naam | tojson }} },
 
   "offers": {
     "@type": "Offer",
     "priceCurrency": "EUR",
     "price": "{{ abonnement.prijs_vanaf }}",
     "availability": "https://schema.org/InStock",
-    "url": "{{ abonnement.url }}",
-    "priceValidUntil": "2025-12-31",
-    "hasMerchantReturnPolicy": {
-      "@type": "MerchantReturnPolicy",
-      "applicableCountry": "NL",
-      "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
-      "merchantReturnDays": 14,
-      "returnFees": "https://schema.org/FreeReturn"
-    },
-    "shippingDetails": {
-      "@type": "OfferShippingDetails",
-      "shippingDestination": {
-        "@type": "DefinedRegion",
-        "addressCountry": "NL"
-      },
-      "shippingRate": {
-        "@type": "MonetaryAmount",
-        "value": "0",
-        "currency": "EUR"
-      },
-      "deliveryTime": {
-        "@type": "ShippingDeliveryTime",
-        "handlingTime": {
-          "@type": "QuantitativeValue",
-          "minValue": 0,
-          "maxValue": 0,
-          "unitCode": "DAY"
-        },
-        "transitTime": {
-          "@type": "QuantitativeValue",
-          "minValue": 0,
-          "maxValue": 0,
-          "unitCode": "DAY"
-        }
-      }
-    }
+    "url": {{ (abonnement.url or request.url) | tojson }},
+    "priceValidUntil": "2025-12-31"
   },
 
   "aggregateRating": {
     "@type": "AggregateRating",
-    "ratingValue": "{{ gemiddelde_score }}",
+    "ratingValue": "{{ abonnement.get_average_score() }}",
     "bestRating": "5",
     "worstRating": "1",
     "reviewCount": "{{ abonnement.reviews|length }}"
@@ -371,9 +386,9 @@
     {% for review in abonnement.reviews %}
     {
       "@type": "Review",
-      "author": { "@type": "Person", "name": "{{ review.naam | e }}" },
+      "author": { "@type": "Person", "name": {{ review.naam | tojson }} },
       "datePublished": "{{ review.created_at.strftime('%Y-%m-%d') }}",
-      "reviewBody": "{{ review.comment | e }}",
+      "reviewBody": {{ (review.comment or '') | tojson }},
       "reviewRating": {
         "@type": "Rating",
         "ratingValue": "{{ review.score }}",
@@ -382,23 +397,10 @@
       }
     }{{ "," if not loop.last else "" }}
     {% endfor %}
-  ],
-
-  "requiresSubscription": true,
-  "billingDuration": "P1M",
-
-  "publisher": {
-    "@type": "Organization",
-    "name": "AbboHub",
-    "logo": {
-      "@type": "ImageObject",
-      "url": "{{ url_for('static', filename='logo.png', _external=True) }}"
-    }
-  }
+  ]
 }
 </script>
 {% endif %}
-
 <script type="application/ld+json">
 {
   "@context":"https://schema.org",
@@ -422,6 +424,36 @@
   ]
 }
 </script> 
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"WebSite",
+  "name":"AbboHub Reviews",
+  "url":"{{ url_for('index', _external=True) }}",
+  "inLanguage":"nl-NL",
+  "publisher":{"@type":"Organization","name":"AbboHub"}
+}
+</script>
+{% if abonnement.youtube_url %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoObject",
+  "name": {{ (abonnement.naam ~ " review (2025)") | tojson }},
+  "description": {{ (abonnement.wat_is_het_abonnement or "Review & ervaringen van " ~ abonnement.naam) | striptags | truncate(280, True, "…") | tojson }},
+  "thumbnailUrl": [
+    "https://i.ytimg.com/vi/{{ yt_id }}/maxresdefault.jpg",
+    "https://i.ytimg.com/vi/{{ yt_id }}/hqdefault.jpg"
+  ],
+"uploadDate": "{{ abonnement.video_upload_datum if abonnement.video_upload_datum else '2025-01-01' }}"
+  "embedUrl": "https://www.youtube-nocookie.com/embed/{{ yt_id }}",
+  "url": {{ request.url | tojson }},
+  "publisher": { "@type": "Organization", "name": "AbboHub" }
+}
+</script>
+{% endif %}
+
+
     </main>
 <!-- SIDEBAR -->
 <aside class="sidebar" style="flex: 1 1 30%; max-width: 360px;">
@@ -455,8 +487,9 @@
 </aside>
   </div></div>
   <footer>
+  <p>Sommige links op AbboHub zijn affiliate links. Als je via zo’n link bestelt, ontvangen wij mogelijk een commissie – zonder extra kosten voor jou.</p>
   <p>&copy; 2025 AbboHub. Alle rechten voorbehouden.</p>
-  <nav class="footer-nav">
+   <nav class="footer-nav">
     <ul>
       <li><a href="{{ url_for('privacy_cookieverklaring') }}">Privacy en Cookieverklaring</a></li>
       <li><a href="{{ url_for('over_abbohub') }}">Over AbboHub</a></li>
