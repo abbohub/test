@@ -1784,6 +1784,11 @@ def admin_clicks():
         date_to=date_to_str
     )
 
+@app.route('/algemene-voorwaarden')
+def algemene_voorwaarden():
+    return render_template('algemene_voorwaarden.html')
+
+
 @app.route('/admin/clicks/export.csv')
 @login_required
 def admin_clicks_export():
