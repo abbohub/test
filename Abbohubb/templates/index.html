@@ -348,17 +348,28 @@
     </div>
   </div>
 
-  <footer>
-  <p>Sommige links op AbboHub zijn affiliate links. Als je via zo’n link bestelt, ontvangen wij mogelijk een commissie – zonder extra kosten voor jou.</p>
-  <p>&copy; 2025 AbboHub. Alle rechten voorbehouden.</p>
-    <nav class="footer-nav">
+ <footer class="site-footer">
+  <div class="footer-content">
+    <p class="affiliate-note">
+      Sommige links op AbboHub zijn affiliate links. Wanneer je via zo’n link bestelt, kan AbboHub een kleine commissie ontvangen – 
+      <strong>zonder extra kosten voor jou</strong>.
+    </p>
+
+    <p class="copyright">
+      &copy; 2025 AbboHub. Alle rechten voorbehouden.
+    </p>
+
+    <nav class="footer-nav" aria-label="Footer navigatie">
       <ul>
-        <li><a href="{{ url_for('privacy_cookieverklaring') }}">Privacy en Cookieverklaring</a></li>
+        <li><a href="{{ url_for('privacy_cookieverklaring') }}">Privacy- en Cookieverklaring</a></li>
+        <li><a href="{{ url_for('algemene_voorwaarden') }}">Algemene Voorwaarden</a></li>
         <li><a href="{{ url_for('over_abbohub') }}">Over AbboHub</a></li>
         <li><a href="#" onclick="openSettings()">Cookievoorkeuren aanpassen</a></li>
       </ul>
     </nav>
-  </footer>
+  </div>
+</footer>
+
   
   <!-- Cookiebanner insluiten -->
   {% include 'cookie-banner.html' %}

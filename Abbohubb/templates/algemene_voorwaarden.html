@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Algemene Voorwaarden | AbboHub</title>
+  <meta name="description" content="Lees de algemene voorwaarden van AbboHub – het platform voor het ontdekken en vergelijken van productabonnementen in Nederland.">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <header>
+    <h1>Algemene Voorwaarden</h1>
+  </header>
+
+  <main class="container">
+    <section>
+      <h2>1. Inleiding</h2>
+      <p>Deze algemene voorwaarden zijn van toepassing op het gebruik van de website <a href="https://abbohub.nl">https://abbohub.nl</a>, hierna “AbboHub” genoemd. Door onze website te gebruiken, gaat u akkoord met deze voorwaarden.</p>
+    </section>
+
+    <section>
+      <h2>2. Doel van de website</h2>
+      <p>AbboHub is een onafhankelijk platform waarop bezoekers informatie kunnen vinden over diverse productabonnementen in Nederland. Wij bieden vergelijkingen, reviews en doorverwijzingen naar aanbieders. AbboHub verkoopt zelf geen abonnementen.</p>
+    </section>
+
+    <section>
+      <h2>3. Gebruik van informatie</h2>
+      <p>De informatie op deze website is met zorg samengesteld. Toch kan AbboHub niet garanderen dat alle informatie altijd volledig, juist of actueel is. Prijzen en voorwaarden van abonnementen kunnen tussentijds wijzigen. Controleer altijd de actuele informatie bij de aanbieder voordat u een beslissing neemt.</p>
+    </section>
+
+    <section>
+      <h2>4. Aansprakelijkheid</h2>
+      <p>AbboHub is niet aansprakelijk voor schade die voortvloeit uit het gebruik van deze website of de aangeboden informatie. Dit geldt zowel voor directe als indirecte schade, tenzij sprake is van opzet of grove nalatigheid aan onze zijde.</p>
+    </section>
+
+    <section>
+      <h2>5. Affiliate links en advertenties</h2>
+      <p>Op AbboHub worden affiliate links gebruikt. Wanneer u via zo’n link een aankoop doet of zich aanmeldt bij een aanbieder, kan AbboHub een kleine commissie ontvangen, zonder extra kosten voor u. Dit wordt nader toegelicht in ons <a href="{{ url_for('privacy_cookieverklaring') }}">Privacy- en Cookiebeleid</a>.</p>
+    </section>
+
+    <section>
+      <h2>6. Intellectuele eigendomsrechten</h2>
+      <p>Alle teksten, afbeeldingen, logo’s en overige inhoud op AbboHub zijn eigendom van AbboHub of worden gebruikt met toestemming van de rechthebbende. Zonder voorafgaande schriftelijke toestemming mag niets van deze website worden gekopieerd of hergebruikt.</p>
+    </section>
+
+    <section>
+      <h2>7. Links naar andere websites</h2>
+      <p>AbboHub bevat links naar websites van derden. Wij zijn niet verantwoordelijk voor de inhoud, het privacybeleid of de praktijken van deze externe websites.</p>
+    </section>
+
+    <section>
+      <h2>8. Wijzigingen</h2>
+      <p>AbboHub behoudt zich het recht voor om deze algemene voorwaarden op elk moment te wijzigen. De meest recente versie is altijd te vinden op deze pagina.</p>
+    </section>
+
+    <section>
+      <h2>9. Contact</h2>
+      <p>Voor vragen of opmerkingen over deze voorwaarden kunt u contact opnemen via <a href="mailto:abbohub.products@gmail.com">contact@abbohub.nl</a>.</p>
+    </section>
+  </main>
+
+ <footer class="site-footer">
+  <div class="footer-content">
+    <p class="affiliate-note">
+      Sommige links op AbboHub zijn affiliate links. Wanneer je via zo’n link bestelt, kan AbboHub een kleine commissie ontvangen – 
+      <strong>zonder extra kosten voor jou</strong>.
+    </p>
+
+    <p class="copyright">
+      &copy; 2025 AbboHub. Alle rechten voorbehouden.
+    </p>
+
+    <nav class="footer-nav" aria-label="Footer navigatie">
+      <ul>
+        <li><a href="{{ url_for('privacy_cookieverklaring') }}">Privacy- en Cookieverklaring</a></li>
+        <li><a href="{{ url_for('algemene_voorwaarden') }}">Algemene Voorwaarden</a></li>
+        <li><a href="{{ url_for('over_abbohub') }}">Over AbboHub</a></li>
+        <li><a href="#" onclick="openSettings()">Cookievoorkeuren aanpassen</a></li>
+      </ul>
+    </nav>
+  </div>
+</footer>
+</body>
+</html>
