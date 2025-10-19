@@ -510,199 +510,242 @@ document.addEventListener('DOMContentLoaded', function() {
   function loadUI(){ try { return JSON.parse(localStorage.getItem(UI_STATE_KEY)) || {}; } catch{ return {}; } }
   function saveUI(data){ localStorage.setItem(UI_STATE_KEY, JSON.stringify(data)); }
 
-  // ———————————————
-  // 1) Data – 6 maanden planning
-  // label: 'tech' | 'content' | 'seo' | 'marketing'
-  // ———————————————
-  const PLANNING = [
-    {
-      phaseId: "fase1",
-      title: "Fase 1 – Direct inkomsten genereren (Week 1–4)",
-      weeks: [
-        {
-          weekId: "w1",
-          title: "Week 1",
-          tasks: [
-            { id:"w1_t1", text:"Google AdSense-account aanmaken & goedkeuring aanvragen", label:"marketing" },
-            { id:"w1_t2", text:"Advertentieblokken maken (responsive) in AdSense", label:"marketing" },
-            { id:"w1_t3", text:"Code plaatsen: onder eerste 3 tegels, sidebar categoriepagina’s, onder reviews", label:"tech" }
-          ]
-        },
-        {
-          weekId: "w2",
-          title: "Week 2",
-          tasks: [
-            { id:"w2_t1", text:"Nieuw veld `affiliate_url` toevoegen in Abonnement-model (app.py)", label:"tech" },
-            { id:"w2_t2", text:"Template aanpassen: gebruik `affiliate_url` indien gevuld", label:"tech" },
-            { id:"w2_t3", text:"GA4-event logging behouden voor affiliate clicks", label:"marketing" }
-          ]
-        },
-        {
-          weekId: "w3",
-          title: "Week 3",
-          tasks: [
-            { id:"w3_t1", text:"Alle huidige 20 abonnementen controleren (prijs, aanbiedingen, beschrijving)", label:"content" },
-            { id:"w3_t2", text:"5 nieuwe populaire abonnementen toevoegen", label:"content" }
-          ]
-        },
-        {
-          weekId: "w4",
-          title: "Week 4",
-          tasks: [
-            { id:"w4_t1", text:"Nog eens 5 nieuwe abonnementen toevoegen (populair & seizoensgebonden)", label:"content" },
-            { id:"w4_t2", text:"Eerste GA4-rapport draaien met klikdata", label:"marketing" }
-          ]
-        }
-      ]
-    },
-    {
-      phaseId: "fase2",
-      title: "Fase 2 – Verkeer & zichtbaarheid vergroten (Week 5–10)",
-      weeks: [
-        {
-          weekId: "w5",
-          title: "Week 5",
-          tasks: [
-            { id:"w5_t1", text:"Min. 300 woorden unieke tekst op 3 populairste categoriepagina’s", label:"content" },
-            { id:"w5_t2", text:"Structured data (Product, Review) toevoegen aan detailpagina’s", label:"seo" }
-          ]
-        },
-        {
-          weekId: "w6",
-          title: "Week 6",
-          tasks: [
-            { id:"w6_t1", text:"Sitemap uitbreiden met `lastmod` & `priority`", label:"seo" },
-            { id:"w6_t2", text:"GA4 doelen instellen voor ‘Klik naar aanbieder’", label:"marketing" }
-          ]
-        },
-        {
-          weekId: "w7",
-          title: "Week 7",
-          tasks: [
-            { id:"w7_t1", text:"Blogsectie aanmaken (`/blog/` route in Flask)", label:"tech" },
-            { id:"w7_t2", text:"Artikel publiceren: ‘Top 5 maaltijdbox-abonnementen in 2025’", label:"content" }
-          ]
-        },
-        {
-          weekId: "w8",
-          title: "Week 8",
-          tasks: [
-            { id:"w8_t1", text:"Artikel: ‘Hoe kies je het beste tijdschriftabonnement?’", label:"content" },
-            { id:"w8_t2", text:"Instagram- en LinkedIn-pagina’s starten", label:"marketing" }
-          ]
-        },
-        {
-          weekId: "w9",
-          title: "Week 9",
-          tasks: [
-            { id:"w9_t1", text:"Artikel: ‘Top 5 cadeau-abonnementen voor de feestdagen’", label:"content" },
-            { id:"w9_t2", text:"2 backlinks regelen via blogs/partners", label:"seo" }
-          ]
-        },
-        {
-          weekId: "w10",
-          title: "Week 10",
-          tasks: [
-            { id:"w10_t1", text:"Artikel: ‘Waarom een abonnement vaak goedkoper is dan losse aankopen’", label:"content" },
-            { id:"w10_t2", text:"Social posts (10 stuks: quotes, tips, aanbiedingen)", label:"marketing" }
-          ]
-        }
-      ]
-    },
-    {
-      phaseId: "fase3",
-      title: "Fase 3 – Conversie verhogen & premium model (Week 11–16)",
-      weeks: [
-        {
-          weekId: "w11",
-          title: "Week 11",
-          tasks: [
-            { id:"w11_t1", text:"Filterfunctie bouwen: prijs, beoordeling, bezorgfrequentie, doelgroep, tags", label:"tech" }
-          ]
-        },
-        {
-          weekId: "w12",
-          title: "Week 12",
-          tasks: [
-            { id:"w12_t1", text:"Sorteeropties: prijs laag/hoog, best beoordeeld", label:"tech" }
-          ]
-        },
-        {
-          weekId: "w13",
-          title: "Week 13",
-          tasks: [
-            { id:"w13_t1", text:"Nieuw veld `is_premium` in Abonnement", label:"tech" },
-            { id:"w13_t2", text:"Premium weergave in templates (bovenaan, label ‘Aanbevolen’)", label:"tech" }
-          ]
-        },
-        {
-          weekId: "w14",
-          title: "Week 14",
-          tasks: [
-            { id:"w14_t1", text:"Betaalpagina voor aanbieders (Mollie/Stripe testmode)", label:"tech" }
-          ]
-        },
-        {
-          weekId: "w15",
-          title: "Week 15",
-          tasks: [
-            { id:"w15_t1", text:"Adminoptie: abonnementen premium maken na betaling", label:"tech" },
-            { id:"w15_t2", text:"Factuurgeneratie in PDF", label:"tech" }
-          ]
-        },
-        {
-          weekId: "w16",
-          title: "Week 16",
-          tasks: [
-            { id:"w16_t1", text:"Eerste 2 aanbieders benaderen voor premium plaatsing", label:"marketing" }
-          ]
-        }
-      ]
-    },
-    {
-      phaseId: "fase4",
-      title: "Fase 4 – Webshopfunctie & partnerdashboard (Week 17–24)",
-      weeks: [
-        {
-          weekId: "w17_18",
-          title: "Week 17–18",
-          tasks: [
-            { id:"w17_18_t1", text:"Webshopmodule: direct abonnement afsluiten via AbboHub", label:"tech" },
-            { id:"w17_18_t2", text:"Betaalafhandeling integreren (Mollie/Stripe live)", label:"tech" }
-          ]
-        },
-        {
-          weekId: "w19_20",
-          title: "Week 19–20",
-          tasks: [
-            { id:"w19_20_t1", text:"Partnerdashboard: inlog, zelf abonnementen toevoegen/bewerken", label:"tech" }
-          ]
-        },
-        {
-          weekId: "w21_22",
-          title: "Week 21–22",
-          tasks: [
-            { id:"w21_22_t1", text:"Statistieken voor aanbieders (kliks, conversies)", label:"tech" }
-          ]
-        },
-        {
-          weekId: "w23_24",
-          title: "Week 23–24",
-          tasks: [
-            { id:"w23_24_t1", text:"E-mailnieuwsbrief met aanbiedingen opzetten", label:"marketing" },
-            { id:"w23_24_t2", text:"Retargeting-campagnes via Google Ads", label:"marketing" }
-          ]
-        }
-      ]
-    }
-  ];
+// ———————————————
+// 1) Data – 6 maanden planning (vervangt oude planning)
+// label: 'tech' | 'content' | 'seo' | 'marketing'
+// ———————————————
+const PLANNING = [
+  {
+    phaseId: "fase1",
+    title: "Fase 1 – Niche & CTR-fundament (Week 1–8)",
+    weeks: [
+      {
+        weekId: "w1",
+        title: "Week 1",
+        tasks: [
+          { id:"w1_t1", text:"Niche kiezen + categorieboom en tags definitief maken", label:"content" },
+          { id:"w1_t2", text:"Technische basis: WebSite, WebPage, BreadcrumbList schema in <head>", label:"tech" },
+          { id:"w1_t3", text:"Keyword seedlijst + SERP-intentie-onderzoek (top 20 termen)", label:"seo" }
+        ]
+      },
+      {
+        weekId: "w2",
+        title: "Week 2",
+        tasks: [
+          { id:"w2_t1", text:"Google Search Console & GA4 goed inrichten (eigendom, filters, doelen)", label:"marketing" },
+          { id:"w2_t2", text:"XML-sitemap + robots.txt check; lastmod en hreflang-basics klaarzetten", label:"seo" },
+          { id:"w2_t3", text:"Core Web Vitals quick wins (LCP/CLS): critical CSS + image dimensions", label:"tech" }
+        ]
+      },
+      {
+        weekId: "w3",
+        title: "Week 3",
+        tasks: [
+          { id:"w3_t1", text:"Meta titles & descriptions herschrijven (top 10 pagina’s) voor CTR", label:"seo" },
+          { id:"w3_t2", text:"Favicon/brand cleanup + duidelijke ‘site name’ in SERP (title-prefix)", label:"marketing" },
+          { id:"w3_t3", text:"CTR-experimenten voorbereiden (variant A/B in CMS of via template)", label:"marketing" }
+        ]
+      },
+      {
+        weekId: "w4",
+        title: "Week 4",
+        tasks: [
+          { id:"w4_t1", text:"Structured data: Product + Offer + AggregateRating op detailpagina’s", label:"seo" },
+          { id:"w4_t2", text:"FAQ-secties schrijven en implementeren (FAQPage schema) op 3 key pagina’s", label:"content" },
+          { id:"w4_t3", text:"Validator-run & fix rich results warnings (JSON-LD)", label:"tech" }
+        ]
+      },
+      {
+        weekId: "w5",
+        title: "Week 5",
+        tasks: [
+          { id:"w5_t1", text:"Pillar page #1 + 3 clusterartikelen publiceren (internal linking)", label:"content" },
+          { id:"w5_t2", text:"Interne links toevoegen vanuit categorieën naar top money pages", label:"seo" }
+        ]
+      },
+      {
+        weekId: "w6",
+        title: "Week 6",
+        tasks: [
+          { id:"w6_t1", text:"Blogroute/templating finetunen + Article/BlogPosting schema", label:"tech" },
+          { id:"w6_t2", text:"Auteurspagina’s + E-E-A-T elementen (bio, expertise)", label:"content" },
+          { id:"w6_t3", text:"ImageObject metadata (alt/copyright) voor hero images", label:"seo" }
+        ]
+      },
+      {
+        weekId: "w7",
+        title: "Week 7",
+        tasks: [
+          { id:"w7_t1", text:"Backlink-outreach: 10 prospects benaderen (niche blogs/partners)", label:"seo" },
+          { id:"w7_t2", text:"5 nieuwe relevante abonnementen toevoegen (volledige data + schema)", label:"content" }
+        ]
+      },
+      {
+        weekId: "w8",
+        title: "Week 8",
+        tasks: [
+          { id:"w8_t1", text:"CTR-dashboard (GSC API/exports) in admin tonen: CTR, posities, rich hits", label:"tech" },
+          { id:"w8_t2", text:"A/B test meta titles livezetten (batch 1: 5 pagina’s)", label:"marketing" }
+        ]
+      }
+    ]
+  },
 
-  const LABEL_BADGE = {
-    tech:       '<span class="badge tech">Technisch</span>',
-    content:    '<span class="badge content">Content</span>',
-    seo:        '<span class="badge seo">SEO</span>',
-    marketing:  '<span class="badge marketing">Marketing</span>',
-  };
+  {
+    phaseId: "fase2",
+    title: "Fase 2 – Traffic & Autoriteit (Week 9–16)",
+    weeks: [
+      {
+        weekId: "w9",
+        title: "Week 9",
+        tasks: [
+          { id:"w9_t1", text:"Content sprint: 4 long-tail artikelen (zoekintentie ‘best/vergelijk’)", label:"content" },
+          { id:"w9_t2", text:"Categoriepagina’s uitbreiden met 300–500 woorden (top 3)", label:"seo" }
+        ]
+      },
+      {
+        weekId: "w10",
+        title: "Week 10",
+        tasks: [
+          { id:"w10_t1", text:"Filter & sorteer MVP (prijs, beoordeling, frequentie, doelgroep)", label:"tech" },
+          { id:"w10_t2", text:"GA4 events finetunen (filter interacties, outbound clicks, scroll)", label:"marketing" }
+        ]
+      },
+      {
+        weekId: "w11",
+        title: "Week 11",
+        tasks: [
+          { id:"w11_t1", text:"Reviewmodule + AggregateRating renderen; moderatieflow", label:"tech" },
+          { id:"w11_t2", text:"Review guidelines & outreach (eerste 10 reviews verzamelen)", label:"marketing" }
+        ]
+      },
+      {
+        weekId: "w12",
+        title: "Week 12",
+        tasks: [
+          { id:"w12_t1", text:"Vergelijkingscomponent (tabellen) op categorie- en productdetail", label:"tech" },
+          { id:"w12_t2", text:"Vergelijkingscontent toevoegen voor 5 populaire categorieën", label:"content" }
+        ]
+      },
+      {
+        weekId: "w13",
+        title: "Week 13",
+        tasks: [
+          { id:"w13_t1", text:"Partner onboarding landingspagina (USPs, commissie, proces)", label:"content" },
+          { id:"w13_t2", text:"Leads-lijst (20 vendors) + outreach-sequence (e-mail/LinkedIn)", label:"marketing" }
+        ]
+      },
+      {
+        weekId: "w14",
+        title: "Week 14",
+        tasks: [
+          { id:"w14_t1", text:"Partnerdashboard v1: login + CRUD abonnementen + bulk CSV import", label:"tech" }
+        ]
+      },
+      {
+        weekId: "w15",
+        title: "Week 15",
+        tasks: [
+          { id:"w15_t1", text:"Datakwaliteit-checker: verplichte velden, prijsformat, schema completeness", label:"tech" },
+          { id:"w15_t2", text:"Automatische hints in admin voor ontbrekende content (UX copy)", label:"tech" }
+        ]
+      },
+      {
+        weekId: "w16",
+        title: "Week 16",
+        tasks: [
+          { id:"w16_t1", text:"2 case studies publiceren (keuzehulp) + 2 kwaliteitsbacklinks regelen", label:"content" },
+          { id:"w16_t2", text:"CTR batch 2 A/B test + learnings verwerken", label:"marketing" }
+        ]
+      }
+    ]
+  },
+
+  {
+    phaseId: "fase3",
+    title: "Fase 3 – Marketplace & Conversie (Week 17–20)",
+    weeks: [
+      {
+        weekId: "w17",
+        title: "Week 17",
+        tasks: [
+          { id:"w17_t1", text:"Betaalprovider integratie (Mollie/Stripe test) + commissiemodel", label:"tech" },
+          { id:"w17_t2", text:"Checkout/CTA-flow testen: ‘Direct afsluiten’ vs ‘Naar aanbieder’", label:"marketing" }
+        ]
+      },
+      {
+        weekId: "w18",
+        title: "Week 18",
+        tasks: [
+          { id:"w18_t1", text:"Premium/pinned placements voor aanbieders + billing PDF", label:"tech" },
+          { id:"w18_t2", text:"Pricing pagina voor partners + pitchdeck (light)", label:"marketing" }
+        ]
+      },
+      {
+        weekId: "w19",
+        title: "Week 19",
+        tasks: [
+          { id:"w19_t1", text:"Nieuwsbrief digest automatiseren (RSS/DB → e-mail), opt-in op site", label:"tech" },
+          { id:"w19_t2", text:"Lead magnet + exit intent (gids: ‘Beste X-abonnement kiezen’)", label:"marketing" }
+        ]
+      },
+      {
+        weekId: "w20",
+        title: "Week 20",
+        tasks: [
+          { id:"w20_t1", text:"Retargeting campagnes (Google/Meta) op categorie + productdetail", label:"marketing" },
+          { id:"w20_t2", text:"On-site personalisatie: ‘Aanbevolen voor jou’ (eenvoudige rules)", label:"tech" }
+        ]
+      }
+    ]
+  },
+
+  {
+    phaseId: "fase4",
+    title: "Fase 4 – Monetisatie & Opschaling (Week 21–24)",
+    weeks: [
+      {
+        weekId: "w21",
+        title: "Week 21",
+        tasks: [
+          { id:"w21_t1", text:"Partner analytics v1: kliks, conversies, omzet per product/partner", label:"tech" },
+          { id:"w21_t2", text:"Cohort/KPI dashboards (traffic, CTR, CR, AOV, churn)", label:"tech" }
+        ]
+      },
+      {
+        weekId: "w22",
+        title: "Week 22",
+        tasks: [
+          { id:"w22_t1", text:"Performance SEO: lazyload, preconnect, responsive images, WebP/AVIF", label:"tech" },
+          { id:"w22_t2", text:"Structured data audit & fixes (coverage, warnings, missing fields)", label:"seo" }
+        ]
+      },
+      {
+        weekId: "w23",
+        title: "Week 23",
+        tasks: [
+          { id:"w23_t1", text:"i18n-voorbereiding (framework + URL-strategie) en hreflang-design", label:"tech" },
+          { id:"w23_t2", text:"Vertaalbare metavelden en categoriecopy structuur", label:"content" }
+        ]
+      },
+      {
+        weekId: "w24",
+        title: "Week 24",
+        tasks: [
+          { id:"w24_t1", text:"Roadmap review + nieuwe 6 mnd doelen (partners, aanbod, traffic, omzet)", label:"marketing" },
+          { id:"w24_t2", text:"Investor/partner one-pager updaten met traction metrics", label:"content" }
+        ]
+      }
+    ]
+  }
+];
+
+const LABEL_BADGE = {
+  tech:       '<span class="badge tech">Technisch</span>',
+  content:    '<span class="badge content">Content</span>',
+  seo:        '<span class="badge seo">SEO</span>',
+  marketing:  '<span class="badge marketing">Marketing</span>',
+};
 
   // ———————————————
   // 2) Renderer

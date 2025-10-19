@@ -1,92 +1,73 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<!-- Google Tag Manager & adsense (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NRGH8P6W"
-  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5139039913201131"
-     crossorigin="anonymous"></script>
-  <!-- End Google Tag Manager (noscript) -->
   <meta charset="UTF-8">
   <title>Blog - AbboHub</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- GTM: script in HEAD -->
+  <script>
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});
+      var f=d.getElementsByTagName(s)[0], j=d.createElement(s), dl=l!='dataLayer'?'&l='+l:'';
+      j.async=true; j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;
+      f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-NRGH8P6W');
+  </script>
+
+  <!-- AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5139039913201131" crossorigin="anonymous"></script>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   <style>
-    .blog-lijst {
-      list-style: none;
-      padding: 0;
-      max-width: 500px;
-      margin: 0 auto;
-    }
-    .blog-item {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 15px;
-      border-bottom: 1px solid #ddd;
-      padding: 15px 0;
-    }
-    .blog-tekst {
-      flex: 1;
-    }
-    .blog-tekst .meta {
-      font-size: 0.85rem;
-      color: #888;
-      margin-bottom: 5px;
-    }
-    .blog-tekst h2 {
-      font-size: 1.1rem;
-      margin: 0;
-    }
-    .blog-tekst h2 a {
-      text-decoration: none;
-      color: #0a2a4a;
-    }
-    .blog-tekst h2 a:hover {
-      text-decoration: underline;
-    }
-    .blog-thumbnail img {
-      width: 90px;
-      height: 60px;
-      object-fit: cover;
-      border-radius: 6px;
-    }
+    .blog-lijst { list-style: none; padding: 0; max-width: 500px; margin: 0 auto; }
+    .blog-item { display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; border-bottom: 1px solid #ddd; padding: 15px 0; }
+    .blog-tekst { flex: 1; }
+    .blog-tekst .meta { font-size: 0.85rem; color: #888; margin-bottom: 5px; }
+    .blog-tekst h2 { font-size: 1.1rem; margin: 0; }
+    .blog-tekst h2 a { text-decoration: none; color: #0a2a4a; }
+    .blog-tekst h2 a:hover { text-decoration: underline; }
+    .blog-thumbnail img { width: 90px; height: 60px; object-fit: cover; border-radius: 6px; }
   </style>
 </head>
-<header>
-  <nav class="main-nav" aria-label="Hoofdnavigatie">
-    <ul>
-      <li><a href="{{ url_for('index') }}">Home</a></li>
-      {% if current_user.is_authenticated %}
-        <li><a href="{{ url_for('logout') }}">Uitloggen</a></li>
-      {% else %}
-        <li><a href="{{ url_for('login') }}">Inloggen</a></li>
-      {% endif %}
-      <li><a href="/contact">Contact</a></li>
-      <li><a href="{{ url_for('blog_overzicht') }}" aria-current="page">AbboHub Research</a></li>
-    </ul>
-  </nav>
-
-  <div class="zoek-filter-container">
-    <h1>AbboHub Research</h1>
-    <p>Trends, vergelijkingen & inzichten over abonnementen – door experts samengesteld.</p>
-  </div>
-</header>
-
 <body>
+
+  <!-- GTM: noscript in BODY, zo hoog mogelijk -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NRGH8P6W"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+
+  <!-- HELE header hoort binnen body -->
+  <header>
+    <nav class="main-nav" aria-label="Hoofdnavigatie">
+      <ul>
+        <li><a href="{{ url_for('index') }}">Home</a></li>
+        {% if current_user.is_authenticated %}
+          <li><a href="{{ url_for('logout') }}">Uitloggen</a></li>
+        {% else %}
+          <li><a href="{{ url_for('login') }}">Inloggen</a></li>
+        {% endif %}
+        <li><a href="/contact">Contact</a></li>
+        <li><a href="{{ url_for('blog_overzicht') }}" aria-current="page">AbboHub Research</a></li>
+      </ul>
+    </nav>
+
+    <div class="zoek-filter-container">
+      <h1>AbboHub Research</h1>
+      <p>Trends, vergelijkingen & inzichten over abonnementen – door experts samengesteld.</p>
+    </div>
+  </header>
 
   <h1 style="text-align: center;">Laatste blogberichten</h1>
 
   <ul class="blog-lijst">
     {% for post in posts %}
-    <li class="blog-item">
+    <li class="blog-item" data-post-slug="{{ post.slug }}" data-post-title="{{ post.titel }}" data-post-index="{{ loop.index }}">
       <div class="blog-tekst">
-<div class="meta">
-  {{ post.datum.strftime('%d %b %Y').lstrip('0') }} in 
-  <span>{{ post.auteur.username if post.auteur else 'Blog' }}</span>
-</div>
+        <div class="meta">
+          {{ post.datum.strftime('%d %b %Y').lstrip('0') }} in 
+          <span>{{ post.auteur.username if post.auteur else 'Blog' }}</span>
+        </div>
         <h2>
-          <a href="{{ url_for('blog_detail', slug=post.slug) }}">{{ post.titel }}</a>
+          <a class="blog-link" href="{{ url_for('blog_detail', slug=post.slug) }}">{{ post.titel }}</a>
         </h2>
       </div>
       <div class="blog-thumbnail">
