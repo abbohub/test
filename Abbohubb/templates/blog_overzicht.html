@@ -2,10 +2,19 @@
 <html lang="nl">
 <head>
   <meta charset="UTF-8">
-  <title>Blog - AbboHub</title>
+  <title>
+    {% set base_title = "AbboHub Research – Blog over product-abonnementen" %}
+    {% set base_desc  = "Lees analyses, vergelijkingen en gidsen over abonnementen. Klik door naar reviews of vergelijk direct." %}
+    {% set filter_bits = [] %}
+    {% if request.args.get('categorie') %}{% set _ = filter_bits.append("Categorie: " ~ request.args.get('categorie')) %}{% endif %}
+    {% if request.args.get('subcategorie') %}{% set _ = filter_bits.append("Subcategorie: " ~ request.args.get('subcategorie')) %}{% endif %}
+    {% if request.args.get('abonnement') %}{% set _ = filter_bits.append("Abonnement: " ~ request.args.get('abonnement')) %}{% endif %}
+    {% set seo_title = base_title ~ (" · " ~ (", ".join(filter_bits)) if filter_bits else "") %}
+    {{ seo_title }}
+  </title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- GTM: script in HEAD -->
+  <!-- GTM (optioneel) -->
   <script>
     (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});
       var f=d.getElementsByTagName(s)[0], j=d.createElement(s), dl=l!='dataLayer'?'&l='+l:'';
@@ -14,28 +23,156 @@
     })(window,document,'script','dataLayer','GTM-NRGH8P6W');
   </script>
 
-  <!-- AdSense -->
+  <!-- AdSense (optioneel) -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5139039913201131" crossorigin="anonymous"></script>
 
+  <!-- Behoud jouw styling -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+
+  {# ======== Canonical & Robots (dynamisch) ======== #}
+  {% set is_thin = (posts|length < 5) %} {# drempel: pas gerust aan #}
+  <link rel="canonical" href="{{ url_for('blog_overzicht', _external=True) }}">
+  {% if request.query_string or is_thin %}
+    <meta name="robots" content="noindex,follow">
+  {% else %}
+    <meta name="robots" content="index,follow">
+  {% endif %}
+
+  {# ======== Meta Description ======== #}
+  {% set desc_filters = (", ".join(filter_bits)) if filter_bits else "" %}
+  {% set seo_desc = base_desc ~ ((" – " ~ desc_filters) if desc_filters else "") %}
+  <meta name="description" content="{{ seo_desc }}">
+
+  {# ======== Open Graph / Twitter ======== #}
+  {% set og_img = url_for('static', filename='images/og-default.jpg', _external=True) %}
+  <meta property="og:site_name" content="AbboHub">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="{{ seo_title }}">
+  <meta property="og:description" content="{{ seo_desc }}">
+  <meta property="og:url" content="{{ url_for('blog_overzicht', _external=True) }}">
+  <meta property="og:image" content="{{ og_img }}">
+  <meta property="og:image:alt" content="AbboHub Research">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ seo_title }}">
+  <meta name="twitter:description" content="{{ seo_desc }}">
+  <meta name="twitter:image" content="{{ og_img }}">
+
+  {# ======== Favicons ======== #}
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='favicons/favicon-32x32.png') }}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='favicons/favicon-16x16.png') }}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='favicons/apple-touch-icon.png') }}">
+  <link rel="manifest" href="{{ url_for('static', filename='favicons/site.webmanifest') }}">
+  <meta name="theme-color" content="#ffffff">
+
+  <!-- Extra layout/styling voor hub + filter -->
   <style>
-    .blog-lijst { list-style: none; padding: 0; max-width: 500px; margin: 0 auto; }
-    .blog-item { display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; border-bottom: 1px solid #ddd; padding: 15px 0; }
+    body { background: #f3e6cc; }
+    .page-wrap { background-color: #f3e6cc;max-width: 1200px; margin: 0 auto; padding: 0 12px 48px; }
+
+    .blog-layout { display: grid; grid-template-columns: 300px 1fr; gap: 24px; align-items: start; }
+    @media (max-width: 900px) { .blog-layout { grid-template-columns: 1fr; } }
+
+    .content-card {
+      background: #fff; border: 1px solid #e8e8ef; border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,.06); padding: 18px; margin-top: 18px;
+    }
+
+    /* Sidebar – modern + drawer */
+    .sidebar-modern {
+      background: #ffffff; border: 1px solid #e6e8ee; border-radius: 12px; padding: 16px;
+      box-shadow: 0 6px 20px rgba(0,0,0,.06); position: sticky; top: 90px; z-index: 10;
+    }
+    .sidebar-modern .sidebar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .sidebar-modern h2 { font-size: 1.1rem; margin: 0; font-weight: 700; color: #0a2a4a; }
+    .sidebar-modern .sidebar-close { display: none; background: none; border: none; font-size: 28px; line-height: 1; cursor: pointer; color: #222; }
+
+    .form-group { margin-top: 14px; }
+    .form-group label { display: block; font-weight: 600; margin-bottom: 6px; color: #222; }
+    .help { font-size: .85rem; color: #6b7280; }
+
+    .select-wrap { position: relative; }
+    .select-wrap select {
+      width: 100%; appearance: none; background: #fff; border: 1px solid #d8dbe4; border-radius: 10px;
+      padding: 10px 36px 10px 12px; font-size: 0.98rem; line-height: 1.2;
+    }
+    .select-wrap .chev {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      pointer-events: none; color: #6b7280; font-size: 0.9rem;
+    }
+
+    .btn-primary, .btn-reset, .btn-outline {
+      width: 100%; padding: 11px 12px; border-radius: 10px; font-weight: 700; cursor: pointer;
+      border: 1px solid transparent; font-size: .95rem;
+    }
+    .btn-primary { background: #f4cd00; color: #fff; margin-top: 12px; }
+    .btn-primary:hover { background: #1bd3c6; }
+    .btn-reset { background: #f4cd00; color: #fff; margin-top: 10px; }
+    .btn-reset:hover { background: #1bd3c6; }
+
+    .filters-trigger { display: none; justify-content: flex-end; margin: 10px 0 14px; }
+    .btn-outline { background: #f4cd00; color: #fff; margin-top: 12px; }
+
+    @media (max-width: 900px) {
+      .filters-trigger { display: flex; }
+      .sidebar-modern {
+        position: fixed; inset: 0 0 0 auto; width: min(90vw, 360px); height: 100vh; top: 0; right: -100%;
+        border-radius: 0; box-shadow: -8px 0 24px rgba(0,0,0,.2); transition: right .28s ease; padding: 18px 16px 22px; overflow-y: auto; z-index: 15;
+      }
+      .sidebar-modern.open { right: 0; }
+      .sidebar-modern .sidebar-close { display: inline-block; }
+
+      body.filters-open { overflow: hidden; }
+      body.filters-open header { display: none; }
+      body.filters-open .page-wrap { padding-top: 0; }
+
+      .filters-backdrop {
+        position: fixed; inset: 0; background: rgba(0,0,0,.35);
+        opacity: 0; pointer-events: none; transition: opacity .2s ease; z-index: 14;
+      }
+      .filters-backdrop.show { opacity: 1; pointer-events: auto; }
+    }
+
+    /* Bloglijst */
+    .blog-lijst { list-style: none; padding: 0; margin: 0; }
+    .blog-item { display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; border-bottom: 1px solid #eee; padding: 14px 4px; }
+    .blog-item:last-child { border-bottom: none; }
     .blog-tekst { flex: 1; }
-    .blog-tekst .meta { font-size: 0.85rem; color: #888; margin-bottom: 5px; }
-    .blog-tekst h2 { font-size: 1.1rem; margin: 0; }
+    .blog-tekst .meta { font-size: 0.85rem; color: #777; margin-bottom: 6px; }
+    .blog-tekst h2 { font-size: 1.1rem; margin: 0; line-height: 1.35; }
     .blog-tekst h2 a { text-decoration: none; color: #0a2a4a; }
     .blog-tekst h2 a:hover { text-decoration: underline; }
-    .blog-thumbnail img { width: 90px; height: 60px; object-fit: cover; border-radius: 6px; }
+    .blog-thumbnail img { width: 110px; height: 74px; object-fit: cover; border-radius: 8px; border: 1px solid #eee; }
+
+    .badge { display: inline-block; background-color:#cd95ccbd; color: white; padding: 4px 8px; font-size: .85rem; border-radius: 12px; margin: 2px; text-decoration: none; }
+
+    /* Intro & categorie-tegels */
+    .lead { font-size: 1.05rem; color: #384250; line-height: 1.65; }
+    .grid-cats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; padding: 0; margin: 12px 0 0; list-style: none; }
+    .grid-cats a { display: block; background: #fff; border: 1px solid #e8e8ef; border-radius: 10px; padding: 12px; text-decoration: none; color: #0a2a4a; box-shadow: 0 2px 10px rgba(0,0,0,.04); }
+    .grid-cats strong { display: block; margin-bottom: 4px; }
+    @media (max-width: 900px){ .grid-cats { grid-template-columns: 1fr; } }
+    /* Full-width intro boven de grid */
+.intro-card {
+  margin-top: 18px;margin-bottom: 20px;
+}
+
+/* Zorg dat de eerste rij van de grid (filters + lijst) bovenaan gelijk staat */
+.blog-layout {
+  align-items: start; /* staat er al, maar expliciet is prima */
+}
+
+/* Optioneel: iets minder ruimte boven de lijst-kaart */
+.posts-card {
+  margin-top: 0;
+}
+
   </style>
 </head>
 <body>
+  <!-- GTM noscript -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NRGH8P6W" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
-  <!-- GTM: noscript in BODY, zo hoog mogelijk -->
-  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NRGH8P6W"
-    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-
-  <!-- HELE header hoort binnen body -->
+  <!-- Header -->
   <header>
     <nav class="main-nav" aria-label="Hoofdnavigatie">
       <ul>
@@ -55,31 +192,379 @@
       <p>Trends, vergelijkingen & inzichten over abonnementen – door experts samengesteld.</p>
     </div>
   </header>
+        <nav class="breadcrumb" aria-label="Broodkruimelpad">
+      <a href="{{ url_for('index') }}" class="back-link">&larr; Terug naar overzicht</a>
+      <span aria-hidden="true">›</span>
+    </nav>
 
-  <h1 style="text-align: center;">Laatste blogberichten</h1>
+  <main class="page-wrap">
+  <!-- 1) FULL-WIDTH INTRO -->
+  <section class="content-card intro-card" aria-labelledby="intro">
+    <h2 id="intro">AbboHub Research: verdieping in product-abonnementen</h2>
+    <p class="lead">
+      AbboHub is hét online platform waar je allerlei abonnementen op één plek kunt ontdekken en vergelijken van
+      maaltijdboxen en koffie-abonnementen tot diervoeding, verzorging en andere slimme bezorgabonnementen. In plaats van
+      zelf alle aanbieders af te speuren, laat AbboHub je per categorie zien welke opties er zijn, wat ze bieden en waar
+      je op moet letten.
+    </p>
+    <p class="lead">
+      <strong>Welkom bij AbboHub Research</strong>, de pagina waar we juist díeper ingaan op deze product-abonnementen.
+      Naast de algemene review en basisinformatie van een abonnement, vind je hier de échte details: achtergrondinformatie
+      over het bedrijf achter het abonnement, unboxings, prijsvergelijkingen, B Corp-informatie (waar van toepassing),
+      hoe de website is opgebouwd, welke abonnementsvariant het beste is en praktische zaken zoals allergieën.
+    </p>
+    <p class="lead">
+      Dit alles maakt het kiezen van het juiste abonnement een stuk makkelijker. Kijk gerust rond en duik de categorie in
+      die je interessant vindt.
+    </p>
+  </section>
 
-  <ul class="blog-lijst">
-    {% for post in posts %}
-    <li class="blog-item" data-post-slug="{{ post.slug }}" data-post-title="{{ post.titel }}" data-post-index="{{ loop.index }}">
-      <div class="blog-tekst">
-        <div class="meta">
-          {{ post.datum.strftime('%d %b %Y').lstrip('0') }} in 
-          <span>{{ post.auteur.username if post.auteur else 'Blog' }}</span>
+  <!-- 2) MOBIELE TRIGGER VOOR FILTERS -->
+  <div class="filters-trigger">
+    <button type="button" class="btn-outline" id="btn-open-filters" aria-haspopup="dialog" aria-controls="filters-drawer">
+      Filters
+    </button>
+  </div>
+
+  <!-- 3) GRID: LINKS FILTERS — RECHTS DIRECT LAATSTE BLOGBERICHTEN -->
+  <div class="blog-layout">
+    <!-- Sidebar filter -->
+    <aside class="sidebar-modern" aria-labelledby="filter-title" id="filters-drawer">
+      <div class="sidebar-header">
+        <h2 id="filter-title">Filters</h2>
+        <button type="button" class="sidebar-close" id="btn-close-filters" aria-label="Sluit filters">×</button>
+      </div>
+
+      <div class="form-group">
+        <label for="f-categorie">Categorie</label>
+        <div class="select-wrap">
+          <select id="f-categorie" aria-describedby="cat-help">
+            <option value="">Alle categorieën</option>
+            {% for c in categorieen %}
+              <option value="{{ c.id }}">{{ c.naam }}</option>
+            {% endfor %}
+          </select>
+          <span class="chev">▾</span>
         </div>
-        <h2>
-          <a class="blog-link" href="{{ url_for('blog_detail', slug=post.slug) }}">{{ post.titel }}</a>
-        </h2>
+        <small id="cat-help" class="help">Kies eerst een categorie</small>
       </div>
-      <div class="blog-thumbnail">
-        {% if post.afbeelding %}
-          <img src="{{ url_for('static', filename='uploads/' ~ post.afbeelding) }}" alt="{{ post.titel }}">
-        {% else %}
-          <img src="{{ url_for('static', filename='images/placeholder.jpg') }}" alt="Geen afbeelding">
-        {% endif %}
-      </div>
-    </li>
-    {% endfor %}
-  </ul>
 
-</body>
+      <div class="form-group">
+        <label for="f-subcategorie">Subcategorie</label>
+        <div class="select-wrap">
+          <select id="f-subcategorie" aria-describedby="sub-help">
+            <option value="">Alle subcategorieën</option>
+            {% for s in subcategorieen %}
+              <option value="{{ s.id }}" data-categorie="{{ s.categorie_id }}">{{ s.naam }}</option>
+            {% endfor %}
+          </select>
+          <span class="chev">▾</span>
+        </div>
+        <small id="sub-help" class="help">Wordt automatisch gefilterd</small>
+      </div>
+
+      <div class="form-group">
+        <label for="f-abonnement">Abonnement</label>
+        <div class="select-wrap">
+          <select id="f-abonnement" aria-describedby="abo-help">
+            <option value="">Alle abonnementen</option>
+            {% for a in abonnementen %}
+              <option value="{{ a.id }}" data-sub="{{ a.subcategorie_id }}">{{ a.naam }}</option>
+            {% endfor %}
+          </select>
+          <span class="chev">▾</span>
+        </div>
+        <small id="abo-help" class="help">Wordt automatisch gefilterd</small>
+      </div>
+
+      <button type="button" class="btn-primary" id="btn-apply-filters">Pas filters toe</button>
+      <button type="button" class="btn-reset" id="btn-reset">Reset</button>
+    </aside>
+
+    <!-- Rechterkolom: direct “Laatste blogberichten” -->
+    <section class="content-card posts-card" aria-labelledby="lijst-title">
+      <h3 id="lijst-title">Laatste blogberichten</h3>
+      <ul class="blog-lijst" id="blog-lijst">
+        {% for post in posts %}
+        <li class="blog-item"
+            data-cats="{{ post.categorieen | map(attribute='id') | join(',') }}"
+            data-subs="{{ post.subcategorieen | map(attribute='id') | join(',') }}"
+            data-abos="{{ post.abonnementen | map(attribute='id') | join(',') }}">
+          <div class="blog-tekst">
+            <div class="meta">
+              {{ post.datum.strftime('%d %b %Y').lstrip('0') }} ·
+              <span>{{ post.auteur.username if post.auteur else 'AbboHub' }}</span>
+            </div>
+            <h2><a class="blog-link" href="{{ url_for('blog_detail', slug=post.slug) }}">{{ post.titel }}</a></h2>
+            <div class="badges" style="margin-top:6px;">
+              {% for a in post.abonnementen %}
+                <a class="badge" href="{{ url_for('abonnement_reviews', slug=a.slug) }}">Review: {{ a.naam }}</a>
+              {% endfor %}
+              {% if not post.abonnementen %}
+                {% for s in post.subcategorieen %}
+                  <a class="badge" href="{{ url_for('abonnement_overzicht', categorie_slug=s.categorie.slug, subcategorie_slug=s.slug) }}">{{ s.naam }}</a>
+                {% endfor %}
+              {% endif %}
+              {% if not post.abonnementen and not post.subcategorieen %}
+                {% for c in post.categorieen %}
+                  <a class="badge" href="{{ url_for('abonnement_overzicht', categorie_slug=c.slug) }}">{{ c.naam }}</a>
+                {% endfor %}
+              {% endif %}
+            </div>
+          </div>
+          <div class="blog-thumbnail">
+            {% if post.afbeelding %}
+              <img loading="lazy" src="{{ url_for('static', filename='uploads/' ~ post.afbeelding) }}" alt="{{ post.titel }}">
+            {% else %}
+              <img loading="lazy" src="{{ url_for('static', filename='images/placeholder.jpg') }}" alt="Geen afbeelding">
+            {% endif %}
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+  </div>
+
+  <!-- 4) FULL-WIDTH SECTIES ONDER DE GRID -->
+  {% if featured_posts %}
+  <section class="content-card" aria-labelledby="featured">
+    <h3 id="featured">Uitgelicht</h3>
+    <ul class="blog-lijst">
+      {% for post in featured_posts %}
+      <li class="blog-item">
+        <div class="blog-tekst">
+          <div class="meta">
+            {{ post.datum.strftime('%d %b %Y').lstrip('0') }} ·
+            <span>{{ post.auteur.username if post.auteur else 'AbboHub' }}</span>
+          </div>
+          <h2><a href="{{ url_for('blog_detail', slug=post.slug) }}">{{ post.titel }}</a></h2>
+        </div>
+        <div class="blog-thumbnail">
+          {% if post.afbeelding %}
+            <img loading="lazy" src="{{ url_for('static', filename='uploads/' ~ post.afbeelding) }}" alt="{{ post.titel }}">
+          {% else %}
+            <img loading="lazy" src="{{ url_for('static', filename='images/placeholder.jpg') }}" alt="Geen afbeelding">
+          {% endif %}
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {% if top_categorieen %}
+  <section class="content-card" aria-labelledby="cats">
+    <h3 id="cats">Populaire categorieën</h3>
+    <ul class="grid-cats">
+      {% for c in top_categorieen %}
+        <li>
+          <a href="{{ url_for('abonnement_overzicht', categorie_slug=c.slug) }}">
+            <strong>{{ c.naam }}</strong>
+            {% if c.korte_omschrijving %}<span>{{ c.korte_omschrijving }}</span>{% endif %}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  <section class="content-card" aria-labelledby="faq">
+    <h3 id="faq">Veelgestelde vragen</h3>
+    <details><summary>Hoe kies ik het beste abonnement?</summary>
+      <p>Vergelijk prijs, looptijd, opzegvoorwaarden en reviews. Gebruik onze vergelijkpagina’s om snel te filteren op jouw criteria.</p>
+    </details>
+    <details><summary>Wat is het verschil tussen categorie en subcategorie?</summary>
+      <p>Categorieën groeperen brede thema’s (bijv. eten &amp; voeding). Subcategorieën zoomen verder in (bijv. maaltijdboxen).</p>
+    </details>
+    <details><summary>Verdienen jullie aan abonnementen?</summary>
+      <p>We tonen objectieve informatie. Soms gebruiken we affiliate-links; dat beïnvloedt onze beoordeling niet.</p>
+    </details>
+  </section>
+</main>
+
+
+  <!-- Backdrop voor mobiel -->
+  <div class="filters-backdrop" id="filters-backdrop"></div>
+
+  <!-- JSON-LD: ItemList + FAQPage -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"ItemList",
+    "itemListElement":[
+      {% for post in posts %}
+      { "@type":"ListItem", "position": {{ loop.index }}, "url": "{{ url_for('blog_detail', slug=post.slug, _external=True) }}" }{{ "," if not loop.last else "" }}
+      {% endfor %}
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"FAQPage",
+    "mainEntity":[
+      {
+        "@type":"Question",
+        "name":"Hoe kies ik het beste abonnement?",
+        "acceptedAnswer":{"@type":"Answer","text":"Vergelijk prijs, looptijd, opzegvoorwaarden en reviews. Gebruik onze vergelijkpagina’s om snel te filteren op jouw criteria."}
+      },
+      {
+        "@type":"Question",
+        "name":"Wat is het verschil tussen categorie en subcategorie?",
+        "acceptedAnswer":{"@type":"Answer","text":"Categorieën groeperen brede thema’s, subcategorieën zoomen verder in (bijv. maaltijdboxen binnen eten & voeding)."}
+      },
+      {
+        "@type":"Question",
+        "name":"Verdienen jullie aan abonnementen?",
+        "acceptedAnswer":{"@type":"Answer","text":"We tonen objectieve informatie. Soms gebruiken we affiliate-links; dat beïnvloedt onze beoordeling niet."}
+      }
+    ]
+  }
+  </script>
+
+  <!-- Filtering + Drawer JS -->
+  <script>
+  (function(){
+    const selCat  = document.getElementById('f-categorie');
+    const selSub  = document.getElementById('f-subcategorie');
+    const selAbo  = document.getElementById('f-abonnement');
+    const btnReset = document.getElementById('btn-reset');
+    const btnApply = document.getElementById('btn-apply-filters');
+    const btnOpen  = document.getElementById('btn-open-filters');
+    const btnClose = document.getElementById('btn-close-filters');
+    const sidebar  = document.getElementById('filters-drawer');
+    const backdrop = document.getElementById('filters-backdrop');
+    const list     = document.getElementById('blog-lijst');
+
+    // Data buffers
+    const allSubs = Array.from(selSub.options).map(o => ({id:o.value, cat:o.dataset.categorie || '', text:o.textContent}));
+    const allAbos = Array.from(selAbo.options).map(o => ({id:o.value, sub:o.dataset.sub || '', text:o.textContent}));
+
+    function renderSubOptions(){
+      const catId = selCat.value;
+      selSub.innerHTML = '<option value="">Alle subcategorieën</option>';
+      let pool = allSubs;
+      if (catId) pool = allSubs.filter(s => String(s.cat) === String(catId));
+      pool.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id; opt.textContent = s.text; opt.dataset.categorie = s.cat;
+        selSub.appendChild(opt);
+      });
+    }
+
+    // Bugfix: bij alleen categorie filteren we abos op subcategorieën onder die categorie
+    function renderAboOptions(){
+      const subId = selSub.value;
+      const catId = selCat.value;
+      selAbo.innerHTML = '<option value="">Alle abonnementen</option>';
+
+      let pool = allAbos;
+      if (subId) {
+        pool = allAbos.filter(a => String(a.sub) === String(subId));
+      } else if (catId) {
+        const subIdsUnderCat = allSubs.filter(s => String(s.cat) === String(catId)).map(s => String(s.id));
+        pool = allAbos.filter(a => subIdsUnderCat.includes(String(a.sub)));
+      }
+      pool.forEach(a => {
+        const opt = document.createElement('option');
+        opt.value = a.id; opt.textContent = a.text; opt.dataset.sub = a.sub;
+        selAbo.appendChild(opt);
+      });
+    }
+
+    function matchSet(haystackCSV, needle){
+      if (!needle) return true;
+      const ids = (haystackCSV || '').split(',').filter(Boolean);
+      return ids.includes(String(needle));
+    }
+
+    function cascadeContain(catId, subId, aboId, li){
+      if (aboId) return matchSet(li.dataset.abos, aboId);
+      if (subId) return matchSet(li.dataset.subs, subId);
+
+      if (catId) {
+        if (matchSet(li.dataset.cats, catId)) return true;
+        const visibleSubIds = Array.from(selSub.options).map(o => o.value).filter(Boolean);
+        const visibleAboIds = Array.from(selAbo.options).map(o => o.value).filter(Boolean);
+        const postSubIds = (li.dataset.subs || '').split(',').filter(Boolean);
+        const postAboIds = (li.dataset.abos || '').split(',').filter(Boolean);
+        if (postSubIds.some(id => visibleSubIds.includes(id))) return true;
+        if (postAboIds.some(id => visibleAboIds.includes(id))) return true;
+        return false;
+      }
+      return true;
+    }
+
+    function applyFilters(){
+      const catId = selCat.value, subId = selSub.value, aboId = selAbo.value;
+      Array.from(list.children).forEach(li => {
+        li.style.display = cascadeContain(catId, subId, aboId, li) ? 'flex' : 'none';
+      });
+    }
+
+    function openFilters(){
+      sidebar.classList.add('open');
+      document.body.classList.add('filters-open');
+      backdrop.classList.add('show');
+    }
+    function closeFilters(){
+      sidebar.classList.remove('open');
+      document.body.classList.remove('filters-open');
+      backdrop.classList.remove('show');
+    }
+
+    // Events
+    selCat.addEventListener('change', () => { renderSubOptions(); renderAboOptions(); applyFilters(); });
+    selSub.addEventListener('change', () => { renderAboOptions(); applyFilters(); });
+    selAbo.addEventListener('change', applyFilters);
+
+    btnReset.addEventListener('click', () => {
+      selCat.value = ''; renderSubOptions();
+      selSub.value = ''; renderAboOptions();
+      selAbo.value = '';
+      Array.from(list.children).forEach(li => li.style.display = 'flex');
+      closeFilters();
+    });
+
+    const openBtn  = document.getElementById('btn-open-filters');
+    const closeBtn = document.getElementById('btn-close-filters');
+    if (openBtn)  openBtn.addEventListener('click', openFilters);
+    if (closeBtn) closeBtn.addEventListener('click', closeFilters);
+    if (btnApply) btnApply.addEventListener('click', () => { applyFilters(); closeFilters(); });
+    backdrop.addEventListener('click', closeFilters);
+    document.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && sidebar.classList.contains('open')) closeFilters(); });
+
+    // Init
+    renderSubOptions();
+    renderAboOptions();
+  })();
+  </script>
+ 
+ <footer class="site-footer">
+  <div class="footer-content">
+    <p class="affiliate-note">
+      Sommige links op AbboHub zijn affiliate links. Wanneer je via zo’n link bestelt, kan AbboHub een kleine commissie ontvangen – 
+      <strong>zonder extra kosten voor jou</strong>.
+    </p>
+
+    <p class="copyright">
+      &copy; 2025 AbboHub. Alle rechten voorbehouden.
+    </p>
+
+    <nav class="footer-nav" aria-label="Footer navigatie">
+      <ul>
+        <li><a href="{{ url_for('privacy_cookieverklaring') }}">Privacy- en Cookieverklaring</a></li>
+        <li><a href="{{ url_for('algemene_voorwaarden') }}">Algemene Voorwaarden</a></li>
+        <li><a href="{{ url_for('over_abbohub') }}">Over AbboHub</a></li>
+        <li><a href="#" onclick="openSettings()">Cookievoorkeuren aanpassen</a></li>
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+  
+  <!-- Cookiebanner insluiten -->
+  {% include 'cookie-banner.html' %}
+  <script src="{{ url_for('static', filename='js/index.js') }}"></script> 
+            </body>
 </html>
