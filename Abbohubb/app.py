@@ -11,6 +11,7 @@ from sqlalchemy import func, case
 from datetime import datetime, timezone
 from xml.sax.saxutils import escape
 from flask import Response
+from sqlalchemy import func, or_
 
 
 # Alleen nodig als je environment variables gebruikt
@@ -198,17 +199,41 @@ class AbonnementFoto(db.Model):
     bestandsnaam = db.Column(db.String(255), nullable=False)
 
     abonnement = db.relationship('Abonnement', back_populates='fotos')
+# === associations ===
+blogpost_categorie = db.Table(
+    'blogpost_categorie',
+    db.Column('blogpost_id', db.Integer, db.ForeignKey('blog_post.id'), primary_key=True),
+    db.Column('categorie_id', db.Integer, db.ForeignKey('categorie.id'), primary_key=True),
+)
+
+blogpost_subcategorie = db.Table(
+    'blogpost_subcategorie',
+    db.Column('blogpost_id', db.Integer, db.ForeignKey('blog_post.id'), primary_key=True),
+    db.Column('subcategorie_id', db.Integer, db.ForeignKey('subcategorie.id'), primary_key=True),
+)
+
+blogpost_abonnement = db.Table(
+    'blogpost_abonnement',
+    db.Column('blogpost_id', db.Integer, db.ForeignKey('blog_post.id'), primary_key=True),
+    db.Column('abonnement_id', db.Integer, db.ForeignKey('abonnement.id'), primary_key=True),
+)
 
 class BlogPost(db.Model):
+    __tablename__ = "blog_post"
     id = db.Column(db.Integer, primary_key=True)
     titel = db.Column(db.String(150), nullable=False)
-    slug = db.Column(db.String(150), unique=True, nullable=False)
+    slug = db.Column(db.String(150), unique=True, nullable=False, index=True)
     inhoud = db.Column(db.Text, nullable=False)
-    afbeelding = db.Column(db.String(255), nullable=True)
-    video_url = db.Column(db.String(255), nullable=True)
+    afbeelding = db.Column(db.String(255))
+    video_url = db.Column(db.String(255))
     datum = db.Column(db.DateTime, default=db.func.now())
     auteur_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     auteur = db.relationship('User', backref='blogposts')
+
+    # << nieuwe many-to-many’s >>
+    categorieen = db.relationship('Categorie', secondary=blogpost_categorie, lazy='dynamic')
+    subcategorieen = db.relationship('Subcategorie', secondary=blogpost_subcategorie, lazy='dynamic')
+    abonnementen = db.relationship('Abonnement', secondary=blogpost_abonnement, lazy='dynamic')
 
 class Review(db.Model):
     __tablename__ = 'review'
@@ -581,18 +606,6 @@ def abonnement_reviews(slug):
         page_title=page_title,
         page_description=page_description
     )
-
-@app.route('/blog', strict_slashes=False)
-@app.route('/blog/', strict_slashes=False)
-def blog_overzicht():
-    posts = BlogPost.query.order_by(BlogPost.datum.desc()).all()
-    return render_template('blog_overzicht.html', posts=posts)
-
-@app.route('/blog/<slug>', strict_slashes=False)
-@app.route('/blog/<slug>/', strict_slashes=False)
-def blog_detail(slug):
-    post = BlogPost.query.filter_by(slug=slug).first_or_404()
-    return render_template('blog_detail.html', post=post)
 
 
 @app.route('/user_dashboard')
@@ -1061,25 +1074,44 @@ def manage_subscriptions():
         geselecteerde_categorie=categorie_id
     )
 
-@app.route('/admin/blog/nieuw', methods=['GET', 'POST'])
+
+# =============== ADMIN: blog toevoegen (meervoudige koppelingen) ===============
+@app.route('/admin/blog/nieuw', methods=['GET', 'POST'], endpoint='blog_toevoegen')
 @login_required
-def blog_toevoegen():
+def blog_toevoegen_v2():
     if not current_user.is_admin:
         abort(403)
 
-    if request.method == 'POST':
-        titel = request.form['titel']
-        inhoud = request.form['inhoud']
-        video_url = request.form.get('video_url')
-        afbeelding = request.files.get('afbeelding')
-        slug = slugify(titel)
+    categorieen = Categorie.query.order_by(Categorie.naam.asc()).all()
+    subcategorieen = Subcategorie.query.order_by(Subcategorie.naam.asc()).all()
+    abonnementen = Abonnement.query.order_by(Abonnement.naam.asc()).all()
 
+    if request.method == 'POST':
+        titel = request.form['titel'].strip()
+        inhoud = request.form['inhoud']
+        video_url = (request.form.get('video_url') or '').strip()
+        afbeelding = request.files.get('afbeelding')
+
+        # Unieke slug
+        base_slug = slugify(titel)
+        slug = base_slug
+        i = 1
+        while BlogPost.query.filter(func.lower(BlogPost.slug) == slug.lower()).first():
+            slug = f"{base_slug}-{i}"
+            i += 1
+
+        # YouTube watch -> embed
+        if video_url and 'watch?v=' in video_url:
+            video_url = video_url.replace('watch?v=', 'embed/')
+
+        # Afbeelding opslaan
         bestandsnaam = None
         if afbeelding and allowed_file(afbeelding.filename):
             bestandsnaam = secure_filename(afbeelding.filename)
             pad = os.path.join(app.config['UPLOAD_FOLDER'], bestandsnaam)
             afbeelding.save(pad)
 
+        # Nieuwe post
         nieuw = BlogPost(
             titel=titel,
             slug=slug,
@@ -1088,31 +1120,61 @@ def blog_toevoegen():
             video_url=video_url,
             auteur=current_user
         )
+
+        # Meervoudige koppelingen (allemaal optioneel)
+        cat_ids = [int(x) for x in request.form.getlist('categorie_ids')]
+        sub_ids = [int(x) for x in request.form.getlist('subcategorie_ids')]
+        abo_ids = [int(x) for x in request.form.getlist('abonnement_ids')]
+
+        if cat_ids:
+            nieuw.categorieen = Categorie.query.filter(Categorie.id.in_(cat_ids)).all()
+        if sub_ids:
+            nieuw.subcategorieen = Subcategorie.query.filter(Subcategorie.id.in_(sub_ids)).all()
+        if abo_ids:
+            nieuw.abonnementen = Abonnement.query.filter(Abonnement.id.in_(abo_ids)).all()
+
         db.session.add(nieuw)
         db.session.commit()
         flash("Blogbericht geplaatst!", "success")
-        return redirect(url_for('blog_overzicht'))
+        return redirect(url_for('admin_blog_overzicht'))
 
-    return render_template('blog_formulier.html')
+    return render_template(
+        'blog_formulier.html',
+        categorieen=categorieen,
+        subcategorieen=subcategorieen,
+        abonnementen=abonnementen,
+        post=None
+    )
 
-@app.route('/admin/blog')
+# =============== ADMIN: blogoverzicht ===============
+@app.route('/admin/blog', endpoint='admin_blog_overzicht')
 @login_required
-def admin_blog_overzicht():
+def admin_blog_overzicht_v2():
     if not current_user.is_admin:
         abort(403)
     posts = BlogPost.query.order_by(BlogPost.datum.desc()).all()
     return render_template('admin_blog_overzicht.html', posts=posts)
-@app.route('/admin/blog/bewerk/<int:post_id>', methods=['GET', 'POST'])
+
+# =============== ADMIN: blog bewerken ===============
+@app.route('/admin/blog/bewerk/<int:post_id>', methods=['GET', 'POST'], endpoint='blog_bewerken')
 @login_required
-def blog_bewerken(post_id):
+def blog_bewerken_v2(post_id):
     if not current_user.is_admin:
         abort(403)
+
     post = BlogPost.query.get_or_404(post_id)
+    categorieen = Categorie.query.order_by(Categorie.naam.asc()).all()
+    subcategorieen = Subcategorie.query.order_by(Subcategorie.naam.asc()).all()
+    abonnementen = Abonnement.query.order_by(Abonnement.naam.asc()).all()
 
     if request.method == 'POST':
-        post.titel = request.form['titel']
+        post.titel = request.form['titel'].strip()
         post.inhoud = request.form['inhoud']
-        post.video_url = request.form['video_url']
+
+        video_url = (request.form.get('video_url') or '').strip()
+        if video_url and 'watch?v=' in video_url:
+            video_url = video_url.replace('watch?v=', 'embed/')
+        post.video_url = video_url
 
         afbeelding = request.files.get('afbeelding')
         if afbeelding and allowed_file(afbeelding.filename):
@@ -1121,15 +1183,31 @@ def blog_bewerken(post_id):
             afbeelding.save(pad)
             post.afbeelding = filename
 
+        # Koppelingen updaten
+        cat_ids = [int(x) for x in request.form.getlist('categorie_ids')]
+        sub_ids = [int(x) for x in request.form.getlist('subcategorie_ids')]
+        abo_ids = [int(x) for x in request.form.getlist('abonnement_ids')]
+
+        post.categorieen = Categorie.query.filter(Categorie.id.in_(cat_ids)).all() if cat_ids else []
+        post.subcategorieen = Subcategorie.query.filter(Subcategorie.id.in_(sub_ids)).all() if sub_ids else []
+        post.abonnementen = Abonnement.query.filter(Abonnement.id.in_(abo_ids)).all() if abo_ids else []
+
         db.session.commit()
         flash("Blog bijgewerkt", "success")
         return redirect(url_for('admin_blog_overzicht'))
 
-    return render_template('blog_formulier.html', post=post)
+    return render_template(
+        'blog_formulier.html',
+        post=post,
+        categorieen=categorieen,
+        subcategorieen=subcategorieen,
+        abonnementen=abonnementen
+    )
 
-@app.route('/admin/blog/verwijder/<int:post_id>', methods=['POST'])
+# =============== ADMIN: blog verwijderen ===============
+@app.route('/admin/blog/verwijder/<int:post_id>', methods=['POST'], endpoint='blog_verwijderen')
 @login_required
-def blog_verwijderen(post_id):
+def blog_verwijderen_v2(post_id):
     if not current_user.is_admin:
         abort(403)
     post = BlogPost.query.get_or_404(post_id)
@@ -1138,6 +1216,92 @@ def blog_verwijderen(post_id):
     flash("Blog verwijderd", "success")
     return redirect(url_for('admin_blog_overzicht'))
 
+# =============== BLOG OVERZICHT: cascaderende filters ===============
+@app.route('/blog', endpoint='blog_overzicht', strict_slashes=False)
+def blog_overzicht():
+    """
+    Filters (via URL-params, optioneel):
+      ?categorie=<categorie-slug>
+      ?subcategorie=<subcategorie-slug>
+      ?abonnement=<abonnement-slug>
+    Cascadering (server-side voor URL-filters):
+      - categorie => ook posts gekoppeld aan subcategorieën & abonnementen onder die categorie
+      - subcategorie => ook posts gekoppeld aan abonnementen onder die subcategorie (en evt. categorie)
+      - abonnement => evt. ook posts die aan de bijbehorende sub/categorie hangen
+
+    Let op: op de pagina zelf werkt de sidebar-filter client-side (snel, zonder requests).
+    """
+    cat_slug = request.args.get('categorie')
+    sub_slug = request.args.get('subcategorie')
+    abo_slug = request.args.get('abonnement')
+
+    q = BlogPost.query.order_by(BlogPost.datum.desc())
+
+    if abo_slug:
+        abo = Abonnement.query.filter_by(slug=abo_slug).first()
+        if abo:
+            q = q.filter(
+                or_(
+                    BlogPost.abonnementen.any(Abonnement.id == abo.id),
+                    BlogPost.subcategorieen.any(Subcategorie.id == abo.subcategorie_id),
+                    BlogPost.categorieen.any(Categorie.id == abo.subcategorie.categorie_id)
+                )
+            )
+
+    elif sub_slug:
+        sub = Subcategorie.query.filter_by(slug=sub_slug).first()
+        if sub:
+            abo_ids = [a.id for a in Abonnement.query.filter_by(subcategorie_id=sub.id).all()]
+            q = q.filter(
+                or_(
+                    BlogPost.subcategorieen.any(Subcategorie.id == sub.id),
+                    BlogPost.abonnementen.any(Abonnement.id.in_(abo_ids)),
+                    BlogPost.categorieen.any(Categorie.id == sub.categorie_id)
+                )
+            )
+
+    elif cat_slug:
+        cat = Categorie.query.filter_by(slug=cat_slug).first()
+        if cat:
+            sub_ids = [s.id for s in Subcategorie.query.filter_by(categorie_id=cat.id).all()]
+            abo_ids = [a.id for a in Abonnement.query.filter(Abonnement.subcategorie_id.in_(sub_ids)).all()]
+            q = q.filter(
+                or_(
+                    BlogPost.categorieen.any(Categorie.id == cat.id),
+                    BlogPost.subcategorieen.any(Subcategorie.id.in_(sub_ids)),
+                    BlogPost.abonnementen.any(Abonnement.id.in_(abo_ids))
+                )
+            )
+
+    posts = q.all()
+
+    # Lijsten voor de sidebar-filter (client-side cascade)
+    categorieen = Categorie.query.order_by(Categorie.naam.asc()).all()
+    subcategorieen = Subcategorie.query.order_by(Subcategorie.naam.asc()).all()
+    abonnementen = Abonnement.query.order_by(Abonnement.naam.asc()).all()
+
+    return render_template(
+        'blog_overzicht.html',
+        posts=posts,
+        categorieen=categorieen,
+        subcategorieen=subcategorieen,
+        abonnementen=abonnementen
+    )
+
+# =============== BLOG DETAIL ===============
+@app.route('/blog/<slug>', endpoint='blog_detail', strict_slashes=False)
+@app.route('/blog/<slug>/', strict_slashes=False)
+def blog_detail_v2(slug):
+    post = BlogPost.query.filter_by(slug=slug).first_or_404()
+
+    related_posts = (
+        BlogPost.query
+        .filter(BlogPost.id != post.id)
+        .order_by(BlogPost.datum.desc())
+        .limit(3)
+        .all()
+    )
+    return render_template('blog_detail.html', post=post, related_posts=related_posts)
 
 # ---------------------------------------
 # Routes: Abonnementen vergelijken (publiek)
