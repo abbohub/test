@@ -2,128 +2,191 @@
 <html lang="nl">
 <head>
   <meta charset="UTF-8">
-  <title>Nieuw blogbericht - AbboHub</title>
+  <title>{{ 'Blog bewerken' if post else 'Nieuw blogbericht' }} - AbboHub</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
- <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
   <style>
-    .blog-form-container {
-      max-width: 700px;
-      margin: 40px auto;
-      padding: 25px;
-      background-color: #fff;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      border-radius: 8px;
-      font-family: Arial, sans-serif;
-    }
-
-    h1 {
-      text-align: center;
-      margin-bottom: 25px;
-      font-size: 1.8rem;
-      color: #4CAF50;
-    }
-
-    label {
-      display: block;
-      margin-top: 15px;
-      font-weight: bold;
-      color: #333;
-    }
-
-    input[type="text"],
-    input[type="url"],
-    textarea,
-    input[type="file"] {
-      width: 100%;
-      padding: 10px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-size: 1rem;
-      box-sizing: border-box;
-    }
-
-    textarea {
-      min-height: 150px;
-      resize: vertical;
-    }
-
-    button[type="submit"] {
-      display: block;
-      width: 100%;
-      padding: 12px;
-      margin-top: 25px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      font-size: 1rem;
-      font-weight: bold;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    button[type="submit"]:hover {
-      background-color: #45a049;
-    }
-
-    .flash-message {
-      margin-bottom: 15px;
-      padding: 10px;
-      border-radius: 4px;
-    }
-
-    .flash-success {
-      background-color: #d4edda;
-      color: #155724;
-    }
-
-    .flash-danger {
-      background-color: #f8d7da;
-      color: #721c24;
-    }
+    .blog-form-container { max-width: 900px; margin: 30px auto; background: #fff; padding: 24px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,.06); }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    label { display:block; margin-top: 14px; font-weight: 600; }
+    input[type="text"], input[type="url"], textarea, select { width: 100%; padding: 10px; border:1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
+    textarea { min-height: 160px; }
+    select[multiple] { min-height: 160px; }
+    .help { font-size: .9rem; color:#666; margin-top: 6px; }
+    .btn-primary { margin-top: 18px; width: 100%; padding: 12px; border:none; border-radius: 6px; color:#fff; background:#4CAF50; cursor: pointer; font-weight: 700; }
+    .btn-primary:hover { background:#45a049; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .muted { font-size: .85rem; color:#777; }
   </style>
 </head>
 <body>
 
-  <div class="blog-form-container">
-    <h1>Nieuw blogbericht</h1>
+<div class="blog-form-container">
+  <h1>{{ 'Blog bewerken' if post else 'Nieuw blogbericht' }}</h1>
 
-    <!-- Flashberichten -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="flash-message flash-{{ category }}">{{ message }}</div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="flash-message flash-{{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
 
-<form method="POST" enctype="multipart/form-data">
-  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <form method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
-  <label for="titel">Titel</label>
-  <input type="text" name="titel" id="titel" required value="{{ post.titel if post else '' }}">
+    <label for="titel">Titel</label>
+    <input type="text" id="titel" name="titel" required value="{{ post.titel if post else '' }}">
 
-  <label for="inhoud">Inhoud (HTML toegestaan)</label>
-  <textarea name="inhoud" id="inhoud" rows="10">{{ post.inhoud if post else '' }}</textarea>
+    <label for="inhoud">Inhoud (HTML toegestaan)</label>
+    <textarea id="inhoud" name="inhoud">{{ post.inhoud if post else '' }}</textarea>
+    <p class="help">Tip: Gebruik <code>&lt;p&gt;</code>, <code>&lt;h2&gt;</code>, <code>&lt;ul&gt;</code> voor nette formatting.</p>
 
-  <label for="video_url">Video-URL (optioneel)</label>
-  <input type="url" name="video_url" id="video_url" value="{{ post.video_url if post else '' }}">
+    <div class="row">
+      <div>
+        <label for="video_url">Video-URL (YouTube, embed of watch)</label>
+        <input type="url" id="video_url" name="video_url" placeholder="https://www.youtube.com/embed/..." value="{{ post.video_url if post else '' }}">
+        <p class="help muted">‘watch?v=…’ wordt automatisch omgezet naar ‘embed/…’</p>
+      </div>
+      <div>
+        <label for="afbeelding">Afbeelding</label>
+        <input type="file" id="afbeelding" name="afbeelding" accept="image/*">
+        {% if post and post.afbeelding %}
+          <p class="help">Huidig: <strong>{{ post.afbeelding }}</strong></p>
+          <img src="{{ url_for('static', filename='uploads/' ~ post.afbeelding) }}" alt="Huidige afbeelding" style="max-width:180px; border-radius:6px; margin-top:8px;">
+        {% endif %}
+      </div>
+    </div>
 
-  <label for="afbeelding">Afbeelding uploaden (laat leeg om bestaande te behouden)</label>
-  <input type="file" name="afbeelding" id="afbeelding">
+    <hr style="margin: 22px 0;">
 
-  {% if post and post.afbeelding %}
-    <p>Huidige afbeelding: <strong>{{ post.afbeelding }}</strong></p>
-    <img src="{{ url_for('static', filename='uploads/' ~ post.afbeelding) }}" alt="Huidige afbeelding" style="max-width: 150px;">
-  {% endif %}
+    <h3>Koppel dit artikel (meerdere selecties mogelijk, alles optioneel)</h3>
+    <div class="grid-3">
+      <div>
+        <label for="categorie_ids">Categorieën</label>
+        <select id="categorie_ids" name="categorie_ids" multiple size="8" aria-label="Koppel categorieën">
+          {% for c in categorieen %}
+            <option value="{{ c.id }}" {{ 'selected' if post and c in post.categorieen else '' }}>
+              {{ c.naam }}
+            </option>
+          {% endfor %}
+        </select>
+        <p class="help muted">Hoger niveau. Filtert subcategorieën & abonnementen.</p>
+      </div>
 
-  <button type="submit">
-    {{ 'Update' if post else 'Publiceer' }}
-  </button>
-</form>
+      <div>
+        <label for="subcategorie_ids">Subcategorieën</label>
+        <select id="subcategorie_ids" name="subcategorie_ids" multiple size="8" aria-label="Koppel subcategorieën">
+          {% for s in subcategorieen %}
+            <option value="{{ s.id }}" data-categorie="{{ s.categorie_id }}" {{ 'selected' if post and s in post.subcategorieen else '' }}>
+              {{ s.naam }}
+            </option>
+          {% endfor %}
+        </select>
+        <p class="help muted">Wordt gefilterd door gekozen categorie(ën).</p>
+      </div>
 
-  </div>
+      <div>
+        <label for="abonnement_ids">Abonnementen</label>
+        <select id="abonnement_ids" name="abonnement_ids" multiple size="8" aria-label="Koppel abonnementen">
+          {% for a in abonnementen %}
+            <option value="{{ a.id }}" data-sub="{{ a.subcategorie_id }}" {{ 'selected' if post and a in post.abonnementen else '' }}>
+              {{ a.naam }}
+            </option>
+          {% endfor %}
+        </select>
+        <p class="help muted">Wordt gefilterd door gekozen subcategorie(ën).</p>
+      </div>
+    </div>
+
+    <button type="submit" class="btn-primary">{{ 'Update' if post else 'Publiceer' }}</button>
+  </form>
+</div>
+
+<script>
+/**
+ * CLIENT-SIDE CASCADE
+ * - Filter subcategorieën o.b.v. gekozen categorie(ën)
+ * - Filter abonnementen o.b.v. gekozen subcategorie(ën)
+ * Werkt zonder extra API-calls (we gebruiken data-* attributen op <option>).
+ */
+(function(){
+  const selCat = document.getElementById('categorie_ids');
+  const selSub = document.getElementById('subcategorie_ids');
+  const selAbo = document.getElementById('abonnement_ids');
+
+  // Bewaar originele opties
+  const allSubs = Array.from(selSub.options).map(o => ({id:o.value, cat:o.dataset.categorie, text:o.textContent, selected:o.selected}));
+  const allAbos = Array.from(selAbo.options).map(o => ({id:o.value, sub:o.dataset.sub, text:o.textContent, selected:o.selected}));
+
+  function getSelectedValues(selectEl){
+    return Array.from(selectEl.selectedOptions).map(o => o.value);
+  }
+
+  function renderSubcats(){
+    const catIds = new Set(getSelectedValues(selCat));
+    selSub.innerHTML = '';
+    let pool = allSubs;
+
+    if (catIds.size > 0){
+      pool = allSubs.filter(s => catIds.has(String(s.cat)));
+    }
+
+    pool.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.text;
+      opt.dataset.categorie = s.cat;
+      // behoud selectie als die nog geldig is
+      if (s.selected) opt.selected = true;
+      selSub.appendChild(opt);
+    });
+
+    // Bijwerken abonnementen zodra subcats veranderen
+    renderAbos();
+  }
+
+  function renderAbos(){
+    const subIds = new Set(getSelectedValues(selSub));
+    selAbo.innerHTML = '';
+    let pool = allAbos;
+
+    if (subIds.size > 0){
+      pool = allAbos.filter(a => subIds.has(String(a.sub)));
+    }
+
+    pool.forEach(a => {
+      const opt = document.createElement('option');
+      opt.value = a.id;
+      opt.textContent = a.text;
+      opt.dataset.sub = a.sub;
+      if (a.selected) opt.selected = true;
+      selAbo.appendChild(opt);
+    });
+  }
+
+  // On change events
+  selCat.addEventListener('change', () => { 
+    // snapshot huidige selecties
+    const currentSubs = new Set(getSelectedValues(selSub));
+    const currentAbos = new Set(getSelectedValues(selAbo));
+    // regenereer
+    renderSubcats();
+    // probeer bestaande keuzes zoveel mogelijk te behouden
+    Array.from(selSub.options).forEach(o => { if (currentSubs.has(o.value)) o.selected = true; });
+    Array.from(selAbo.options).forEach(o => { if (currentAbos.has(o.value)) o.selected = true; });
+  });
+
+  selSub.addEventListener('change', () => {
+    const currentAbos = new Set(getSelectedValues(selAbo));
+    renderAbos();
+    Array.from(selAbo.options).forEach(o => { if (currentAbos.has(o.value)) o.selected = true; });
+  });
+
+  // Init: één keer renderen zodat filtering direct klopt bij bewerken
+  renderSubcats();
+})();
+</script>
 
 </body>
 </html>
-
