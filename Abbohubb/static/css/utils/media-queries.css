@@ -13,10 +13,6 @@
 /* ========== 7. RESPONSIVENESS ========== */
 /* Optimized media query voor mobiele apparaten */
 @media (max-width: 768px) {
-  /* Verberg de navigatie */
-  nav {
-    display: none;
-  }
   
   /* verklein header */
   header {
