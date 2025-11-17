@@ -1750,7 +1750,7 @@ def sitemap():
             .join(Subcategorie, Abonnement.subcategorie_id == Subcategorie.id)
             .filter(Subcategorie.categorie_id == cat.id)
             .order_by(Abonnement.volgorde.asc())
-            .limit(5)
+            .limit(3)
             .all()
         )
         for i in range(len(abs_cat)):

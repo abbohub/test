@@ -5,8 +5,49 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
 
-  <!-- Canonical -->
-  <link rel="canonical" href="{{ request.url }}">
+  {# ================= Canonical & Robots =================
+     Logica:
+     - Gefilterd (params ≠ alleen page): noindex,follow + canonical naar basis-URL
+     - Alleen paginering (?page=2+): index,follow + self-canonical met page
+     - Ongefilterd: index,follow + canonical naar basis-URL
+  #}
+  {% set page = request.args.get('page') %}
+  {% set allowed_only_page = (request.args|length == 1 and page) %}
+  {% set has_filters = (request.args|length > 0 and not allowed_only_page) %}
+
+  {# Basis-URL afhankelijk van context (home, categorie, subcategorie) #}
+  {% if actieve_subcategorie %}
+    {% set base_url = url_for('abonnement_overzicht',
+                              categorie_slug=actieve_subcategorie.categorie.slug,
+                              subcategorie_slug=actieve_subcategorie.slug,
+                              _external=True) %}
+  {% elif actieve_categorie %}
+    {% set base_url = url_for('abonnement_overzicht',
+                              categorie_slug=actieve_categorie.slug,
+                              _external=True) %}
+  {% else %}
+    {% set base_url = url_for('index', _external=True) %}
+  {% endif %}
+
+  {# Canonical-doel bepalen #}
+  {% if has_filters %}
+    {% set canonical_url = base_url %}
+  {% elif allowed_only_page %}
+    {% set canonical_url = base_url ~ ('?page=' ~ page) %}
+  {% else %}
+    {% set canonical_url = base_url %}
+  {% endif %}
+  <link rel="canonical" href="{{ canonical_url }}">
+
+  {# Robots meta #}
+  {% set is_thin = (abonnementen|length == 0) %}
+  {% if has_filters or is_thin %}
+    <meta name="robots" content="noindex,follow">
+  {% else %}
+    <meta name="robots" content="index,follow">
+  {% endif %}
+  {# Optioneel: maximaliseer previews #}
+  <meta name="robots" content="max-snippet:-1, max-image-preview:large">
 
   <!-- Title & Meta description -->
   <title>{{ page_title or "AbboHub - Vind en vergelijk product-abonnementen" }}</title>
@@ -20,7 +61,7 @@
   <meta property="og:title" content="{{ page_title or 'AbboHub - Vergelijk product-abonnementen eenvoudig' }}">
   <meta property="og:description" content="{{ page_description or 'Vind het abonnement dat bij jou past.' }}">
   <meta property="og:image" content="{{ url_for('static', filename='logo.png', _external=True) }}">
-  <meta property="og:url" content="{{ request.url }}">
+  <meta property="og:url" content="{{ canonical_url }}">
   <meta property="og:type" content="website">
 
   <!-- Twitter -->
@@ -28,49 +69,49 @@
   <meta name="twitter:title" content="{{ page_title or 'AbboHub' }}">
   <meta name="twitter:description" content="{{ page_description or 'Vergelijk eenvoudig abonnementen per categorie.' }}">
   <meta name="twitter:image" content="{{ url_for('static', filename='logo.png', _external=True) }}">
-  
+  {# Twitter kent geen officiële 'twitter:url', og:url volstaat #}
+
   <!-- Styles -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 
   <!-- vendor scripts Google Tag Manager & adsense -->
   <script src="{{ url_for('static', filename='js/vendor.js') }}"></script>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5139039913201131"
-     crossorigin="anonymous"></script>
 
   <!-- Structured data (organisatie) -->
-<!-- Structured data (organisatie) -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  "name": "AbboHub",
-  "url": "https://abbohub.nl",
-  "logo": "https://abbohub.nl/static/logo.png"
-}
-</script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "AbboHub",
+    "url": "https://abbohub.nl",
+    "logo": "https://abbohub.nl/static/logo.png"
+  }
+  </script>
 
-{% if actieve_subcategorie or actieve_categorie %}
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "ItemList",
-  "name": "Abonnementen in categorie {{ actieve_subcategorie.naam if actieve_subcategorie else actieve_categorie.naam }}",
-  "description": "{{ actieve_subcategorie.beschrijving if actieve_subcategorie else actieve_categorie.beschrijving | striptags | replace('\n', ' ') }}",
-  "url": "{{ request.url }}",
-  "itemListElement": [
-    {% for i, abbo in enumerate(abonnementen) %}
-    {
-      "@type": "ListItem",
-      "position": {{ i + 1 }},
-      "name": "{{ abbo.naam }}",
-      "url": "{{ url_for('abonnement_reviews', slug=abbo.slug, _external=True) }}"
-    }{{ "," if not loop.last else "" }}
-    {% endfor %}
-  ]
-}
-</script>
-{% endif %}
-{# ---- Breadcrumbs JSON-LD (alleen tonen bij actief filter) ---- #}
+  {# ItemList alleen tonen bij categorie/subcategorie context #}
+  {% if actieve_subcategorie or actieve_categorie %}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Abonnementen in categorie {{ actieve_subcategorie.naam if actieve_subcategorie else actieve_categorie.naam }}",
+    "description": "{{ (actieve_subcategorie.beschrijving if actieve_subcategorie else actieve_categorie.beschrijving) | striptags | replace('\n', ' ') }}",
+    "url": "{{ canonical_url }}",
+    "itemListElement": [
+      {% for i, abbo in enumerate(abonnementen) %}
+      {
+        "@type": "ListItem",
+        "position": {{ i + 1 }},
+        "name": "{{ abbo.naam }}",
+        "url": "{{ url_for('abonnement_reviews', slug=abbo.slug, _external=True) }}"
+      }{{ "," if not loop.last else "" }}
+      {% endfor %}
+    ]
+  }
+  </script>
+  {% endif %}
+
+  {# Breadcrumbs JSON-LD (alleen bij actieve context) #}
   {% if actieve_subcategorie or actieve_categorie %}
   <script type="application/ld+json">
   {
@@ -111,17 +152,18 @@
 
 <body>
   <!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NRGH8P6W"
-  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NRGH8P6W"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   <!-- End Google Tag Manager (noscript) -->
-{% if geselecteerde_subcategorie %}
-  {% set actieve_subcategorie = unieke_subcategorieën | selectattr("id", "equalto", geselecteerde_subcategorie | int) | list | first %}
-{% endif %}
-{% if geselecteerde_categorie %}
-  {% set actieve_categorie = unieke_categorieën | selectattr("id", "equalto", geselecteerde_categorie | int) | list | first %}
-{% endif %}
 
-<!-- HEADER -->
+  {# Context-helpers (zoals in je oorspronkelijke template) #}
+  {% if geselecteerde_subcategorie %}
+    {% set actieve_subcategorie = unieke_subcategorieën | selectattr("id", "equalto", geselecteerde_subcategorie | int) | list | first %}
+  {% endif %}
+  {% if geselecteerde_categorie %}
+    {% set actieve_categorie = unieke_categorieën | selectattr("id", "equalto", geselecteerde_categorie | int) | list | first %}
+  {% endif %}
+
 <!-- HEADER -->
   <header>
     <nav class="main-nav" aria-label="Hoofdnavigatie">
@@ -179,7 +221,9 @@
       </div>
     </div>
   </header>
+
 {% if actieve_subcategorie or actieve_categorie %}
+
 <!-- Mobiele overlay -->
 <div id="categorieOverlayMobile" class="categorie-overlay-mobile">
   <div class="overlay-content">
@@ -217,7 +261,6 @@
 
 {% endif %}
 <main>
-        {# On-page breadcrumb (alleen tonen bij actief filter) #}
 {% if actieve_subcategorie or actieve_categorie %}
 <nav class="breadcrumb" aria-label="Broodkruimelpad">
   <a href="{{ url_for('index') }}" class="back-link">Home</a>
@@ -233,6 +276,41 @@
   {% endif %}
 </nav>
 {% endif %}
+
+{# Intro alleen tonen als er géén actieve categorie of subcategorie is #}
+{% if not actieve_subcategorie and not actieve_categorie
+   and not geselecteerde_categorie and not geselecteerde_subcategorie
+   and not zoekterm %}
+<section class="content-card1 intro-card1" aria-labelledby="intro">
+  <h2 id="intro">Welkom bij AbboHub dé plek waar je eenvoudig abonnementen ontdekt, vergelijkt en beter onderbouwde keuzes maakt.</h2>
+
+  <p class="lead">
+    AbboHub is dé plek waar je eenvoudig abonnementen ontdekt, vergelijkt en beter onderbouwde keuzes maakt. 
+    Je vindt hier een helder overzicht van uiteenlopende productabonnementen, van maaltijdboxen en koffie 
+    tot verzorgingsproducten, dierenvoeding en andere slimme thuisbezorgservices. Onze missie is om jou te
+    helpen sneller het abonnement te vinden dat écht bij je past.
+  </p>
+
+  <p class="lead">
+    Op AbboHub bundelen we alle belangrijke informatie op één plek: prijzen, inhoud, voorwaarden, voordelen,
+    ervaringen en praktische details. Zo hoef je niet meer zelf tientallen websites af te speuren. Met onze 
+    duidelijke vergelijkingen, reviews en tips zie je direct welke aanbieders het beste aansluiten op jouw 
+    wensen en situatie.
+  </p>
+
+  <p class="lead">
+    AbboHub groeit voortdurend. We voegen regelmatig nieuwe abonnementen toe, werken categorieën bij en 
+    publiceren diepgaande analyses op onze blog AbboHub Research. Zo blijf jij altijd op de hoogte van trends 
+    en nieuwe abonnementsvormen.
+  </p>
+
+  <p class="lead">
+    Of je nu op zoek bent naar gemak, prijsvoordeel of gewoon benieuwd bent naar de mogelijkheden: 
+    met AbboHub vergelijk je sneller, kies je slimmer en blijf je altijd goed geïnformeerd.
+  </p>
+</section>
+{% endif %}
+
 
 {% if actieve_subcategorie or actieve_categorie %}
 <!-- Verborgen SEO-tekst zodat AI/zoekmachines de categorie-info kunnen indexeren -->
@@ -309,8 +387,8 @@
                                     </label>
                                     <a href="{{ url_for('abonnement_reviews', slug=abonnement.slug) }}"
                                     class="btn-review"
-                                    onclick="trackMeerInfo('{{ abonnement.naam }}')">
-                                   Meer info
+                                    onclick="trackAbboInfo('{{ abonnement.naam }}')">
+                                   Abbo info
                                  </a>                                 
                                   </div>
                                 </article>
