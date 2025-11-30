@@ -136,3 +136,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
     window.dataLayer.push(evt);
   }, { passive: true });
+
+// 3) Horizontaal scrollen voor product sliders 
+  function scrollPhotos(button, direction) {
+    const slider = button.closest('.product-slider');
+    const outer = slider.querySelector('.product-slider-outer');
+
+    const scrollAmount = outer.clientWidth * 0.8; // 80% van de zichtbare breedte
+
+    outer.scrollBy({
+      left: direction === 'right' ? scrollAmount : -scrollAmount,
+      behavior: 'smooth'
+    });
+  }
+

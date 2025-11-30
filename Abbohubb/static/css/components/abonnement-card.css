@@ -227,3 +227,98 @@ body {
   margin: 0 auto;
   padding: 0 12px 48px;
 }
+/* ===== Layout voor de review-pagina (desktop & tablet) ===== */
+
+body.page-abonnement-reviews .page-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+body.page-abonnement-reviews .page-layout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 40px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+body.page-abonnement-reviews .main-content {
+  flex: 1 1 65%;
+  min-width: 320px;
+}
+
+body.page-abonnement-reviews .sidebar {
+  flex: 1 1 30%;
+  max-width: 360px;
+}
+
+/* Onder ~900px stapelen we main + sidebar onder elkaar */
+@media (max-width: 900px) {
+  body.page-abonnement-reviews .page-layout {
+    flex-direction: column;
+  }
+
+  body.page-abonnement-reviews .main-content,
+  body.page-abonnement-reviews .sidebar {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+
+  body.page-abonnement-reviews .sidebar {
+    margin-top: 30px;
+  }
+}
+/* ===== Sidebar layout (desktop) ===== */
+body.page-abonnement-reviews .sidebar {
+  flex: 1 1 30%;
+  max-width: 360px;
+}
+
+/* Container met vergelijk-abonnementen */
+body.page-abonnement-reviews .sidebar-abos {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Individuele tegels in de sidebar – zelfde look als “oude” inline styles */
+body.page-abonnement-reviews .sidebar-abo {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+body.page-abonnement-reviews .sidebar-abo h3 {
+  font-size: 1rem;
+  margin-bottom: 8px;
+  color: #8968cd;          /* zelfde paars als elders */
+}
+
+body.page-abonnement-reviews .sidebar-abo img {
+  max-width: 100px;
+  height: auto;
+  margin-bottom: 10px;
+}
+
+body.page-abonnement-reviews .sidebar-abo p {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  min-height: 50px;
+  margin: 0 0 10px;
+}
+@media (max-width: 900px) {
+  body.page-abonnement-reviews .sidebar {
+    flex: 1 1 100%;
+    max-width: 100%;
+    margin-top: 30px;
+  }
+
+  body.page-abonnement-reviews .sidebar-abo {
+    max-width: 400px;
+    margin: 0 auto;
+  }
+}

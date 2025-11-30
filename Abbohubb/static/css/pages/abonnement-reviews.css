@@ -1,105 +1,144 @@
-  /* Reset & basisstijlen */
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f3e6cc;
-      color: #333;
-      line-height: 1.6;
-    }
-    .card {
-      background-color: #fff;
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-    .card h2, .card h3 {
-      color: #8968cd;
-      margin-bottom: 15px;
-    }
-    /* Tabel met abonnementsgegevens */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 20px;
-    }
-    table th, table td {
-      text-align: left;
-      padding: 10px;
-      border-bottom: 1px solid #ddd;
-    }
-    /* Tekstuele secties */
-    .text-section {
-      margin-bottom: 30px;
-    }
-    .text-section p {
-      margin-bottom: 10px;
-    }
-    /* Review formulier */
-    .review-form {
-      margin-top: 20px;
-    }
-    form label {
-      display: block;
-      margin: 10px 0 5px;
-      font-weight: bold;
-    }
-    form input, form textarea {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 15px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    form button {
-      background-color: #8968cd;
-      color: #fff;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 4px;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-    form button:hover {
-      background-color: #8968cd;
-    }
-    /* Review lijst */
-    .review {
-      border-bottom: 1px solid #ddd;
-      padding: 15px 0;
-    }
-    .review:last-child {
-      border-bottom: none;
-    }
-    .review p {
-      margin: 5px 0;
-    }
-    .review small {
-      color: #888;
-    }
-    .back-link {
-      display: inline-block;
-      margin-top: 20px;
-      color: #8968cd;
-      text-decoration: none;
-      font-weight: bold;
-    }
-    .back-link:hover {
-      text-decoration: underline;
-    }
+/* =========================================
+   RESET & BASISSTIJLEN
+========================================= */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f3e6cc;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* Kaarten (blokken op de detailpagina) */
+.card {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.card h2,
+.card h3 {
+  color: #8968cd;
+  margin-bottom: 15px;
+}
+
+/* =========================================
+   TABEL MET ABONNEMENTS-GEGEVENS
+========================================= */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+table th,
+table td {
+  text-align: left;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+/* =========================================
+   TEKSTSECTIES
+========================================= */
+.text-section {
+  margin-bottom: 30px;
+}
+
+.text-section p {
+  margin-bottom: 10px;
+}
+
+/* =========================================
+   REVIEW FORMULIER & REVIEWS
+========================================= */
+.review-form {
+  margin-top: 20px;
+}
+
+form label {
+  display: block;
+  margin: 10px 0 5px;
+  font-weight: bold;
+}
+
+form input,
+form textarea {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+form button {
+  background-color: #8968cd;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+form button:hover {
+  background-color: #8968cd;
+}
+
+.review {
+  border-bottom: 1px solid #ddd;
+  padding: 15px 0;
+}
+
+.review:last-child {
+  border-bottom: none;
+}
+
+.review p {
+  margin: 5px 0;
+}
+
+.review small {
+  color: #888;
+}
+
+/* Teruglink */
+.back-link {
+  display: inline-block;
+  margin-top: 20px;
+  color: #8968cd;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+/* =========================================
+   BEZOEK WEBSITE KNOP
+========================================= */
 a.visit-website {
   background-color: #f4cd00;
   color: white;
   font-weight: bold;
   text-decoration: none;
-  padding: 8px 6px;           /* iets minder hoog en breed */
-  font-size: 0.8rem;           /* iets kleinere tekst */
-  border-radius: 6px;          /* iets minder rond */
+  padding: 8px 6px;
+  font-size: 0.8rem;
+  border-radius: 6px;
   display: inline-block;
   transition: background-color 0.2s ease;
 }
@@ -110,8 +149,9 @@ a.visit-website:focus {
   text-decoration: none;
 }
 
-
-    /* vergelijk en meer info knoppen */
+/* =========================================
+   ACTIEKNOPPEN (VERGELIJK / MEER INFO)
+========================================= */
 .actieknoppen {
   display: flex;
   gap: 8px;
@@ -139,54 +179,230 @@ a.visit-website:focus {
   background-color: #e0ba00;
 }
 
-/* test foto en video*/
-/* Foto-galerij */
-.product-photos {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+/* =========================================
+   PRODUCTFOTO SLIDER (HORIZONTAAL)
+========================================= */
+/* Buitenste container: bepaalt de breedte */
+/* ==== PHOTO CARD – los van .card ===== */
+.photo-card {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+  /* voorkom overflow in flex layouts */
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  align-self: stretch;   /* als parent een flex-container is */
 }
+
+.photo-card h3 {
+  color: #8968cd;
+  margin-bottom: 15px;
+}
+
+/* ==== PRODUCT SLIDER – volledig geïsoleerd ==== */
+
+/* Buitenste container: bepaalt de breedte, rest van de pagina kan niet breder worden */
+.product-slider {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  margin-top: 10px;
+  box-sizing: border-box;
+}
+
+/* De scroller zelf – alleen hier mag horizontale scroll plaatsvinden */
+.product-slider-outer {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;          /* scrollt alleen binnen deze box */
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;     /* scrollbar verbergen (Firefox) */
+}
+
+.product-slider-outer::-webkit-scrollbar {
+  display: none;             /* scrollbar verbergen (WebKit) */
+}
+
+/* Binnenste track met de slides naast elkaar */
+.product-slider-inner {
+  display: inline-flex;      /* breedte = som van de slides, maar binnen outer box */
+  gap: 10px;
+  padding: 0.5rem 0;
+  scroll-snap-type: x mandatory;
+}
+
+/* Elke individuele slide */
+.product-slide {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+
+/* De afbeelding zelf */
 .product-photo {
+  display: block;
   max-width: 200px;
   height: auto;
   border-radius: 5px;
   border: 1px solid #ccc;
   cursor: pointer;
-  transition: transform 0.2s ease-in-out;
-}
-.product-photo:hover {
-  transform: scale(1.05);
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
-/* Responsive video */
+.product-photo:hover {
+  transform: scale(1.03);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+/* Pijltjes – liggen bovenop maar binnen de slider */
+.product-slider-arrow {
+  border: none;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  border-radius: 999px;
+  width: 32px;
+  height: 32px;
+  font-size: 20px;
+  line-height: 32px;
+  text-align: center;
+  cursor: pointer;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.product-slider-arrow.prev {
+  left: 8px;
+}
+
+.product-slider-arrow.next {
+  right: 8px;
+}
+
+.product-slider-arrow:hover {
+  transform: translateY(-50%) scale(1.05);
+}
+
+/* Mobiel: kleinere foto’s en pijltjes dichterbij */
+@media (max-width: 768px) {
+  .photo-card {
+    padding: 16px;
+  }
+
+  .product-photo {
+    max-width: 160px;
+  }
+
+  .product-slider-arrow {
+    width: 28px;
+    height: 28px;
+    font-size: 18px;
+  }
+
+  .product-slider-arrow.prev {
+    left: 4px;
+  }
+
+  .product-slider-arrow.next {
+    right: 4px;
+  }
+}
+
+
+/* =========================================
+   VIDEO / YOUTUBE
+========================================= */
 .video-container {
   position: relative;
   padding-bottom: 56.25%;
   height: 0;
   overflow: hidden;
 }
+
 .video-container iframe {
   position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 }
 
-/* Lightbox styling */
+/* In combinatie met cards */
+.card .video-container {
+  width: 100%;
+  max-width: 100%;
+}
+
+.card .video-container iframe {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  border: 0;
+}
+
+/* Moderne browsers: aspect-ratio */
+@supports (aspect-ratio: 16 / 9) {
+  .card .video-container {
+    aspect-ratio: 16 / 9;
+    height: auto;
+    padding: 0;
+  }
+
+  .card .video-container iframe {
+    position: static;
+  }
+}
+
+/* Fallback voor oudere browsers */
+@supports not (aspect-ratio: 16 / 9) {
+  .card .video-container {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+  }
+
+  .card .video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+/* =========================================
+   LIGHTBOX
+========================================= */
 #lightbox {
   display: none;
   position: fixed;
   z-index: 9999;
   padding-top: 50px;
-  left: 0; top: 0;
-  width: 100%; height: 100%;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
   background-color: rgba(0,0,0,0.9);
 }
+
 #lightbox img {
   margin: auto;
   display: block;
   max-width: 90%;
   max-height: 80%;
 }
+
 .lightbox-close {
   position: absolute;
   top: 20px;
@@ -197,75 +413,9 @@ a.visit-website:focus {
   cursor: pointer;
 }
 
-    /* Responsive design */
-    @media (max-width: 768px) {
-      header h1 {
-        font-size: 2rem;
-      }
-      header p {
-        font-size: 1rem;
-      }
-      .container {
-        padding: 10px;
-      }
-    }
-    @media (max-width: 768px) {
-  .page-layout {
-    flex-direction: column;
-  }
-  .sidebar {
-    max-width: 100%;
-    margin-top: 30px;
-  }
-}
-/* --- YOUTUBE: mobiele fix + overrides --- */
-
-/* Zorg dat de container altijd full-width is */
-.card .video-container {
-  width: 100%;
-  max-width: 100%;
-}
-
-/* Forceer het iframe om de volledige container te vullen */
-.card .video-container iframe {
-  display: block;
-  width: 100% !important;
-  height: 100% !important;
-  max-width: none !important;   /* overschrijft generieke max-width regels */
-  border: 0;
-}
-
-/* Moderne browsers: 16:9 zonder padding-hack */
-@supports (aspect-ratio: 16 / 9) {
-  .card .video-container {
-    aspect-ratio: 16 / 9;
-    height: auto;
-    padding: 0;                 /* override van padding-bottom fallback */
-  }
-  .card .video-container iframe {
-    position: static;           /* niet absoluut nodig met aspect-ratio */
-  }
-}
-
-/* Oudere browsers fallback: padding-hack */
-@supports not (aspect-ratio: 16 / 9) {
-  .card .video-container {
-    position: relative;
-    padding-bottom: 56.25%;
-    height: 0;
-    overflow: hidden;
-  }
-  .card .video-container iframe {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%;
-    height: 100%;
-  }
-}
-
-/* =======================
-   Breadcrumb
-   ======================= */
+/* =========================================
+   BREADCRUMB
+========================================= */
 .breadcrumb {
   display: flex;
   align-items: center;
@@ -291,10 +441,11 @@ a.visit-website:focus {
 /* Links en actieve pagina */
 .breadcrumb a,
 .breadcrumb [aria-current="page"] {
-  color: #7a42c8;     /* paars */
+  color: #7a42c8;
   font-weight: 600;
   text-decoration: none;
 }
+
 .breadcrumb a:hover {
   text-decoration: underline;
 }
@@ -308,7 +459,91 @@ a.visit-website:focus {
   color: #7a42c8;
   font-weight: 500;
   opacity: 0.9;
-  margin: 0 0.15rem;       /* veel compacter dan 0.3 of 0.6 */
-  line-height: 1;          /* zorgt dat het pijltje in het midden staat */
-  transform: translateY(0.02em); /* mini-optische correctie */
+  margin: 0 0.15rem;
+  line-height: 1;
+  transform: translateY(0.02em);
+}
+
+/* =========================================
+   MOBIEL SPECIFIEK
+========================================= */
+@media (max-width: 768px) {
+  header h1 {
+    font-size: 2rem;
+  }
+
+  header p {
+    font-size: 1rem;
+  }
+
+  .container {
+    padding: 10px;
+  }
+
+  .page-layout {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    max-width: 100%;
+    margin-top: 30px;
+  }
+
+  /* Slider iets compacter op mobiel */
+  .product-photo {
+    max-width: 160px;
+  }
+
+  .product-slider-arrow {
+    width: 28px;
+    height: 28px;
+    font-size: 18px;
+  }
+
+  .product-slider-arrow.prev {
+    left: 4px;
+  }
+
+  .product-slider-arrow.next {
+    right: 4px;
+  }
+}
+/* Alleen mobiel, alleen op de detailpagina abonnement_reviews */
+@media (max-width: 768px) {
+
+  /* Pagina zelf mag nooit breder zijn dan het scherm */
+  body.page-abonnement-reviews {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Belangrijkste wrappers op deze pagina */
+  body.page-abonnement-reviews .page-wrap,
+  body.page-abonnement-reviews main,
+  body.page-abonnement-reviews .container {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  /* Alle cards op deze pagina mogen krimpen binnen flex-layouts */
+  body.page-abonnement-reviews .card,
+  body.page-abonnement-reviews .photo-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box;
+    align-self: stretch;
+  }
+
+  /* Specifiek de productfotoslider */
+  body.page-abonnement-reviews .product-slider,
+  body.page-abonnement-reviews .product-slider-outer,
+  body.page-abonnement-reviews .product-slider-inner {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box;
+  }
 }
