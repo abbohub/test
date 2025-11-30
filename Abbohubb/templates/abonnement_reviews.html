@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<!-- Vendor scripts (o.a. Google Tag Manager loader in vendor.js) -->
-<script src="{{ url_for('static', filename='js/vendor.js') }}"></script>
-
+  <!-- Vendor scripts (o.a. Google Tag Manager loader in vendor.js) -->
   <script src="{{ url_for('static', filename='js/vendor.js') }}"></script>
 
   <meta charset="UTF-8">
@@ -15,19 +13,18 @@
   <link rel="canonical" href="{{ request.base_url }}">
 
   <!-- Dynamische SEO -->
-<title>
-  {{ page_title
-     or abonnement.naam ~ ' review (2025): prijzen, ervaringen & aanbiedingen' }}
-</title>
+  <title>
+    {{ page_title
+       or abonnement.naam ~ ' review (2025): prijzen, ervaringen & aanbiedingen' }}
+  </title>
 
-<meta name="description" content="{{
-  page_description
-  or (
-    'Alles over ' ~ abonnement.naam ~ ': prijzen vanaf €' ~ abonnement.prijs_vanaf
-    ~ ', opzeggen/pauzeren en echte ervaringen. Vergelijk alternatieven en bespaar tijd.'
-  )
-}}">
-
+  <meta name="description" content="{{
+    page_description
+    or (
+      'Alles over ' ~ abonnement.naam ~ ': prijzen vanaf €' ~ abonnement.prijs_vanaf
+      ~ ', opzeggen/pauzeren en echte ervaringen. Vergelijk alternatieven en bespaar tijd.'
+    )
+  }}">
 
   <!-- Open Graph -->
   <meta property="og:title" content="{{ page_title or (abonnement.naam ~ ' abonnement: prijzen, opzeggen & ervaringen (2025)') }}">
@@ -87,16 +84,19 @@
     ]
   }
   </script> 
-  <!-- adsense -->
+
+  <!-- Adsense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5139039913201131"
-  crossorigin="anonymous"></script>
-<!-- End adsense Manager-->
+    crossorigin="anonymous"></script>
 </head>
 
-<body>
+<body class="page-abonnement-reviews">
   <!-- Google Tag Manager -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NRGH8P6W"
-  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <noscript>
+    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NRGH8P6W"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe>
+  </noscript>
+
   <!-- Header met de abonnementsnaam -->
   <header>
     <nav class="main-nav" aria-label="Hoofdnavigatie">
@@ -111,417 +111,430 @@
         <li><a href="{{ url_for('blog_overzicht') }}">Abbohub Research</a></li>
       </ul>
     </nav>
-<h1>{{ abonnement.naam }} review (2025): prijzen, ervaringen & aanbiedingen</h1>
-<p class="lede">Alles wat je moet weten: prijs, voorwaarden, opzeggen en reviews. Vergelijk alternatieven in 1 minuut.</p>
+    <h1>{{ abonnement.naam }} review (2025): prijzen, ervaringen & aanbiedingen</h1>
+    <p class="lede">Alles wat je moet weten: prijs, voorwaarden, opzeggen en reviews. Vergelijk alternatieven in 1 minuut.</p>
   </header>
-<div class="bc-container">
-  <nav class="breadcrumb" aria-label="Broodkruimelpad">
-    <ol>
-      <li><a href="{{ url_for('index') }}">Home</a></li>
-      {% if categorie %}
-        <li><a href="{{ url_for('abonnement_overzicht', categorie_slug=categorie.slug) }}">{{ categorie.naam }}</a></li>
-      {% endif %}
-      {% if subcategorie %}
-        <li><a href="{{ url_for('abonnement_overzicht', categorie_slug=categorie.slug, subcategorie_slug=subcategorie.slug) }}">{{ subcategorie.naam }}</a></li>
-      {% endif %}
-      <li aria-current="page">{{ abonnement.naam }}</li>
-    </ol>
-  </nav>
-</div>
-  <div class="page-wrapper" style="max-width: 1200px; margin: 0 auto; padding: 40px 20px;">
-    <div class="page-layout" style="display: flex; flex-wrap: wrap; gap: 40px; align-items: flex-start; justify-content: space-between;">
 
-      <!-- MAIN CONTENT -->
-      <main class="main-content" style="flex: 1 1 65%; min-width: 320px;">
-        <section class="card" id="kosten">
-  <h2>Abonnementsgegevens</h2>
-  <table>
-    <tbody>
-      <tr>
-        <th scope="row">Frequentie Bezorging</th>
-        <td>{{ abonnement.frequentie_bezorging }}</td>
-      </tr>
-      <tr>
-        <th scope="row">Contractduur</th>
-        <td>{{ abonnement.contractduur }}</td>
-      </tr>
-      <tr>
-        <th scope="row">Aanbieding &amp; kortingscode</th>
-        <td>{{ abonnement.aanbiedingen }}</td>
-      </tr>
-      <tr>
-        <th scope="row">Prijs vanaf</th>
-        <td>€{{ abonnement.prijs_vanaf }}</td>
-      </tr>
-      {% if abonnement.prijs_tot %}
-      <tr>
-        <th scope="row">Prijs tot</th>
-        <td>€{{ abonnement.prijs_tot }}</td>
-      </tr>
-      {% endif %}
-      <tr>
-        <th scope="row">Doelgroep</th>
-        <td>
-          {% for doelgroep in abonnement.doelgroepen %}
-            <span class="badge">{{ doelgroep.naam }}</span>
-          {% endfor %}
-        </td>
-      </tr>
-      <tr>
-        <th scope="row">Tags</th>
-        <td>
-          {% for tag in abonnement.tags %}
-            <span class="badge">{{ tag.naam }}</span>
-          {% endfor %}
-        </td>
-      </tr>
-      <tr>
-        <th scope="row">Gemiddelde beoordeling</th>
-        <td>
-          {% set score = abonnement.get_average_score() %}
-          {% set volle = score | int %}
-          {% set halve = (score - volle) >= 0.25 and (score - volle) < 0.75 %}
-          {% set leeg = 5 - volle - (1 if halve else 0) %}
-
-          <span class="ster-rating" aria-label="Gemiddelde beoordeling: {{ score }} van 5">
-            {% for _ in range(volle) %}<span class="vol-ster">★</span>{% endfor %}
-            {% if halve %}<span class="halve-ster">★</span>{% endif %}
-            {% for _ in range(leeg) %}<span class="leeg-ster">☆</span>{% endfor %}
-          </span>
-          <span class="score-tekst">{{ score }} ({{ abonnement.reviews|length }} beoordelingen)</span>
-        </td>
-      </tr>
-      <tr>
-        <th scope="row">Bezoek website</th>
-        <td>
-          <a
-            class="visit-website js-aff-link"
-            href="{{ url_for('outbound', ab_id=abonnement.id) }}?from={{ request.path }}&amp;utm_source=abbohub&amp;utm_medium=review&amp;utm_campaign={{ abonnement.slug }}"
-            target="_blank"
-            rel="sponsored nofollow noreferrer"
-            aria-label="Bezoek {{ abonnement.naam | e }} – opent in nieuw tabblad"
-            data-abonnement="{{ abonnement.naam | e }}"
-            data-abonnement-slug="{{ abonnement.slug | e }}"
-            data-categorie="{{ (categorie.naam if categorie else '') | e }}"
-            data-categorie-slug="{{ (categorie.slug if categorie else '') | e }}"
-            data-subcategorie="{{ (subcategorie.naam if subcategorie else '') | e }}"
-            data-subcategorie-slug="{{ (subcategorie.slug if subcategorie else '') | e }}"
-            data-affid="{{ abonnement.id }}"
-          >
-            Bezoek aanbieder
-          </a>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</section>
-
-  <!-- Foto's van het abonnement -->
-  {% if abonnement.fotos %}
-  <section class="card">
-    <h3>Productfoto's</h3>
-    <div class="product-photos">
-      {% for foto in abonnement.fotos %}
-        <img src="{{ url_for('static', filename='uploads/' ~ foto.bestandsnaam) }}"
-            alt="Foto van {{ abonnement.naam }}"
-            class="product-photo"
-            onclick="openLightbox('{{ url_for('static', filename='uploads/' ~ foto.bestandsnaam) }}')"
-            loading="lazy">
-      {% endfor %}
-    </div>
-  </section>
-  {% endif %}
-
-<div style="white-space: pre-wrap;">
-  <section class="card text-section"><h3>Wat is {{ abonnement.naam }}?</h3><p>{{ abonnement.wat_is_het_abonnement }}</p></section>
-  <section class="card text-section"><h3>Waarom kiezen voor {{ abonnement.naam }}?</h3><p>{{ abonnement.waarom_kiezen }}</p></section>
-  <section class="card text-section"><h3>Hoe werkt het?</h3><p>{{ abonnement.hoe_werkt_het }}</p></section>
-   <section class="card text-section"><h3>Opzeggen</h3><p>{{ abonnement.annuleringsvoorwaarden }}</p></section>         
-  <section class="card text-section"><h3>Past {{ abonnement.naam }} bij jou?</h3><p>{{ abonnement.past_dit_bij_jou }}</p></section>
-</div>   
-
-
-
-<!-- YouTube-video -->
-{% if abonnement.youtube_url %}
-  {% set yt = abonnement.youtube_url %}
-  {% if 'v=' in yt %}
-    {% set yt_id = yt.split('v=')[-1].split('&')[0] %}
-  {% else %}
-    {% set yt_id = yt.rsplit('/', 1)[-1].split('?')[0] %}
-  {% endif %}
-
-  <section class="card">
-    <h3>Video</h3>
-    <div class="video-container">
-      <iframe
-        title="{{ abonnement.naam }} video"
-        src="https://www.youtube-nocookie.com/embed/{{ yt_id }}?playsinline=1&modestbranding=1&rel=0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        allowfullscreen
-        loading="lazy"
-        referrerpolicy="strict-origin-when-cross-origin"
-        style="border:0;"
-      ></iframe>
-    </div>
-  </section>
-{% endif %}
-
-<!-- Lightbox -->
-<div id="lightbox" onclick="closeLightbox()">
-  <span class="lightbox-close">&times;</span>
-  <img id="lightbox-img" src="">
-</div>
-
-<!-- Reviews sectie -->
-<section class="card" aria-labelledby="reviews-heading">
-  <h2 id="reviews-heading">Reviews</h2>
-
-  <th>Gemiddelde Beoordeling</th>
-  <td>
-    {% set score = abonnement.get_average_score() %}
-    {% set volle_sterren = score | int %}
-    {% set halve_ster = (score - volle_sterren) >= 0.25 and (score - volle_sterren) < 0.75 %}
-    {% set lege_sterren = 5 - volle_sterren - (1 if halve_ster else 0) %}
-
-    <span class="ster-rating" aria-label="Gemiddelde beoordeling: {{ score }} van 5">
-      {% for i in range(volle_sterren) %}
-        <span class="vol-ster">★</span>
-      {% endfor %}
-      {% if halve_ster %}
-        <span class="halve-ster">★</span>
-      {% endif %}
-      {% for i in range(lege_sterren) %}
-        <span class="leeg-ster">☆</span>
-      {% endfor %}
-    </span>
-    <span class="score-tekst">{{ score }} ({{ abonnement.reviews|length }} beoordelingen)</span>
-  </td>
-</tr>  
-<!-- Formulier om een review toe te voegen -->
-  <div class="review-form">
-    <h3>Schrijf een review</h3>
-    <form method="POST">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      
-      <label for="naam">Uw naam:</label>
-      <input type="text" name="naam" id="naam" placeholder="Vul hier uw naam in" required>
-
-      <label>Score:</label>
-      <div class="star-rating" id="rating-stars">
-        {% for i in range(1, 6) %}
-          <span class="star">
-            <span class="half left" data-value="{{ i - 0.5 }}"></span>
-            <span class="half right" data-value="{{ i }}"></span>
-          </span>
-        {% endfor %}
-      </div>
-      <input type="hidden" name="score" id="score" required>
-      
-      <label for="comment">Opmerking (optioneel):</label>
-      <textarea name="comment" id="comment" placeholder="Deel uw mening over het abonnement..."></textarea>
-
-      <button type="submit">Review toevoegen</button>
-    </form>
-  </div>
-
-  <!-- Overzicht van reeds ingediende reviews -->
-     <!-- Overzicht van reeds ingediende reviews -->
-  <div class="reviews">
-    {% if abonnement.reviews %}
-      {% for review in abonnement.reviews %}
-        <div class="review">
-          <p><strong>{{ review.naam }}</strong></p>
-          <p><strong>Score:</strong> {{ review.score }} / 5</p>
-          <p>{{ review.comment }}</p>
-          <p><small>Geplaatst op: {{ review.created_at.strftime('%d-%m-%Y %H:%M') }}</small></p>
-
-          {% if is_admin %}
-            <form method="POST" style="display:inline;">
-              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-              <input type="hidden" name="delete_review_id" value="{{ review.id }}">
-              <button type="submit" class="btn-delete">Verwijderen</button>
-            </form>
-          {% endif %}
-        </div>
-      {% endfor %}
-    {% else %}
-      <p>Er zijn nog geen reviews voor dit abonnement.</p>
-    {% endif %}
-  </div>
-</section>
-
-  <div class="reviews">
-    {% if abonnement.reviews %}
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": ["Product", "SubscriptionService"],
-  "name": {{ abonnement.naam | tojson }},
-  "description": {{ (abonnement.wat_is_het_abonnement or '') | striptags | truncate(280, True, '…') | tojson }},
-  "image": {% if abonnement.fotos and abonnement.fotos[0] %}
-             {{ url_for('static', filename='uploads/' ~ abonnement.fotos[0].bestandsnaam, _external=True) | tojson }}
-           {% else %}
-             {{ url_for('static', filename='logo.png', _external=True) | tojson }}
-           {% endif %},
-  "url": {{ request.url | tojson }},
-  "brand": { "@type":"Brand", "name": {{ abonnement.naam | tojson }} },
-
-  "offers": {
-    "@type": "Offer",
-    "priceCurrency": "EUR",
-    "price": "{{ abonnement.prijs_vanaf }}",
-    "availability": "https://schema.org/InStock",
-    "url": {{ (abonnement.url or request.url) | tojson }},
-    "priceValidUntil": "2025-12-31"
-  },
-
-  "aggregateRating": {
-    "@type": "AggregateRating",
-    "ratingValue": "{{ abonnement.get_average_score() }}",
-    "bestRating": "5",
-    "worstRating": "1",
-    "reviewCount": "{{ abonnement.reviews|length }}"
-  },
-
-  "review": [
-    {% for review in abonnement.reviews %}
-    {
-      "@type": "Review",
-      "author": { "@type": "Person", "name": {{ review.naam | tojson }} },
-      "datePublished": "{{ review.created_at.strftime('%Y-%m-%d') }}",
-      "reviewBody": {{ (review.comment or '') | tojson }},
-      "reviewRating": {
-        "@type": "Rating",
-        "ratingValue": "{{ review.score }}",
-        "bestRating": "5",
-        "worstRating": "1"
-      }
-    }{{ "," if not loop.last else "" }}
-    {% endfor %}
-  ]
-}
-</script>
-{% endif %}
-<script type="application/ld+json">
-{
-  "@context":"https://schema.org",
-  "@type":"FAQPage",
-  "mainEntity":[
-    {
-      "@type":"Question",
-      "name":"Wat kost {{ abonnement.naam }} per maand?",
-      "acceptedAnswer":{"@type":"Answer","text":"Vanaf €{{ abonnement.prijs_vanaf }}{{ abonnement.prijs_tot and (' tot €' ~ abonnement.prijs_tot) or '' }} per maand, afhankelijk van pakket."}
-    },
-    {
-      "@type":"Question",
-      "name":"Kan ik {{ abonnement.naam }} pauzeren of opzeggen?",
-      "acceptedAnswer":{"@type":"Answer","text":"Ja, pauzeren en opzeggen kan. Contractduur: {{ abonnement.contractduur }}. Check de voorwaarden bij de aanbieder."}
-    },
-    {
-      "@type":"Question",
-      "name":"Voor wie is {{ abonnement.naam }} geschikt?",
-      "acceptedAnswer":{"@type":"Answer","text":"{{ abonnement.past_dit_bij_jou | striptags | truncate(280, True, '…') }}"}
-    }
-  ]
-}
-</script> 
-<script type="application/ld+json">
-{
-  "@context":"https://schema.org",
-  "@type":"WebSite",
-  "name":"AbboHub Reviews",
-  "url":"{{ url_for('index', _external=True) }}",
-  "inLanguage":"nl-NL",
-  "publisher":{"@type":"Organization","name":"AbboHub"}
-}
-</script>
-{% if abonnement.youtube_url %}
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "VideoObject",
-  "name": {{ (abonnement.naam ~ " review (2025)") | tojson }},
-  "description": {{ (abonnement.wat_is_het_abonnement or "Review & ervaringen van " ~ abonnement.naam) | striptags | truncate(280, True, "…") | tojson }},
-  "thumbnailUrl": [
-    "https://i.ytimg.com/vi/{{ yt_id }}/maxresdefault.jpg",
-    "https://i.ytimg.com/vi/{{ yt_id }}/hqdefault.jpg"
-  ],
-"uploadDate": "{{ abonnement.video_upload_datum if abonnement.video_upload_datum else '2025-01-01' }}"
-  "embedUrl": "https://www.youtube-nocookie.com/embed/{{ yt_id }}",
-  "url": {{ request.url | tojson }},
-  "publisher": { "@type": "Organization", "name": "AbboHub" }
-}
-</script>
-{% endif %}
-
-
-    </main>
-<!-- SIDEBAR -->
-<aside class="sidebar" style="flex: 1 1 30%; max-width: 360px;">
-  <section class="card">
-    <h2>Vergelijk {{ abonnement.naam }} met:</h2>
-
-    <div style="display: flex; flex-direction: column; gap: 20px;">
-      {% for ab in andere_abonnementen %}
-      <article style="background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 12px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-        <h3 style="font-size: 1rem; margin-bottom: 8px;">{{ ab.naam }}</h3>
-
-        {% if ab.logo %}
-          <img src="{{ url_for('static', filename='uploads/' + ab.logo) }}" alt="Logo van {{ ab.naam }}" style="max-width: 100px; margin-bottom: 10px;">
+  <div class="bc-container">
+    <nav class="breadcrumb" aria-label="Broodkruimelpad">
+      <ol>
+        <li><a href="{{ url_for('index') }}">Home</a></li>
+        {% if categorie %}
+          <li><a href="{{ url_for('abonnement_overzicht', categorie_slug=categorie.slug) }}">{{ categorie.naam }}</a></li>
         {% endif %}
-
-        <p style="font-size: 0.85rem; min-height: 50px;">{{ ab.beschrijving or 'Geen beschrijving.' }}</p>
-
-        <!-- ACTIEKNOPPEN naast elkaar -->
-        <div class="actieknoppen">
-          <a href="{{ url_for('abonnement_reviews', slug=ab.slug) }}" class="btn-compare geel">
-            Meer info
-          </a>
-          <a href="javascript:void(0);" onclick="vergelijkSlugs('{{ abonnement.slug }}', '{{ ab.slug }}')" class="btn-compare grijs">
-            Vergelijk
-          </a>
-        </div>
-      </article>
-      {% endfor %}
-    </div>
-  </section>
-</aside>
-  </div></div>
- <footer class="site-footer">
-  <div class="footer-content">
-    <p class="affiliate-note">
-      Sommige links op AbboHub zijn affiliate links. Wanneer je via zo’n link bestelt, kan AbboHub een kleine commissie ontvangen – 
-      <strong>zonder extra kosten voor jou</strong>.
-    </p>
-
-    <p class="copyright">
-      &copy; 2025 AbboHub. Alle rechten voorbehouden.
-    </p>
-
-    <nav class="footer-nav" aria-label="Footer navigatie">
-      <ul>
-        <li><a href="{{ url_for('privacy_cookieverklaring') }}">Privacy- en Cookieverklaring</a></li>
-        <li><a href="{{ url_for('algemene_voorwaarden') }}">Algemene Voorwaarden</a></li>
-        <li><a href="{{ url_for('over_abbohub') }}">Over AbboHub</a></li>
-        <li><a href="#" onclick="openSettings()">Cookievoorkeuren aanpassen</a></li>
-      </ul>
+        {% if subcategorie %}
+          <li><a href="{{ url_for('abonnement_overzicht', categorie_slug=categorie.slug, subcategorie_slug=subcategorie.slug) }}">{{ subcategorie.naam }}</a></li>
+        {% endif %}
+        <li aria-current="page">{{ abonnement.naam }}</li>
+      </ol>
     </nav>
   </div>
-</footer>
+
+  <div class="page-wrapper">
+    <div class="page-layout">
+      <!-- MAIN CONTENT -->
+      <main class="main-content">
+        <section class="card" id="kosten">
+          <h2>Abonnementsgegevens</h2>
+          <table>
+            <tbody>
+              <tr>
+                <th scope="row">Frequentie Bezorging</th>
+                <td>{{ abonnement.frequentie_bezorging }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Contractduur</th>
+                <td>{{ abonnement.contractduur }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Aanbieding &amp; kortingscode</th>
+                <td>{{ abonnement.aanbiedingen }}</td>
+              </tr>
+              <tr>
+                <th scope="row">Prijs vanaf</th>
+                <td>€{{ abonnement.prijs_vanaf }}</td>
+              </tr>
+              {% if abonnement.prijs_tot %}
+              <tr>
+                <th scope="row">Prijs tot</th>
+                <td>€{{ abonnement.prijs_tot }}</td>
+              </tr>
+              {% endif %}
+              <tr>
+                <th scope="row">Doelgroep</th>
+                <td>
+                  {% for doelgroep in abonnement.doelgroepen %}
+                    <span class="badge">{{ doelgroep.naam }}</span>
+                  {% endfor %}
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">Tags</th>
+                <td>
+                  {% for tag in abonnement.tags %}
+                    <span class="badge">{{ tag.naam }}</span>
+                  {% endfor %}
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">Gemiddelde beoordeling</th>
+                <td>
+                  {% set score = abonnement.get_average_score() %}
+                  {% set volle = score | int %}
+                  {% set halve = (score - volle) >= 0.25 and (score - volle) < 0.75 %}
+                  {% set leeg = 5 - volle - (1 if halve else 0) %}
+
+                  <span class="ster-rating" aria-label="Gemiddelde beoordeling: {{ score }} van 5">
+                    {% for _ in range(volle) %}<span class="vol-ster">★</span>{% endfor %}
+                    {% if halve %}<span class="halve-ster">★</span>{% endif %}
+                    {% for _ in range(leeg) %}<span class="leeg-ster">☆</span>{% endfor %}
+                  </span>
+                  <span class="score-tekst">{{ score }} ({{ abonnement.reviews|length }} beoordelingen)</span>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">Bezoek website</th>
+                <td>
+                  <a
+                    class="visit-website js-aff-link"
+                    href="{{ url_for('outbound', ab_id=abonnement.id) }}?from={{ request.path }}&amp;utm_source=abbohub&amp;utm_medium=review&amp;utm_campaign={{ abonnement.slug }}"
+                    target="_blank"
+                    rel="sponsored nofollow noreferrer"
+                    aria-label="Bezoek {{ abonnement.naam | e }} – opent in nieuw tabblad"
+                    data-abonnement="{{ abonnement.naam | e }}"
+                    data-abonnement-slug="{{ abonnement.slug | e }}"
+                    data-categorie="{{ (categorie.naam if categorie else '') | e }}"
+                    data-categorie-slug="{{ (categorie.slug if categorie else '') | e }}"
+                    data-subcategorie="{{ (subcategorie.naam if subcategorie else '') | e }}"
+                    data-subcategorie-slug="{{ (subcategorie.slug if subcategorie else '') | e }}"
+                    data-affid="{{ abonnement.id }}"
+                  >
+                    Bezoek aanbieder
+                  </a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- Foto's van het abonnement -->
+        {% if abonnement.fotos %}
+        <section class="photo-card">
+          <h3>Productfoto's</h3>
+
+          <div class="product-slider">
+            <button class="product-slider-arrow prev" type="button" onclick="scrollPhotos(this, 'left')">‹</button>
+
+            <div class="product-slider-outer">
+              <div class="product-slider-inner">
+                {% for foto in abonnement.fotos %}
+                  <div class="product-slide">
+                    <img src="{{ url_for('static', filename='uploads/' ~ foto.bestandsnaam) }}"
+                         alt="Foto van {{ abonnement.naam }}"
+                         class="product-photo"
+                         onclick="openLightbox('{{ url_for('static', filename='uploads/' ~ foto.bestandsnaam) }}')"
+                         loading="lazy">
+                  </div>
+                {% endfor %}
+              </div>
+            </div>
+
+            <button class="product-slider-arrow next" type="button" onclick="scrollPhotos(this, 'right')">›</button>
+          </div>
+        </section>
+        {% endif %}
+
+        <div style="white-space: pre-wrap;">
+          <section class="card text-section"><h3>Wat is {{ abonnement.naam }}?</h3><p>{{ abonnement.wat_is_het_abonnement }}</p></section>
+          <section class="card text-section"><h3>Waarom kiezen voor {{ abonnement.naam }}?</h3><p>{{ abonnement.waarom_kiezen }}</p></section>
+          <section class="card text-section"><h3>Hoe werkt het?</h3><p>{{ abonnement.hoe_werkt_het }}</p></section>
+          <section class="card text-section"><h3>Opzeggen</h3><p>{{ abonnement.annuleringsvoorwaarden }}</p></section>         
+          <section class="card text-section"><h3>Past {{ abonnement.naam }} bij jou?</h3><p>{{ abonnement.past_dit_bij_jou }}</p></section>
+        </div>   
+
+        <!-- YouTube-video -->
+        {% if abonnement.youtube_url %}
+          {% set yt = abonnement.youtube_url %}
+          {% if 'v=' in yt %}
+            {% set yt_id = yt.split('v=')[-1].split('&')[0] %}
+          {% else %}
+            {% set yt_id = yt.rsplit('/', 1)[-1].split('?')[0] %}
+          {% endif %}
+
+          <section class="card">
+            <h3>Video</h3>
+            <div class="video-container">
+              <iframe
+                title="{{ abonnement.naam }} video"
+                src="https://www.youtube-nocookie.com/embed/{{ yt_id }}?playsinline=1&modestbranding=1&rel=0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen
+                loading="lazy"
+                referrerpolicy="strict-origin-when-cross-origin"
+                style="border:0;"
+              ></iframe>
+            </div>
+          </section>
+        {% endif %}
+
+        <!-- Lightbox -->
+        <div id="lightbox" onclick="closeLightbox()">
+          <span class="lightbox-close">&times;</span>
+          <img id="lightbox-img" src="">
+        </div>
+
+        <!-- Reviews sectie -->
+        <section class="card" aria-labelledby="reviews-heading">
+          <h2 id="reviews-heading">Reviews</h2>
+
+          <div class="review-summary">
+            {% set score = abonnement.get_average_score() %}
+            {% set volle_sterren = score | int %}
+            {% set halve_ster = (score - volle_sterren) >= 0.25 and (score - volle_sterren) < 0.75 %}
+            {% set lege_sterren = 5 - volle_sterren - (1 if halve_ster else 0) %}
+
+            <span class="ster-rating" aria-label="Gemiddelde beoordeling: {{ score }} van 5">
+              {% for i in range(volle_sterren) %}
+                <span class="vol-ster">★</span>
+              {% endfor %}
+              {% if halve_ster %}
+                <span class="halve-ster">★</span>
+              {% endif %}
+              {% for i in range(lege_sterren) %}
+                <span class="leeg-ster">☆</span>
+              {% endfor %}
+            </span>
+            <span class="score-tekst">{{ score }} ({{ abonnement.reviews|length }} beoordelingen)</span>
+          </div>
+
+          <!-- Formulier om een review toe te voegen -->
+          <div class="review-form">
+            <h3>Schrijf een review</h3>
+            <form method="POST">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              
+              <label for="naam">Uw naam:</label>
+              <input type="text" name="naam" id="naam" placeholder="Vul hier uw naam in" required>
+
+              <label>Score:</label>
+              <div class="star-rating" id="rating-stars">
+                {% for i in range(1, 6) %}
+                  <span class="star">
+                    <span class="half left" data-value="{{ i - 0.5 }}"></span>
+                    <span class="half right" data-value="{{ i }}"></span>
+                  </span>
+                {% endfor %}
+              </div>
+              <input type="hidden" name="score" id="score" required>
+              
+              <label for="comment">Opmerking (optioneel):</label>
+              <textarea name="comment" id="comment" placeholder="Deel uw mening over het abonnement..."></textarea>
+
+              <button type="submit">Review toevoegen</button>
+            </form>
+          </div>
+
+          <!-- Overzicht van reeds ingediende reviews -->
+          <div class="reviews">
+            {% if abonnement.reviews %}
+              {% for review in abonnement.reviews %}
+                <div class="review">
+                  <p><strong>{{ review.naam }}</strong></p>
+                  <p><strong>Score:</strong> {{ review.score }} / 5</p>
+                  <p>{{ review.comment }}</p>
+                  <p><small>Geplaatst op: {{ review.created_at.strftime('%d-%m-%Y %H:%M') }}</small></p>
+
+                  {% if is_admin %}
+                    <form method="POST" style="display:inline;">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <input type="hidden" name="delete_review_id" value="{{ review.id }}">
+                      <button type="submit" class="btn-delete">Verwijderen</button>
+                    </form>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            {% else %}
+              <p>Er zijn nog geen reviews voor dit abonnement.</p>
+            {% endif %}
+          </div>
+        </section>
+
+        <!-- JSON-LD blokken -->
+        <div class="reviews">
+          {% if abonnement.reviews %}
+          <script type="application/ld+json">
+          {
+            "@context": "https://schema.org",
+            "@type": ["Product", "SubscriptionService"],
+            "name": {{ abonnement.naam | tojson }},
+            "description": {{ (abonnement.wat_is_het_abonnement or '') | striptags | truncate(280, True, '…') | tojson }},
+            "image": {% if abonnement.fotos and abonnement.fotos[0] %}
+                       {{ url_for('static', filename='uploads/' ~ abonnement.fotos[0].bestandsnaam, _external=True) | tojson }}
+                     {% else %}
+                       {{ url_for('static', filename='logo.png', _external=True) | tojson }}
+                     {% endif %},
+            "url": {{ request.url | tojson }},
+            "brand": { "@type":"Brand", "name": {{ abonnement.naam | tojson }} },
+
+            "offers": {
+              "@type": "Offer",
+              "priceCurrency": "EUR",
+              "price": "{{ abonnement.prijs_vanaf }}",
+              "availability": "https://schema.org/InStock",
+              "url": {{ (abonnement.url or request.url) | tojson }},
+              "priceValidUntil": "2025-12-31"
+            },
+
+            "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": "{{ abonnement.get_average_score() }}",
+              "bestRating": "5",
+              "worstRating": "1",
+              "reviewCount": "{{ abonnement.reviews|length }}"
+            },
+
+            "review": [
+              {% for review in abonnement.reviews %}
+              {
+                "@type": "Review",
+                "author": { "@type": "Person", "name": {{ review.naam | tojson }} },
+                "datePublished": "{{ review.created_at.strftime('%Y-%m-%d') }}",
+                "reviewBody": {{ (review.comment or '') | tojson }},
+                "reviewRating": {
+                  "@type": "Rating",
+                  "ratingValue": "{{ review.score }}",
+                  "bestRating": "5",
+                  "worstRating": "1"
+                }
+              }{{ "," if not loop.last else "" }}
+              {% endfor %}
+            ]
+          }
+          </script>
+          {% endif %}
+
+          <script type="application/ld+json">
+          {
+            "@context":"https://schema.org",
+            "@type":"FAQPage",
+            "mainEntity":[
+              {
+                "@type":"Question",
+                "name":"Wat kost {{ abonnement.naam }} per maand?",
+                "acceptedAnswer":{"@type":"Answer","text":"Vanaf €{{ abonnement.prijs_vanaf }}{{ abonnement.prijs_tot and (' tot €' ~ abonnement.prijs_tot) or '' }} per maand, afhankelijk van pakket."}
+              },
+              {
+                "@type":"Question",
+                "name":"Kan ik {{ abonnement.naam }} pauzeren of opzeggen?",
+                "acceptedAnswer":{"@type":"Answer","text":"Ja, pauzeren en opzeggen kan. Contractduur: {{ abonnement.contractduur }}. Check de voorwaarden bij de aanbieder."}
+              },
+              {
+                "@type":"Question",
+                "name":"Voor wie is {{ abonnement.naam }} geschikt?",
+                "acceptedAnswer":{"@type":"Answer","text":"{{ abonnement.past_dit_bij_jou | striptags | truncate(280, True, '…') }}"}
+              }
+            ]
+          }
+          </script> 
+
+          <script type="application/ld+json">
+          {
+            "@context":"https://schema.org",
+            "@type":"WebSite",
+            "name":"AbboHub Reviews",
+            "url":"{{ url_for('index', _external=True) }}",
+            "inLanguage":"nl-NL",
+            "publisher":{"@type":"Organization","name":"AbboHub"}
+          }
+          </script>
+
+          {% if abonnement.youtube_url %}
+          <script type="application/ld+json">
+          {
+            "@context": "https://schema.org",
+            "@type": "VideoObject",
+            "name": {{ (abonnement.naam ~ " review (2025)") | tojson }},
+            "description": {{ (abonnement.wat_is_het_abonnement or "Review & ervaringen van " ~ abonnement.naam) | striptags | truncate(280, True, "…") | tojson }},
+            "thumbnailUrl": [
+              "https://i.ytimg.com/vi/{{ yt_id }}/maxresdefault.jpg",
+              "https://i.ytimg.com/vi/{{ yt_id }}/hqdefault.jpg"
+            ],
+            "uploadDate": "{{ abonnement.video_upload_datum if abonnement.video_upload_datum else '2025-01-01' }}",
+            "embedUrl": "https://www.youtube-nocookie.com/embed/{{ yt_id }}",
+            "url": {{ request.url | tojson }},
+            "publisher": { "@type": "Organization", "name": "AbboHub" }
+          }
+          </script>
+          {% endif %}
+        </div>
+      </main>
+
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <section class="card">
+          <h2>Vergelijk {{ abonnement.naam }} met:</h2>
+
+          <div class="sidebar-abos">
+            {% for ab in andere_abonnementen %}
+            <article class="sidebar-abo">
+              <h3>{{ ab.naam }}</h3>
+
+              {% if ab.logo %}
+                <img src="{{ url_for('static', filename='uploads/' + ab.logo) }}" alt="Logo van {{ ab.naam }}">
+              {% endif %}
+
+              <p>{{ ab.beschrijving or 'Geen beschrijving.' }}</p>
+
+              <!-- ACTIEKNOPPEN naast elkaar -->
+              <div class="actieknoppen">
+                <a href="{{ url_for('abonnement_reviews', slug=ab.slug) }}" class="btn-compare geel">
+                  Meer info
+                </a>
+                <a href="javascript:void(0);" onclick="vergelijkSlugs('{{ abonnement.slug }}', '{{ ab.slug }}')" class="btn-compare grijs">
+                  Vergelijk
+                </a>
+              </div>
+            </article>
+            {% endfor %}
+          </div>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <div class="footer-content">
+      <p class="affiliate-note">
+        Sommige links op AbboHub zijn affiliate links. Wanneer je via zo’n link bestelt, kan AbboHub een kleine commissie ontvangen – 
+        <strong>zonder extra kosten voor jou</strong>.
+      </p>
+
+      <p class="copyright">
+        &copy; 2025 AbboHub. Alle rechten voorbehouden.
+      </p>
+
+      <nav class="footer-nav" aria-label="Footer navigatie">
+        <ul>
+          <li><a href="{{ url_for('privacy_cookieverklaring') }}">Privacy- en Cookieverklaring</a></li>
+          <li><a href="{{ url_for('algemene_voorwaarden') }}">Algemene Voorwaarden</a></li>
+          <li><a href="{{ url_for('over_abbohub') }}">Over AbboHub</a></li>
+          <li><a href="#" onclick="openSettings()">Cookievoorkeuren aanpassen</a></li>
+        </ul>
+      </nav>
+    </div>
+  </footer>
+
   <!-- abonnement review scripts -->
   <script src="{{ url_for('static', filename='js/abonnement_reviews.js') }}"></script>  
 
-<script>
-function openLightbox(src) {
-  document.getElementById('lightbox').style.display = 'block';
-  document.getElementById('lightbox-img').src = src;
-}
-function closeLightbox() {
-  document.getElementById('lightbox').style.display = 'none';
-}
-</script>
-
+  <script>
+    function openLightbox(src) {
+      document.getElementById('lightbox').style.display = 'block';
+      document.getElementById('lightbox-img').src = src;
+    }
+    function closeLightbox() {
+      document.getElementById('lightbox').style.display = 'none';
+    }
+  </script>
 </body>
 </html>
-
