@@ -56,33 +56,47 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ———————————————
-  // 3) Vergelijk-knop links
-  // ———————————————
-  const vergelijkKnop = document.getElementById("vergelijk-knop");
-  const checkboxes    = document.querySelectorAll(".vergelijk-checkbox");
+ // ———————————————
+// 3) Vergelijk-knoppen (meerdere links)
+// ———————————————
+const vergelijkLinks = document.querySelectorAll(".js-vergelijk-link");
+const vergelijkKnop  = document.getElementById("vergelijk-knop"); // alleen nog voor 'hide' op mobiel
+const checkboxes     = document.querySelectorAll(".vergelijk-checkbox");
 
-  function updateVergelijkLink() {
-    const slugs = Array.from(checkboxes)
-      .filter(cb => cb.checked)
-      .map(cb => cb.value);
-    if (vergelijkKnop) {
-      vergelijkKnop.href = (slugs.length >= 2)
-        ? `/vergelijk?abonnementen=${slugs.join(",")}`
-        : "#";
+function updateVergelijkLinks() {
+  const slugs = Array.from(checkboxes)
+    .filter(cb => cb.checked)
+    .map(cb => cb.value);
+
+  const href = (slugs.length >= 2)
+    ? `/vergelijk?abonnementen=${slugs.join(",")}`
+    : "#";
+
+  vergelijkLinks.forEach(link => link.href = href);
+}
+
+checkboxes.forEach(cb => cb.addEventListener("change", updateVergelijkLinks));
+updateVergelijkLinks(); // init
+
+// Optioneel: voorkom klikken als er <2 geselecteerd zijn
+vergelijkLinks.forEach(link => {
+  link.addEventListener("click", (e) => {
+    const selected = Array.from(checkboxes).filter(cb => cb.checked).length;
+    if (selected < 2) {
+      e.preventDefault();
+      alert("Selecteer minimaal 2 abonnementen om te vergelijken.");
     }
-  }
-  checkboxes.forEach(cb => cb.addEventListener("change", updateVergelijkLink));
-  updateVergelijkLink(); // init
+  });
+});
 
-  // mobiele menu: hide vergelijk-knop bij categorie-klik
-  if (window.matchMedia("(max-width: 768px)").matches) {
-    document.querySelectorAll(".dropdown-menu a").forEach(link => {
-      link.addEventListener("click", () => {
-        if (vergelijkKnop) vergelijkKnop.style.display = "none";
-      });
+// mobiele menu: hide ALLEEN de bovenste vergelijk-knop bij categorie-klik
+if (window.matchMedia("(max-width: 768px)").matches) {
+  document.querySelectorAll(".dropdown-menu a").forEach(link => {
+    link.addEventListener("click", () => {
+      if (vergelijkKnop) vergelijkKnop.style.display = "none";
     });
-  }
+  });
+}
 
   // ———————————————
   // 4) Endless carousel per categorie

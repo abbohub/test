@@ -241,3 +241,37 @@
   gap: 20px;
   width: max-content;  /* breedte wordt bepaald door de inhoud */
 }
+
+/* Container voor de 2 knoppen naast elkaar */
+.floating-actions {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  gap: 10px;
+  z-index: 3000;
+}
+
+/* Belangrijk: haal fixed-positionering van de knop zelf weg in deze container */
+.floating-actions .chat-toggle-btn {
+  position: static; /* i.p.v. fixed */
+}
+
+/* Zorg dat de <a> eruit ziet als een knop */
+.vergelijk-toggle-btn {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+@media (max-width: 420px) {
+  .floating-actions { gap: 8px; }
+  .chat-toggle-btn { padding: 9px 12px; font-size: 14px; }
+}
+/* Onderste vergelijk-knop (link) geen underline */
+.floating-actions a.chat-toggle-btn,
+.floating-actions a.chat-toggle-btn:visited,
+.floating-actions a.chat-toggle-btn:hover,
+.floating-actions a.chat-toggle-btn:active {
+  text-decoration: none;
+}

@@ -279,3 +279,57 @@ img,svg,video,iframe{max-width:100%;height:auto;display:block}
 
 .flash-message.flash-error { background:#ffe8e8; color:#b20000; border:1px solid #f5b5b5; padding:.6rem .8rem; border-radius:.5rem; }
 .flash-message.flash-warning { background:#fff6e5; color:#8a5400; border:1px solid #ffd28a; padding:.6rem .8rem; border-radius:.5rem; }
+
+/* =======================
+   Header compacter op mobiel
+   ======================= */
+@media (max-width: 640px){
+  .page-header{
+    padding: 10px 12px;   /* was 16px 20px */
+  }
+
+  .main-nav ul{
+    gap: 6px 10px;        /* compacter */
+    margin: 0 0 6px;
+  }
+  .main-nav a{
+    font-size: .95rem;
+  }
+
+  .zoek-filter-container{
+    padding: 12px;        /* als je elders een “card” achtergrond/padding hebt: dit houdt ’m strak */
+    margin: 0;            /* voorkomt extra hoogte door margins */
+  }
+
+  .zoek-filter-container h1{
+    font-size: clamp(1.6rem, 7vw, 2.1rem);
+    line-height: 1.05;
+    margin: 6px 0 10px;   /* minder witruimte */
+  }
+
+  .compare-actions{
+    gap: 8px;             /* was 12px */
+  }
+
+  .compare-actions .btn{
+    min-height: 40px;     /* nog steeds goed klikbaar */
+    padding: 8px 10px;    /* compacter */
+    font-size: .92rem;
+  }
+}
+
+/* Mobiel: 2x2 grid */
+@media (max-width: 767px){
+  .compare-actions{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:8px;
+    width:100%;
+  }
+  .compare-actions .btn,
+  .compare-actions .select{
+    width:100%;
+    min-height:40px;
+    font-size:.92rem;
+  }
+}
