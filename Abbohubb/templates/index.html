@@ -212,7 +212,7 @@
             </div>
           </div>
 
-          <a href="{{ url_for('vergelijk') }}" class="btn btn-compare" id="vergelijk-knop">Vergelijk</a>
+          <a href="{{ url_for('vergelijk') }}" class="btn btn-compare js-vergelijk-link" id="vergelijk-knop">Vergelijk</a>
 
           {% if actieve_subcategorie or actieve_categorie %}
             <a href="javascript:void(0)" onclick="toggleSidebar()" class="btn btn-compare">Categorie Info</a>
@@ -409,9 +409,20 @@
             {% endif %}
         </div>    
 
-        <!-- Chatbot Widget -->
-<!-- Knop om de chatbot te openen/sluiten -->
-<button id="toggle-chat" class="chat-toggle-btn">Vraag om advies</button>
+<!-- Floating knoppen rechtsonder -->
+<div class="floating-actions">
+  <a href="{{ url_for('vergelijk') }}"
+     class="chat-toggle-btn js-vergelijk-link"
+     id="toggle-vergelijk">
+    Vergelijk
+  </a>
+
+  <button id="toggle-chat" class="chat-toggle-btn">
+    Vraag om advies
+  </button>
+</div>
+
+
 
 <!-- Chatbox --> 
 <div id="chatbox">
