@@ -36,11 +36,7 @@
     
   }
   
-  /* Verberg de zoekknop */
-  .zoek-filter-form button.btn-search {
-    display: none;
-  }
-  
+
   /* Pas de zoek-filter-container aan */
   .zoek-filter-container {
     display: grid;
@@ -318,4 +314,43 @@
   text-align: center;
 }
 }
-  
+
+@media (max-width: 768px) {
+  /* jouw intro-blok */
+  section.content-card1.intro-card1 {
+    display: block;           /* voor de zekerheid */
+    width: 100%;
+    box-sizing: border-box;
+    margin-left: auto;        /* centreert binnen parent */
+    margin-right: auto;       /* centreert binnen parent */
+    align-self: stretch;      /* negeert flex-start van main */
+  }
+}
+
+/* ==============================
+   INDEX: MOBILE SIDEBAR FILTER FIX
+   ============================== */
+@media (max-width: 768px) {
+
+  /* 1) Sidebar/drawer moet kunnen scrollen */
+  .sidebar-modern,
+  #filters-drawer {
+    max-height: 100vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 140px; /* ruimte voor fixed/floating knoppen */
+    box-sizing: border-box;
+  }
+
+  /* 2) Forceer dat de “apply” en “reset” knoppen niet hidden zijn */
+  .sidebar-modern .btn-primary,
+  .sidebar-modern .btn-reset,
+  #filters-drawer .btn-primary,
+  #filters-drawer .btn-reset,
+  .sidebar-modern button[type="submit"],
+  #filters-drawer button[type="submit"] {
+    display: block !important;
+    width: 100% !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }}

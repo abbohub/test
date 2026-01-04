@@ -160,3 +160,160 @@ function toggleMobileOverlay() {
   overlay.classList.toggle("show");
 }
 
+// querie builder
+(function () {
+  const cat = document.getElementById("categorie");
+  const sub = document.getElementById("subcategorie");
+  if (!cat || !sub) return;
+
+  function filterSubcats() {
+    const selectedCat = cat.value;
+    const opts = Array.from(sub.options);
+
+    // altijd de "Alle subcategorieën" zichtbaar laten
+    opts.forEach(o => {
+      if (!o.value) {
+        o.hidden = false;
+        return;
+      }
+      const oCat = o.getAttribute("data-cat");
+      o.hidden = !!selectedCat && oCat !== selectedCat;
+    });
+
+    // als huidige subcategorie niet meer past -> reset
+    const selectedOpt = sub.options[sub.selectedIndex];
+    if (selectedOpt && selectedOpt.hidden) {
+      sub.value = "";
+    }
+  }
+
+  cat.addEventListener("change", filterSubcats);
+  // run bij laden (zodat bij refresh alles netjes staat)
+  filterSubcats();
+})();
+(function () {
+  const cat = document.getElementById("f-categorie");
+  const sub = document.getElementById("f-subcategorie");
+  const btnApply = document.getElementById("btn-apply-filters");
+  const btnReset = document.getElementById("btn-reset");
+
+  // Drawer (mobile)
+  const drawer = document.getElementById("filters-drawer");
+  const backdrop = document.getElementById("filters-backdrop");
+  const btnOpen = document.getElementById("btn-open-filters");
+  const btnClose = document.getElementById("btn-close-filters");
+
+  function openDrawer() {
+    if (!drawer) return;
+    drawer.classList.add("open");
+    document.body.classList.add("filters-open");
+    backdrop?.classList.add("show");
+  }
+
+  function closeDrawer() {
+    if (!drawer) return;
+    drawer.classList.remove("open");
+    document.body.classList.remove("filters-open");
+    backdrop?.classList.remove("show");
+  }
+
+  btnOpen?.addEventListener("click", openDrawer);
+  btnClose?.addEventListener("click", closeDrawer);
+  backdrop?.addEventListener("click", closeDrawer);
+
+  // --- Subcategorie opties filteren op categorie ---
+  function filterSubcats() {
+    if (!sub) return;
+    const selectedCatId = cat?.value || "";
+
+    let hasSelectedOption = false;
+
+    [...sub.options].forEach((opt) => {
+      if (!opt.value) {
+        opt.hidden = false;
+        return;
+      }
+      const optCat = opt.dataset.categorie || "";
+      const show = !selectedCatId || optCat === selectedCatId;
+      opt.hidden = !show;
+
+      if (show && opt.selected) hasSelectedOption = true;
+    });
+
+    // Als huidige subcategorie niet bij categorie hoort → reset naar leeg
+    if (selectedCatId && !hasSelectedOption) {
+      sub.value = "";
+    }
+  }
+
+  cat?.addEventListener("change", filterSubcats);
+  filterSubcats(); // init bij page load
+
+  // --- Apply: bouw querystring voor jouw builder keys ---
+  function applyFilters() {
+    const params = new URLSearchParams(window.location.search);
+
+    // q (zoekterm in sidebar)
+    const qEl = document.getElementById("f-q");
+    const qVal = (qEl?.value || "").trim();
+    if (qVal) params.set("q", qVal);
+    else params.delete("q");
+
+    // categorie/subcategorie (IDs)
+    if (cat?.value) params.set("categorie_id", cat.value);
+    else params.delete("categorie_id");
+
+    if (sub?.value) params.set("subcategorie_id", sub.value);
+    else params.delete("subcategorie_id");
+
+    // sort/billing/price/pause
+    const sort = document.getElementById("f-sort")?.value || "";
+    if (sort) params.set("sort", sort); else params.delete("sort");
+
+    const billing = document.getElementById("f-billing")?.value || "";
+    if (billing) params.set("billing_period", billing); else params.delete("billing_period");
+
+    const pmin = document.getElementById("f-price-min")?.value || "";
+    const pmax = document.getElementById("f-price-max")?.value || "";
+    if (pmin) params.set("price_min", pmin); else params.delete("price_min");
+    if (pmax) params.set("price_max", pmax); else params.delete("price_max");
+
+    const pause = document.getElementById("f-pause")?.value || "";
+    if (pause !== "") params.set("pause_possible", pause);
+    else params.delete("pause_possible");
+
+    // countries multiselect
+    const countries = document.getElementById("f-countries");
+    params.delete("countries");
+    if (countries) {
+      [...countries.selectedOptions].forEach((opt) => params.append("countries", opt.value));
+    }
+
+    // paginering resetten bij filter-change
+    params.delete("page");
+
+    window.location.href = `${window.location.pathname}?${params.toString()}`;
+  }
+
+  btnApply?.addEventListener("click", () => {
+    applyFilters();
+    closeDrawer();
+  });
+
+  // Reset: alles weg, terug naar /
+  btnReset?.addEventListener("click", () => {
+    window.location.href = window.location.pathname;
+  });
+})();
+
+document.addEventListener("DOMContentLoaded", () => {
+  const source = document.getElementById("cat-desc-source");
+  if (!source) return;
+
+  const html = source.innerHTML;
+  const m = document.getElementById("cat-desc-mobile");
+  const d = document.getElementById("cat-desc-desktop");
+  if (m) m.innerHTML = html;
+  if (d) d.innerHTML = html;
+});
+
