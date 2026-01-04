@@ -295,94 +295,116 @@
 </head>
 <body>
 
-    <!-- Navigatie (optioneel) -->
-    <nav aria-label="Hoofdnavigatie">
-        <ul>
-            <li><a href="{{ url_for('index') }}">Home</a></li>
-            <li><a href="{{ url_for('vergelijk') }}">Vergelijk</a></li>
-            {% if current_user.is_authenticated %}
-                <li><a href="{{ url_for('logout') }}">Uitloggen</a></li>
-            {% else %}
-                <li><a href="{{ url_for('login') }}">Inloggen</a></li>
-            {% endif %}
-        </ul>
-    </nav>
+<!-- Navigatie -->
+<nav aria-label="Hoofdnavigatie">
+  <ul>
+    <li><a href="{{ url_for('index') }}">Home</a></li>
+    <li><a href="{{ url_for('vergelijk') }}">Vergelijk</a></li>
+    {% if current_user.is_authenticated %}
+      <li><a href="{{ url_for('logout') }}">Uitloggen</a></li>
+    {% else %}
+      <li><a href="{{ url_for('login') }}">Inloggen</a></li>
+    {% endif %}
+  </ul>
+</nav>
 
-    <div class="dashboard-container">
-        <h1>Beheerdersdashboard</h1>
+<div class="dashboard-container">
+  <h1>Beheerdersdashboard</h1>
 
-        <!-- FLASH-BERICHTEN (optioneel) -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-          {% if messages %}
-            <div class="flash-container">
-              {% for category, message in messages %}
-                <div class="flash-message flash-{{ category }}">
-                  {{ message }}
-                </div>
-              {% endfor %}
-            </div>
-          {% endif %}
-        {% endwith %}
-
-        <!-- Knoppen voor acties -->
-        <p>
-            <a href="{{ url_for('add_subscription') }}" class="btn">Abonnement Toevoegen</a>
-            <a href="{{ url_for('manage_subscriptions') }}" class="btn">Beheer Abonnementen</a>
-            <a href="{{ url_for('categorieen') }}" class="btn">Beheer categorieën</a>
-            <a href="{{ url_for('manage_tags') }}"class="btn">Beheer Tags</a>
-            <a href="{{ url_for('manage_doelgroepen') }}"class="btn">Beheer Doelgroepen</a>
-            <a href="{{ url_for('view_logs') }}" class="btn">Bekijk Logs</a>
-            <a href="{{ url_for('berichten') }}" class="btn">Bekijk berichten</a>
-            <a href="{{ url_for('admin_train_chatbot') }}" class="btn">Chatbot trainen</a>
-            <a href="{{ url_for('admin_clicks') }}" class="btn">Klikrapport</a>
-            <a href="{{ url_for('blog_toevoegen') }}" class="btn">Nieuw blogbericht</a>
-            <a href="{{ url_for('admin_blog_overzicht') }}" class="btn">Beheer Blogs</a>
-        </p>
-        <section class="dashboard-taken" id="abbohub-planning">
-  <h2>📅 Groei- & Inkomstenplanning (6 maanden)</h2>
+  <!-- Flash-berichten -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-container">
+        {% for category, message in messages %}
+          <div class="flash-message flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
 
   <!-- Actieknoppen -->
-  <div class="planning-actions">
-    <button id="expand-all" type="button">Alles uitklappen</button>
-    <button id="collapse-all" type="button">Alles inklappen</button>
-    <button id="reset-checks" type="button">Alle vinkjes wissen</button>
+  <div class="dashboard-actions">
+    <a href="{{ url_for('add_subscription') }}" class="btn">Abonnement toevoegen</a>
+    <a href="{{ url_for('manage_subscriptions') }}" class="btn">Beheer abonnementen</a>
+    <a href="{{ url_for('categorieen') }}" class="btn">Beheer categorieën</a>
+    <a href="{{ url_for('manage_tags') }}" class="btn">Beheer tags</a>
+    <a href="{{ url_for('manage_doelgroepen') }}" class="btn">Beheer doelgroepen</a>
+    <a href="{{ url_for('view_logs') }}" class="btn">Bekijk logs</a>
+    <a href="{{ url_for('berichten') }}" class="btn">Bekijk berichten</a>
+    <a href="{{ url_for('admin_train_chatbot') }}" class="btn">Chatbot trainen</a>
+    <a href="{{ url_for('admin_clicks') }}" class="btn">Klikrapport</a>
+    <a href="{{ url_for('blog_toevoegen') }}" class="btn">Nieuw blogbericht</a>
+    <a href="{{ url_for('admin_blog_overzicht') }}" class="btn">Beheer blogs</a>
   </div>
 
-  <!-- Fase containers komen hier dynamisch in -->
-  <div id="planning-root" class="planning-root" aria-live="polite"></div>
-</section>
+  <!-- Stats (werkt als stats in je context zit) -->
+  {% if stats %}
+  <section class="dashboard-stats" aria-label="Dashboard statistieken">
+    <div class="stats-grid">
+      <div class="stat-card">Totaal <b>{{ stats.total }}</b></div>
+      <div class="stat-card">Published <b>{{ stats.published }}</b></div>
+      <div class="stat-card">Draft <b>{{ stats.draft }}</b></div>
+      <div class="stat-card">Archived <b>{{ stats.archived }}</b></div>
+      <div class="stat-card">Zonder bedrijf <b>{{ stats.zonder_bedrijf }}</b></div>
+      <div class="stat-card">SEO mist <b>{{ stats.seo_mist }}</b></div>
+      <div class="stat-card">Nooit gecheckt <b>{{ stats.nooit_gecheckt }}</b></div>
+    </div>
+  </section>
+  {% endif %}
 
+  <!-- Planning -->
+  <section class="dashboard-taken" id="abbohub-planning">
+    <h2>📅 Groei- & Inkomstenplanning (6 maanden)</h2>
 
-        <h2>Alle Abonnementen per Categorie</h2>
+    <div class="planning-actions">
+      <button id="expand-all" type="button">Alles uitklappen</button>
+      <button id="collapse-all" type="button">Alles inklappen</button>
+      <button id="reset-checks" type="button">Alle vinkjes wissen</button>
+    </div>
 
-{% for categorie in categorieen %}
-  <div class="category-section">
-    <h3>{{ categorie.naam }}</h3>
+    <div id="planning-root" class="planning-root" aria-live="polite"></div>
+  </section>
 
-    <div class="sortableAbonnementen" data-categorie-id="{{ categorie.id }}">
-      {% for abonnement in abonnementen %}
-        {% if abonnement.subcategorie and abonnement.subcategorie.categorie.id == categorie.id %}
+  <!-- Abonnementen per categorie -->
+  <h2>Alle abonnementen per categorie</h2>
+
+  {% for categorie in categorieen %}
+    <div class="category-section">
+      <h3>{{ categorie.naam }}</h3>
+
+      <div class="sortableAbonnementen" data-categorie-id="{{ categorie.id }}">
+        {% for abonnement in abonnementen_per_categorie[categorie.id] %}
           <div class="abonnement drag-handle" data-id="{{ abonnement.id }}">
-            <!-- Naam / info van het abonnement -->
             <strong>{{ abonnement.naam }}</strong><br>
-            Subcategorie: {{ abonnement.subcategorie.naam }}
-            
-            <!-- Knopje om kleurenkeuze te openen -->
-            <button class="color-picker-toggle" aria-label="Kleur kiezen">🎨</button>
-            
-            <!-- Verborgen kleurkeuze-menu (wordt getoond als je op 🎨 klikt) -->
+
+            <small>
+              Subcategorie: {{ abonnement.subcategorie.naam if abonnement.subcategorie else '-' }}
+              • Status: {{ abonnement.status or 'draft' }}
+            </small>
+
+            <!-- 🎨 knop -->
+            <button class="color-picker-toggle" type="button" aria-label="Kleur kiezen">🎨</button>
+
+            <!-- menu -->
             <div class="color-picker-menu" aria-hidden="true">
-              <span class="color-option" data-color="white"  title="Wit"></span>
-              <span class="color-option" data-color="green"  title="Groen"></span>
+              <span class="color-option" data-color="white" title="Wit"></span>
+              <span class="color-option" data-color="green" title="Groen"></span>
               <span class="color-option" data-color="orange" title="Oranje"></span>
-              <span class="color-option" data-color="red"    title="Rood"></span>
+              <span class="color-option" data-color="red" title="Rood"></span>
+            </div>
+
+            <!-- Snelle actie -->
+            <div style="margin-top:8px;">
+              <a class="bewerken-link" href="{{ url_for('edit_subscription', id=abonnement.id) }}">
+                Bewerken →
+              </a>
             </div>
           </div>
-        {% endif %}
-      {% endfor %}
+        {% endfor %}
+      </div>
     </div>
-  </div>
-{% endfor %}
+  {% endfor %}
+</div>
 
 
     <!-- Sortable.js functionaliteit -->

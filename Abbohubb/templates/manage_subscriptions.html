@@ -6,166 +6,98 @@
   <title>Beheer Abonnementen</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f9f9f9;
-      color: #333;
-    }
-    .container {
-      max-width: 1200px;
-      margin: 40px auto;
-      padding: 20px;
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    h2 {
-      text-align: center;
-      color: #4CAF50;
-      margin-bottom: 20px;
-    }
-    form {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      justify-content: center;
-      margin-bottom: 20px;
-    }
-    form input,
-    form select,
-    form button {
-      padding: 10px;
-      font-size: 0.95rem;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-    form button {
-      background-color: #4CAF50;
-      color: #fff;
-      border: none;
-      cursor: pointer;
-    }
-    form button:hover {
-      background-color: #45a049;
-    }
-    .table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    .table th, .table td {
-      padding: 12px;
-      text-align: left;
-      border: 1px solid #ddd;
-    }
-    .table th {
-      background-color: #f4f4f9;
-      font-weight: bold;
-    }
-    .table tr:nth-child(even) {
-      background-color: #f9f9f9;
-    }
-    .actions {
-      display: flex;
-      gap: 10px;
-    }
-    .actions a, .actions button {
-      padding: 6px 12px;
-      font-size: 0.85rem;
-      border-radius: 4px;
-      text-decoration: none;
-      text-align: center;
-    }
-    .actions .edit {
-      background-color: #007BFF;
-      color: #fff;
-    }
-    .actions .edit:hover {
-      background-color: #0056b3;
-    }
-    .actions .delete {
-      background-color: #dc3545;
-      color: #fff;
-    }
-    .actions .delete:hover {
-      background-color: #bd2130;
-    }
+    body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f9f9f9; color:#333; }
+    .container { max-width:1200px; margin:40px auto; padding:20px; background:#fff; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
+    h1 { text-align:center; color:#4CAF50; margin-bottom:20px; }
+
+    nav ul { list-style:none; display:flex; gap:12px; padding:0; margin:0 0 20px 0; justify-content:center; }
+    nav a { text-decoration:none; }
+
+    form { display:flex; flex-wrap:wrap; gap:15px; justify-content:center; margin-bottom:20px; }
+    form input, form select, form button, form a { padding:10px; font-size:0.95rem; border:1px solid #ccc; border-radius:5px; }
+    form button { background:#4CAF50; color:#fff; border:none; cursor:pointer; }
+    form button:hover { background:#45a049; }
+    form a { display:inline-block; text-decoration:none; background:#eee; color:#333; }
+
+    .table { width:100%; border-collapse:collapse; margin-top:20px; }
+    .table th, .table td { padding:12px; text-align:left; border:1px solid #ddd; vertical-align:top; }
+    .table th { background:#f4f4f9; font-weight:bold; }
+    .table tr:nth-child(even) { background:#f9f9f9; }
+
+    .actions { display:flex; gap:10px; align-items:center; }
+    .actions a, .actions button { padding:6px 12px; font-size:0.85rem; border-radius:4px; text-decoration:none; border:none; cursor:pointer; }
+    .actions .edit { background:#007BFF; color:#fff; }
+    .actions .edit:hover { background:#0056b3; }
+    .actions .delete { background:#dc3545; color:#fff; }
+    .actions .delete:hover { background:#bd2130; }
   </style>
 </head>
+
 <body>
-  <div class="container">
-    <h2>Beheer Abonnementen</h2>
-
-  <!-- Navigatiebalk -->
-  <nav aria-label="Hoofdnavigatie">
-    <ul>
-      <li><a href="{{ url_for('index') }}">Home</a></li>
-      <li><a href="{{ url_for('vergelijk') }}">Vergelijk</a></li>
-      {% if current_user.is_authenticated %}
-          <li><a href="{{ url_for('logout') }}">Uitloggen</a></li>
-      {% else %}
-          <li><a href="{{ url_for('login') }}">Inloggen</a></li>
-      {% endif %}
-    </ul>
-  </nav>
-
   <div class="container">
     <h1>Beheer Abonnementen</h1>
 
-    <!-- Flash-berichten (optioneel) -->
+    <!-- Navigatie -->
+    <nav aria-label="Hoofdnavigatie">
+      <ul>
+        <li><a href="{{ url_for('index') }}">Home</a></li>
+        <li><a href="{{ url_for('vergelijk') }}">Vergelijk</a></li>
+        {% if current_user.is_authenticated %}
+          <li><a href="{{ url_for('logout') }}">Uitloggen</a></li>
+        {% else %}
+          <li><a href="{{ url_for('login') }}">Inloggen</a></li>
+        {% endif %}
+      </ul>
+    </nav>
+
+    <!-- Flash-berichten -->
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         <div class="flash-container">
           {% for category, message in messages %}
-            <div class="flash-message flash-{{ category }}">
-              {{ message }}
-            </div>
+            <div class="flash-message flash-{{ category }}">{{ message }}</div>
           {% endfor %}
         </div>
       {% endif %}
     {% endwith %}
 
-<!-- Zoek- en filterformulier -->
-<form method="GET" action="{{ url_for('manage_subscriptions') }}" class="filter-form">
-  <input 
-    type="text" 
-    name="zoekterm" 
-    placeholder="Zoek op naam..." 
-    value="{{ zoekterm or '' }}" 
-  >
+    <!-- Zoek- en filterformulier -->
+    <form method="GET" action="{{ url_for('manage_subscriptions') }}" class="filter-form">
+      <input type="text" name="zoekterm" placeholder="Zoek op naam..." value="{{ zoekterm or '' }}">
 
-  <!-- Categorie filter -->
-  <select name="categorie_id">
-    <option value="">Filter op categorie</option>
-    {% for categorie in categorieen %}
-      <option value="{{ categorie.id }}" 
-        {% if categorie.id == geselecteerde_categorie|int %}selected{% endif %}>
-        {{ categorie.naam }}
-      </option>
-    {% endfor %}
-  </select>
+      <select name="categorie_id">
+        <option value="">Filter op categorie</option>
+        {% for categorie in categorieen %}
+          <option value="{{ categorie.id }}" {% if categorie.id == (geselecteerde_categorie|int) %}selected{% endif %}>
+            {{ categorie.naam }}
+          </option>
+        {% endfor %}
+      </select>
 
-  <!-- Subcategorie filter (optioneel) -->
-  {% if subcategorieen %}
-  <select name="subcategorie_id">
-    <option value="">Filter op subcategorie</option>
-    {% for sub in subcategorieen %}
-      <option value="{{ sub.id }}" 
-        {% if sub.id == geselecteerde_subcategorie|int %}selected{% endif %}>
-        {{ sub.naam }}
-      </option>
-    {% endfor %}
-  </select>
-  {% endif %}
+      {% if subcategorieen %}
+        <select name="subcategorie_id">
+          <option value="">Filter op subcategorie</option>
+          {% for sub in subcategorieen %}
+            <option value="{{ sub.id }}" {% if sub.id == (geselecteerde_subcategorie|int) %}selected{% endif %}>
+              {{ sub.naam }}
+            </option>
+          {% endfor %}
+        </select>
+      {% endif %}
 
-  <button type="submit">Toepassen</button>
-  <a href="{{ url_for('manage_subscriptions') }}">Reset</a>
-</form>
+      <select name="status">
+  <option value="">Alle statussen</option>
+  <option value="draft" {% if geselecteerde_status=='draft' %}selected{% endif %}>Draft</option>
+  <option value="published" {% if geselecteerde_status=='published' %}selected{% endif %}>Published</option>
+  <option value="archived" {% if geselecteerde_status=='archived' %}selected{% endif %}>Archived</option>
+</select>
 
 
-    <!-- Tabel met abonnementen -->
+      <button type="submit">Toepassen</button>
+      <a href="{{ url_for('manage_subscriptions') }}">Reset</a>
+    </form>
+
+    <!-- Tabel -->
     <table class="table">
       <thead>
         <tr>
@@ -173,30 +105,35 @@
           <th>Beschrijving</th>
           <th>Categorie</th>
           <th>Subcategorie</th>
+          <th>Status</th>
           <th>Acties</th>
         </tr>
       </thead>
       <tbody>
         {% for abonnement in abonnementen %}
-        <tr>
-          <td>{{ abonnement.naam }}</td>
-          <td>{{ abonnement.beschrijving or 'Geen beschrijving' }}</td>
-          <td>{{ abonnement.subcategorie.categorie.naam if abonnement.subcategorie and abonnement.subcategorie.categorie else 'Geen categorie' }}</td>
-          <td>{{ abonnement.subcategorie.naam if abonnement.subcategorie else 'Geen subcategorie' }}</td>
-          <td class="actions">
-            <a href="{{ url_for('edit_subscription', id=abonnement.id) }}" class="edit">Bewerk</a>
-          <form action="{{ url_for('verwijder', id=abonnement.id) }}" method="POST" style="display:inline;">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" class="delete">Verwijder</button>
-          </form>
-          </td>
-        </tr>
+          <tr>
+            <td>{{ abonnement.naam }}</td>
+            <td>{{ abonnement.beschrijving or 'Geen beschrijving' }}</td>
+            <td>{{ abonnement.subcategorie.categorie.naam if abonnement.subcategorie and abonnement.subcategorie.categorie else 'Geen categorie' }}</td>
+            <td>{{ abonnement.subcategorie.naam if abonnement.subcategorie else 'Geen subcategorie' }}</td>
+            <td>{{ abonnement.status or 'draft' }}</td>
+            <td class="actions">
+              <a href="{{ url_for('edit_subscription', id=abonnement.id) }}" class="edit">Bewerk</a>
+
+              <form action="{{ url_for('verwijder', id=abonnement.id) }}" method="POST" style="display:inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="delete" onclick="return confirm('Weet je zeker dat je dit abonnement wilt verwijderen?');">
+                  Verwijder
+                </button>
+              </form>
+            </td>
+          </tr>
         {% endfor %}
       </tbody>
     </table>
 
     {% if abonnementen|length == 0 %}
-    <p style="text-align: center; color: #777;">Geen abonnementen gevonden.</p>
+      <p style="text-align:center; color:#777;">Geen abonnementen gevonden.</p>
     {% endif %}
   </div>
 </body>

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  {% set current_year = (now().year if now is defined else 2025) %}
+  {% set current_year = (now().year if now is defined else 2026) %}
   {% set count = abonnementen|length if abonnementen is defined else 0 %}
   {% set og_image = (categorie.hero_image_url if categorie is defined and categorie and categorie.hero_image_url else url_for('static', filename='logo.png', _external=True)) %}
   {% set base = request.host_url.rstrip('/') %}
@@ -302,7 +302,7 @@
   <!-- Footer -->
   <footer>
   <p>Sommige links op AbboHub zijn affiliate links. Als je via zo’n link bestelt, ontvangen wij mogelijk een commissie – zonder extra kosten voor jou.</p>
-  <p>&copy; 2025 AbboHub. Alle rechten voorbehouden.</p>
+  <p>&copy; 2026 AbboHub. Alle rechten voorbehouden.</p>
     <nav class="footer-nav" aria-label="Footer">
       <ul>
         <li><a href="{{ url_for('privacy_cookieverklaring') }}">Privacy en Cookieverklaring</a></li>

@@ -213,12 +213,63 @@
 
       <!-- Contractduur -->
       <label for="contractduur">Contractduur:</label>
-      <input 
-        type="text" 
-        name="contractduur" 
-        id="contractduur"
-        placeholder="Bijv. '12 maanden', 'maandelijks opzegbaar'"
-      >
+<input
+  type="text"
+  name="contractduur"
+  id="contractduur"
+  placeholder="Bijv. '12 maanden', 'maandelijks opzegbaar'">
+        <h2>Beschikbaarheid & levering (basis)</h2>
+
+<div class="form-group">
+  <label for="countries">Beschikbaar in landen</label>
+  <select id="countries" name="countries" multiple>
+    <option value="NL">Nederland</option>
+    <option value="BE">België</option>
+  </select>
+  <small>Meerdere selectie mogelijk.</small>
+</div>
+
+<div class="form-group">
+  <label>Leverdagen</label><br>
+  <label><input type="checkbox" name="delivery_days" value="1"> Ma</label>
+  <label><input type="checkbox" name="delivery_days" value="2"> Di</label>
+  <label><input type="checkbox" name="delivery_days" value="3"> Wo</label>
+  <label><input type="checkbox" name="delivery_days" value="4"> Do</label>
+  <label><input type="checkbox" name="delivery_days" value="5"> Vr</label>
+  <label><input type="checkbox" name="delivery_days" value="6"> Za</label>
+  <label><input type="checkbox" name="delivery_days" value="7"> Zo</label>
+</div>
+
+<div class="form-group">
+  <label for="cutoff_time">Cut-off tijd (HH:MM)</label>
+  <input type="time" id="cutoff_time" name="cutoff_time" value="{{ request.form.get('cutoff_time','') }}">
+</div>
+
+<div class="form-group">
+  <label for="lead_time_days">Lead time (dagen)</label>
+  <input type="number" id="lead_time_days" name="lead_time_days" value="{{ request.form.get('lead_time_days','') }}">
+</div>
+
+<div class="form-group">
+  <label>
+    <input type="checkbox" name="pause_possible" value="1">
+    Pauzeren mogelijk
+  </label>
+</div>
+
+<div class="form-group">
+  <label for="pause_max_weeks">Max. pauze (weken)</label>
+  <input type="number" id="pause_max_weeks" name="pause_max_weeks" value="{{ request.form.get('pause_max_weeks','') }}">
+</div>
+
+<div class="form-group">
+  <label for="delivery_frequency">Bezorgfrequentie (per week)</label>
+  <select id="delivery_frequency" name="delivery_frequency" multiple>
+    <option value="1">1x per week</option>
+    <option value="2">2x per week</option>
+    <option value="3">3x per week</option>
+  </select>
+</div>
 
       <!-- Aanbiedingen -->
       <label for="aanbiedingen">Aanbiedingen:</label>
@@ -251,6 +302,98 @@
 <label for="prijs_vanaf">Prijs Vanaf (€):</label>
 <input type="number" name="prijs_vanaf" id="prijs_vanaf" step="0.01" placeholder="Bijv. 10.00">
 
+<h2>Plan / prijs & voorwaarden (filterbaar)</h2>
+
+<div class="form-group">
+  <label for="plan_name">Plannaam</label>
+  <input type="text" id="plan_name" name="plan_name" placeholder="Standaard, Basic, Premium..." value="{{ request.form.get('plan_name','Standaard') }}">
+</div>
+
+<div class="form-group">
+  <label for="plan_price">Prijs (in euro) <span class="required">*</span></label>
+  <input type="number" step="0.01" id="plan_price" name="plan_price" placeholder="Bijv. 19.99" required value="{{ request.form.get('plan_price','') }}">
+  <small>Dit wordt opgeslagen als cents (integer) voor betrouwbare filtering.</small>
+</div>
+
+<div class="form-group">
+  <label for="billing_period">Prijsperiode <span class="required">*</span></label>
+  <select id="billing_period" name="billing_period" required>
+    <option value="month" selected>Per maand</option>
+    <option value="year">Per jaar</option>
+    <option value="week">Per week</option>
+    <option value="portion">Per portie</option>
+    <option value="one_time">Eenmalig</option>
+  </select>
+</div>
+
+<div class="form-group">
+  <label>
+    <input type="checkbox" name="is_from_price" value="1" checked>
+    Dit is een “vanaf prijs”
+  </label>
+</div>
+
+<div class="form-group">
+  <label>
+    <input type="checkbox" name="vat_included" value="1" checked>
+    BTW inbegrepen
+  </label>
+</div>
+
+<div class="form-group">
+  <label for="setup_fee">Setup/activatiekosten (euro)</label>
+  <input type="number" step="0.01" id="setup_fee" name="setup_fee" placeholder="Bijv. 9.99" value="{{ request.form.get('setup_fee','') }}">
+</div>
+
+<div class="form-group">
+  <label for="delivery_fee">Bezorgkosten (euro)</label>
+  <input type="number" step="0.01" id="delivery_fee" name="delivery_fee" placeholder="Bijv. 4.95" value="{{ request.form.get('delivery_fee','') }}">
+</div>
+
+<div class="form-group">
+  <label for="min_term_months">Minimum looptijd (maanden)</label>
+  <input type="number" id="min_term_months" name="min_term_months" placeholder="Bijv. 12" value="{{ request.form.get('min_term_months','') }}">
+</div>
+
+<div class="form-group">
+  <label for="cancellation_notice_days">Opzegtermijn (dagen)</label>
+  <input type="number" id="cancellation_notice_days" name="cancellation_notice_days" placeholder="Bijv. 30" value="{{ request.form.get('cancellation_notice_days','') }}">
+</div>
+
+<div class="form-group">
+  <label for="trial_days">Proefperiode (dagen)</label>
+  <input type="number" id="trial_days" name="trial_days" placeholder="Bijv. 14" value="{{ request.form.get('trial_days','') }}">
+</div>
+
+<h3>Actie / promotie (optioneel)</h3>
+
+<div class="form-group">
+  <label for="promo_code">Promocode</label>
+  <input type="text" id="promo_code" name="promo_code" value="{{ request.form.get('promo_code','') }}">
+</div>
+
+<div class="form-group">
+  <label for="promo_end_date">Actie einddatum</label>
+  <input type="date" id="promo_end_date" name="promo_end_date" value="{{ request.form.get('promo_end_date','') }}">
+</div>
+
+<div class="form-group">
+  <label for="promo_terms">Actievoorwaarden</label>
+  <textarea id="promo_terms" name="promo_terms" placeholder="Bijv. alleen voor nieuwe klanten...">{{ request.form.get('promo_terms','') }}</textarea>
+</div>
+
+<div class="form-group">
+  <label for="renewal_price">Prijs na actie (euro)</label>
+  <input type="number" step="0.01" id="renewal_price" name="renewal_price" placeholder="Bijv. 24.99" value="{{ request.form.get('renewal_price','') }}">
+</div>
+
+<h3>Prijs bron (optioneel, maar handig)</h3>
+
+<div class="form-group">
+  <label for="price_source_url">Bron URL (waar je prijs hebt gecheckt)</label>
+  <input type="url" id="price_source_url" name="price_source_url" placeholder="https://..." value="{{ request.form.get('price_source_url','') }}">
+</div>
+
 <label for="prijs_tot">Prijs Tot (€):</label>
 <input type="number" name="prijs_tot" id="prijs_tot" step="0.01" placeholder="Bijv. 50.00">
 
@@ -265,17 +408,6 @@
 
 <label for="past_dit_bij_jou">Past dit abonnement bij jou?</label>
 <textarea name="past_dit_bij_jou" id="past_dit_bij_jou"></textarea>
-
-
-      <!-- Beoordelingen -->
-      <label for="beoordelingen">Beoordelingen:</label>
-      <input 
-        type="number" 
-        step="0.1" 
-        name="beoordelingen" 
-        id="beoordelingen"
-        placeholder="Bijv. '4.5'"
-      >
 
 <!-- Logo uploaden -->
 <label for="logo">Logo uploaden (optioneel):</label>
@@ -371,6 +503,48 @@
           <option value="{{ tag.id }}">{{ tag.naam }}</option>
           {% endfor %}
       </select>
+
+      <h2>SEO & publicatie</h2>
+
+<div class="form-group">
+  <label for="status">Status</label>
+  <select id="status" name="status">
+    <option value="draft" selected>Draft</option>
+    <option value="published">Published</option>
+    <option value="archived">Archived</option>
+  </select>
+</div>
+
+<div class="form-group">
+  <label for="seo_title">SEO title</label>
+  <input type="text" id="seo_title" name="seo_title" maxlength="255" value="{{ request.form.get('seo_title','') }}">
+</div>
+
+<div class="form-group">
+  <label for="meta_description">Meta description</label>
+  <textarea id="meta_description" name="meta_description" maxlength="255">{{ request.form.get('meta_description','') }}</textarea>
+</div>
+
+<div class="form-group">
+  <label for="canonical_url">Canonical URL</label>
+  <input type="url" id="canonical_url" name="canonical_url" value="{{ request.form.get('canonical_url','') }}">
+</div>
+
+<div class="form-group">
+  <label for="og_image">OG image URL</label>
+  <input type="url" id="og_image" name="og_image" value="{{ request.form.get('og_image','') }}">
+</div>
+
+<div class="form-group">
+  <label for="schema_type">Schema type</label>
+  <input type="text" id="schema_type" name="schema_type" placeholder="Product, Service, Article..." value="{{ request.form.get('schema_type','') }}">
+</div>
+
+<div class="form-group">
+  <label for="faq_json">FAQ JSON (optioneel)</label>
+  <textarea id="faq_json" name="faq_json" placeholder='[{"q":"...","a":"..."}]'>{{ request.form.get('faq_json','') }}</textarea>
+</div>
+
 
       <!-- Submit-knop -->
       <button type="submit">Toevoegen</button>

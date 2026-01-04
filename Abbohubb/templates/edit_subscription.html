@@ -1,467 +1,442 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Abonnement Bewerken | AbboHub</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Abonnement Bewerken | AbboHub</title>
 
-    <!-- Stijlblad koppelen -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 
-    <style>
-        /* Algemene instellingen */
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Arial', sans-serif;
-            background-color: #f9f9f9;
-            color: #333;
-        }
+  <style>
+    body { margin:0; padding:0; font-family: Arial, sans-serif; background:#f9f9f9; color:#333; }
+    .container { max-width: 900px; margin: 50px auto; background:#fff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,.1); }
+    h1 { text-align:center; color:#4CAF50; font-size:1.8rem; margin-bottom: 20px; }
+    h2 { margin-top: 28px; }
+    label { display:block; margin-top: 15px; font-weight:bold; color:#555; }
+    input, select, textarea { width:100%; margin-top:5px; padding:10px; border:1px solid #ccc; border-radius:5px; font-size:1rem; box-sizing:border-box; }
+    textarea { resize: vertical; min-height: 80px; }
+    button { display:block; width:100%; background:#4CAF50; color:#fff; font-weight:bold; padding:12px; border:none; border-radius:5px; cursor:pointer; font-size:1rem; margin-top: 20px; }
+    button:hover { background:#45a049; }
+    .form-group { margin-bottom: 10px; }
+    .logo-preview { margin-top: 10px; }
+    img { max-width: 150px; border:1px solid #ddd; border-radius:5px; padding:5px; background:#f9f9f9; }
 
-        .container {
-            max-width: 800px;
-            margin: 50px auto;
-            background: #fff;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
+    .flash-message { padding:10px; border-radius:5px; margin-bottom:15px; }
+    .flash-success { background:#d4edda; color:#155724; }
+    .flash-danger { background:#f8d7da; color:#721c24; }
 
-        h1 {
-            text-align: center;
-            color: #4CAF50;
-            font-size: 1.8rem;
-            margin-bottom: 20px;
-        }
+    .product-photos { display:flex; flex-wrap:wrap; gap:12px; }
+    .product-photos img { max-width:150px; height:auto; border-radius:6px; border:1px solid #ccc; transition: transform .2s ease, box-shadow .2s ease; }
+    .product-photos img:hover { transform: scale(1.05); box-shadow: 0 4px 10px rgba(0,0,0,.2); }
+    .product-photos div { text-align:center; }
+    .product-photos label { display:block; margin-top:6px; font-size:.85rem; font-weight: normal; color:#333; }
+    .product-photos input[type="checkbox"] { transform: scale(1.2); margin-right:4px; cursor:pointer; }
 
-        label {
-            display: block;
-            margin-top: 15px;
-            font-weight: bold;
-            color: #555;
-        }
-
-        input, select, textarea {
-            width: 100%;
-            margin-top: 5px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 1rem;
-            box-sizing: border-box;
-        }
-
-        textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        button {
-            display: block;
-            width: 100%;
-            background-color: #4CAF50;
-            color: white;
-            font-weight: bold;
-            padding: 12px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1rem;
-            margin-top: 20px;
-        }
-
-        button:hover {
-            background-color: #45a049;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .logo-preview {
-            margin-top: 10px;
-        }
-
-        img {
-            max-width: 150px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 5px;
-            background-color: #f9f9f9;
-        }
-
-        /* Flash-meldingen */
-        .flash-message {
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-        }
-
-        .flash-success {
-            background-color: #d4edda;
-            color: #155724;
-        }
-
-        .flash-danger {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-
-        /* Simpele styling voor de toolbar en de “B”-knop */
-    .toolbar {
-      margin-bottom: 0.25rem;
-    }
-    .toolbar button {
-      font-weight: bold;
-      padding: 0.2rem 0.5rem;
-      cursor: pointer;
-      border: 1px solid #888;
-      background-color: #f0f0f0;
-      border-radius: 3px;
-    }
-    .toolbar button:hover {
-      background-color: #e0e0e0;
-    }
-    /* Optioneel: maak de textarea wat hoger zodat je voldoende tekst kunt invoeren */
-    textarea {
-      width: 100%;
-      min-height: 6em;
-      font-family: Arial, sans-serif;
-      font-size: 14px;
-      line-height: 1.4;
-      margin-bottom: 1rem;
-    }
-    /* Simpele styling van input/label/secties mocht je dat willen uitbreiden */
-    .container {
-      max-width: 800px;
-      margin: 2rem auto;
-      font-family: Arial, sans-serif;
-    }
-    label {
-      display: block;
-      margin-top: 1rem;
-      font-weight: bold;
-    }
-
-    /* Galerij met productfoto's */
-.product-photos {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.product-photos img {
-  max-width: 150px;
-  height: auto;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-}
-
-.product-photos img:hover {
-  transform: scale(1.05);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-}
-
-/* Container voor elke foto + checkbox */
-.product-photos div {
-  position: relative;
-  text-align: center;
-}
-
-.product-photos label {
-  display: block;
-  margin-top: 6px;
-  font-size: 0.85rem;
-  color: #333;
-}
-
-/* Checkbox mooi maken */
-.product-photos input[type="checkbox"] {
-  transform: scale(1.2);
-  margin-right: 4px;
-  cursor: pointer;
-}
-
-
-        /* Responsief ontwerp */
-        @media (max-width: 600px) {
-            .container {
-                padding: 20px;
-            }
-            h1 {
-                font-size: 1.5rem;
-            }
-            button {
-                font-size: 0.9rem;
-            }
-        }
-    </style>
+    .two-col { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+    @media (max-width: 600px) { .container { padding:20px; } h1 { font-size:1.5rem; } button { font-size:.9rem; } }
+  </style>
 </head>
+
 <body>
-    <div class="container">
-        <h1>Abonnement Bewerken</h1>
-        
-        <!-- Flash-meldingen -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div class="flash-container">
-                    {% for category, message in messages %}
-                        <div class="flash-message flash-{{ category }}">{{ message }}</div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
+<div class="container">
+  <h1>Abonnement Bewerken</h1>
 
-  <!-- Het formulier -->
-  <form method="POST" enctype="multipart/form-data">
-  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-<H2>bedrijf informatie</H2>
-      <!-- Bedrijf  -->
-      <label for="bedrijf_id">aanbieder/ Bedrijf</label>
-      <select id="bedrijf_id" name="bedrijf_id" required>
-        <option value="" disabled>Selecteer een bedrijf</option>
-        {% for bedrijf in bedrijven %}
-          <option value="{{ bedrijf.id }}"
-            {% if abonnement.bedrijf_id == bedrijf.id %}selected{% endif %}>
-            {{ bedrijf.naam }}
-          </option>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-container">
+        {% for category, message in messages %}
+          <div class="flash-message flash-{{ category }}">{{ message }}</div>
         {% endfor %}
-      </select>
-  
-  <div class="form-group">
-    <label for="contact_email">Contact e-mail</label>
-    <input
-      type="email"
-      id="contact_email"
-      name="contact_email"
-      placeholder="naam@bedrijf.nl"
-      value="{{ (bedrijf.contact_email if bedrijf else request.form.get('contact_email','')) }}"
-    >
-  </div>
-
-  <div class="form-group">
-    <label for="telefoon">Telefoonnummer</label>
-    <input
-      type="tel"
-      id="telefoon"
-      name="telefoon"
-      placeholder="+31 20 123 4567"
-      value="{{ (bedrijf.telefoon if bedrijf else request.form.get('telefoon','')) }}"
-    >
-  </div>
-
-  <div class="form-group">
-    <label for="kvk_nummer">KvK-nummer</label>
-    <input
-      type="text"
-      id="kvk_nummer"
-      name="kvk_nummer"
-      placeholder="12345678"
-      value="{{ (bedrijf.kvk_nummer if bedrijf else request.form.get('kvk_nummer','')) }}"
-    >
-  </div>
-  <H2>Abbonement informatie</H2>
-  <!-- Naam -->
-  <label for="naam">Naam</label>
-  <input type="text" id="naam" name="naam" value="{{ abonnement.naam }}" required>
-
-  <!-- Beschrijving -->
-  <label for="beschrijving">Beschrijving</label>
-  <textarea id="beschrijving" name="beschrijving">{{ abonnement.beschrijving }}</textarea>
-
-  <!-- Prijs -->
-  <label for="prijs">Prijs</label>
-  <input type="text" id="prijs" name="prijs" value="{{ abonnement.prijs }}">
-
-  <!-- Contractduur -->
-  <label for="contractduur">Contractduur</label>
-  <input type="text" id="contractduur" name="contractduur" value="{{ abonnement.contractduur }}">
-
-  <!-- Filter Optie -->
-  <label for="filter_optie">Filter Optie</label>
-  <input type="text" id="filter_optie" name="filter_optie" value="{{ abonnement.filter_optie }}">
-
-  <!-- Categorie -->
-  <div class="form-group">
-    <label for="categorie_id">Categorie</label>
-    <select id="categorie_id" name="categorie_id" required>
-      <option value="">Selecteer een categorie</option>
-      {% for categorie in categorieen %}
-      <option value="{{ categorie.id }}"
-              {% if abonnement.subcategorie and abonnement.subcategorie.categorie_id == categorie.id %}selected{% endif %}>
-        {{ categorie.naam }}
-      </option>
-      {% endfor %}
-    </select>
-  </div>
-
-  <!-- Subcategorie -->
-  <div class="form-group">
-    <label for="subcategorie_id">Subcategorie</label>
-    <select id="subcategorie_id" name="subcategorie_id" required>
-      <option value="">Selecteer een subcategorie</option>
-      {% for subcategorie in subcategorieen %}
-      <option value="{{ subcategorie.id }}"
-              {% if abonnement.subcategorie_id == subcategorie.id %}selected{% endif %}>
-        {{ subcategorie.naam }}
-      </option>
-      {% endfor %}
-    </select>
-  </div>
-
-  <!-- Website URL -->
-  <div class="form-group">
-    <label for="url">Website URL</label>
-    <input type="url" id="url" name="url" value="{{ abonnement.url }}">
-  </div>
-
-        <!--affiliate url-->
-      <label for="affiliate_url">Affiliate URL (optioneel)</label>
-      <input 
-        type="url" 
-        name="affiliate_url" 
-        id="affiliate_url" 
-        placeholder="https://jouw-affiliate-link.example" 
-        value="{{ abonnement.affiliate_url if abonnement else '' }}">
-<small>Gebruik de trackinglink van je netwerk (bijv. Daisycon, TradeTracker, Awin). Voeg <code>rel="sponsored nofollow"</code> toe aan de CTA.</small>
-
-
-<!-- Logo upload -->
-<div class="form-group">
-  <label for="logo">Logo (max 200×200)</label>
-  <input type="file" id="logo" name="logo" accept="image/*">
-  {% if abonnement.logo %}
-  <div class="logo-preview">
-    <p>Huidig logo:</p>
-    <img
-      src="{{ url_for('static', filename='uploads/' + abonnement.logo) }}"
-      width="200" height="200"
-      loading="lazy"
-      alt="Logo van {{ abonnement.naam }}"
-      class="logo-preview-img"
-    >
-  </div>
-  {% endif %}
-</div>
-
-<!-- Nieuw veld: YouTube-video -->
-<div class="form-group">
-  <label for="youtube_url">YouTube-video (URL)</label>
-  <input 
-    type="url" 
-    id="youtube_url" 
-    name="youtube_url"
-    placeholder="Bijv. https://www.youtube.com/watch?v=abcd1234"
-    value="{{ abonnement.youtube_url or '' }}">
-</div>
-
-<!-- Nieuw veld: Nieuwe productfoto's uploaden -->
-<div class="form-group">
-  <label for="product_fotos">Nieuwe productfoto's toevoegen (max 10)</label>
-  <input 
-    type="file" 
-    id="product_fotos" 
-    name="product_fotos" 
-    multiple 
-    accept="image/*">
-  <small>Je kunt meerdere bestanden selecteren met Ctrl/Cmd + klik. Maximaal 10 foto's.</small>
-</div>
-
-<!-- Bestaande productfoto's tonen en kunnen verwijderen -->
-{% if abonnement.fotos %}
-<div class="form-group">
-  <p>Huidige productfoto's:</p>
-  <div class="product-photos" style="display:flex; flex-wrap:wrap; gap:10px;">
-    {% for foto in abonnement.fotos %}
-      <div style="position:relative; text-align:center;">
-        <img 
-          src="{{ url_for('static', filename='uploads/' ~ foto.bestandsnaam) }}"
-          alt="Foto van {{ abonnement.naam }}"
-          style="max-width:150px; height:auto; border-radius:5px; border:1px solid #ccc;">
-        <label style="display:block; margin-top:5px;">
-          <input type="checkbox" name="delete_fotos" value="{{ foto.id }}">
-          Verwijderen
-        </label>
       </div>
-    {% endfor %}
-  </div>
+    {% endif %}
+  {% endwith %}
+
+  <form method="POST" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <!-- ===================================================== -->
+    <!-- Bedrijf -->
+    <!-- ===================================================== -->
+<h2>Bedrijfsinformatie</h2>
+
+<label for="bedrijf_id">Aanbieder / Bedrijf</label>
+<select id="bedrijf_id" name="bedrijf_id">
+  <option value="" {% if not abonnement.bedrijf_id %}selected{% endif %}>
+    — (nog niet ingesteld) —
+  </option>
+
+  {% for b in bedrijven %}
+    <option value="{{ b.id }}" {% if abonnement.bedrijf_id == b.id %}selected{% endif %}>
+      {{ b.naam }}
+    </option>
+  {% endfor %}
+
+  <option value="__new__">+ Nieuw bedrijf toevoegen…</option>
+</select>
+
+<div id="newBedrijfFields" style="display:none; margin-top:10px;">
+  <label for="bedrijf_naam">Nieuw bedrijf: naam</label>
+  <input type="text" id="bedrijf_naam" name="bedrijf_naam" maxlength="150" placeholder="Bijv. HelloFresh BV">
+
+  <label for="bedrijf_website_url">Website (optioneel)</label>
+  <input type="url" id="bedrijf_website_url" name="bedrijf_website_url" maxlength="255" placeholder="https://...">
 </div>
-{% endif %}
 
-  <!-- Aanbiedingen -->
-  <label for="aanbiedingen">Aanbiedingen</label>
-  <textarea id="aanbiedingen" name="aanbiedingen">{{ abonnement.aanbiedingen }}</textarea>
-
-  <!-- Frequentie Bezorging -->
-  <label for="frequentie_bezorging">Frequentie Bezorging</label>
-  <input type="text" id="frequentie_bezorging" name="frequentie_bezorging" value="{{ abonnement.frequentie_bezorging }}">
-
-  <!-- Prijs Vanaf / Tot -->
-  <div class="form-group">
-    <label for="prijs_vanaf">Prijs Vanaf (€)</label>
-    <input type="number" id="prijs_vanaf" name="prijs_vanaf" step="0.01" value="{{ abonnement.prijs_vanaf }}">
-  </div>
-  <div class="form-group">
-    <label for="prijs_tot">Prijs Tot (€)</label>
-    <input type="number" id="prijs_tot" name="prijs_tot" step="0.01" value="{{ abonnement.prijs_tot }}">
-  </div>
-
-  <!-- Wat is het abonnement? -->
-  <label for="wat_is_het_abonnement">Wat is het abonnement?</label>
-  <textarea id="wat_is_het_abonnement" name="wat_is_het_abonnement">{{ abonnement.wat_is_het_abonnement }}</textarea>
-
-  <!-- Waarom kiezen? -->
-  <label for="waarom_kiezen">Waarom kiezen voor dit abonnement?</label>
-  <textarea id="waarom_kiezen" name="waarom_kiezen">{{ abonnement.waarom_kiezen }}</textarea>
-
-  <!-- Hoe werkt het? -->
-  <label for="hoe_werkt_het">Hoe werkt het?</label>
-  <textarea id="hoe_werkt_het" name="hoe_werkt_het">{{ abonnement.hoe_werkt_het }}</textarea>
-
-  <!-- Past dit bij jou? -->
-  <label for="past_dit_bij_jou">Past dit abonnement bij jou?</label>
-  <textarea id="past_dit_bij_jou" name="past_dit_bij_jou">{{ abonnement.past_dit_bij_jou }}</textarea>
-
-  <!-- Annuleringsvoorwaarden -->
-  <label for="annuleringsvoorwaarden">Annuleringsvoorwaarden</label>
-  <textarea id="annuleringsvoorwaarden" name="annuleringsvoorwaarden"
-            placeholder="Hoe en wanneer kun je opzeggen?">{{ abonnement.annuleringsvoorwaarden }}</textarea>
-
-  <!-- Voordelen -->
-  <label for="voordelen">Voordelen</label>
-  <textarea id="voordelen" name="voordelen" placeholder="Wat zijn de belangrijkste pluspunten?">{{ abonnement.voordelen }}</textarea>
-
-  <!-- Beoordelingen -->
-  <div class="form-group">
-    <label for="beoordelingen">Beoordelingen (0–5)</label>
-    <input type="number" id="beoordelingen" name="beoordelingen" step="0.1" min="0" max="5" value="{{ abonnement.beoordelingen }}">
-  </div>
-
-  <!-- Doelgroepen -->
-  <label for="doelgroepen">Doelgroepen</label>
-  <select id="doelgroepen" name="doelgroepen" multiple>
-    {% for doelgroep in doelgroepen %}
-    <option value="{{ doelgroep.id }}" {% if doelgroep in abonnement.doelgroepen %}selected{% endif %}>
-      {{ doelgroep.naam }}
-    </option>
-    {% endfor %}
-  </select>
-
-  <!-- Tags -->
-  <label for="tags">Tags</label>
-  <select id="tags" name="tags" multiple>
-    {% for tag in tags %}
-    <option value="{{ tag.id }}" {% if tag in abonnement.tags %}selected{% endif %}>
-      {{ tag.naam }}
-    </option>
-    {% endfor %}
-  </select>
-
-  <!-- Opslaan -->
-  <button type="submit">Opslaan</button>
-</form>
+    <!-- Optioneel: deze velden alleen als je backend ze ook opslaat -->
+    <div class="two-col">
+      <div class="form-group">
+        <label for="contact_email">Contact e-mail</label>
+        <input type="email" id="contact_email" name="contact_email" value="{{ bedrijf.contact_email if bedrijf else '' }}">
+      </div>
+      <div class="form-group">
+        <label for="telefoon">Telefoonnummer</label>
+        <input type="tel" id="telefoon" name="telefoon" value="{{ bedrijf.telefoon if bedrijf else '' }}">
+      </div>
     </div>
-    <script src="{{ url_for('static', filename='js/edit_subscription.js') }}"></script> 
+
+    <div class="form-group">
+      <label for="kvk_nummer">KvK-nummer</label>
+      <input type="text" id="kvk_nummer" name="kvk_nummer" value="{{ bedrijf.kvk_nummer if bedrijf else '' }}">
+    </div>
+
+    <!-- ===================================================== -->
+    <!-- Abonnement (basis) -->
+    <!-- ===================================================== -->
+    <h2>Abonnementsinformatie</h2>
+
+    <label for="naam">Naam</label>
+    <input type="text" id="naam" name="naam" value="{{ abonnement.naam }}" required>
+
+    <label for="beschrijving">Beschrijving</label>
+    <textarea id="beschrijving" name="beschrijving">{{ abonnement.beschrijving or '' }}</textarea>
+
+    <label for="filter_optie">Filter Optie</label>
+    <input type="text" id="filter_optie" name="filter_optie" value="{{ abonnement.filter_optie }}" required>
+
+    <div class="two-col">
+      <div class="form-group">
+        <label for="prijs">Prijs (legacy tekst)</label>
+        <input type="text" id="prijs" name="prijs" value="{{ abonnement.prijs or '' }}">
+      </div>
+      <div class="form-group">
+        <label for="contractduur">Contractduur</label>
+        <input type="text" id="contractduur" name="contractduur" value="{{ abonnement.contractduur or '' }}">
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="form-group">
+        <label for="categorie_id">Categorie</label>
+        <select id="categorie_id" name="categorie_id" required>
+          <option value="">Selecteer een categorie</option>
+          {% for c in categorieen %}
+            <option value="{{ c.id }}" {% if abonnement.subcategorie and abonnement.subcategorie.categorie_id == c.id %}selected{% endif %}>
+              {{ c.naam }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="subcategorie_id">Subcategorie</label>
+        <select id="subcategorie_id" name="subcategorie_id" required data-selected="{{ abonnement.subcategorie_id }}">
+          <option value="">Selecteer een subcategorie</option>
+          {% for s in subcategorieen %}
+  <option
+    value="{{ s.id }}"
+    data-categorie="{{ s.categorie_id }}"
+    {% if abonnement.subcategorie_id == s.id %}selected{% endif %}
+  >
+    {{ s.naam }}
+  </option>
+{% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <label for="url">Website URL</label>
+    <input type="url" id="url" name="url" value="{{ abonnement.url or '' }}">
+
+    <label for="affiliate_url">Affiliate URL (optioneel)</label>
+    <input type="url" id="affiliate_url" name="affiliate_url" value="{{ abonnement.affiliate_url or '' }}">
+
+    <!-- ===================================================== -->
+    <!-- Media -->
+    <!-- ===================================================== -->
+    <h2>Media</h2>
+
+    <div class="form-group">
+      <label for="logo">Logo (max 200×200)</label>
+      <input type="file" id="logo" name="logo" accept="image/*">
+      {% if abonnement.logo %}
+        <div class="logo-preview">
+          <p>Huidig logo:</p>
+          <img src="{{ url_for('static', filename='uploads/' ~ abonnement.logo) }}"
+               width="200" height="200" loading="lazy"
+               alt="Logo van {{ abonnement.naam }}">
+        </div>
+      {% endif %}
+    </div>
+
+    <label for="youtube_url">YouTube-video (URL)</label>
+    <input type="url" id="youtube_url" name="youtube_url" value="{{ abonnement.youtube_url or '' }}">
+
+    <div class="form-group">
+      <label for="product_fotos">Nieuwe productfoto's toevoegen (max 10)</label>
+      <input type="file" id="product_fotos" name="product_fotos" multiple accept="image/*">
+      <small>Meerdere selecties mogelijk. Max 10 foto's.</small>
+    </div>
+
+    {% if abonnement.fotos %}
+      <div class="form-group">
+        <p>Huidige productfoto's:</p>
+        <div class="product-photos">
+          {% for foto in abonnement.fotos %}
+            <div>
+              <img src="{{ url_for('static', filename='uploads/' ~ foto.bestandsnaam) }}"
+                   alt="Foto van {{ abonnement.naam }}">
+              <label>
+                <input type="checkbox" name="delete_fotos" value="{{ foto.id }}">
+                Verwijderen
+              </label>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    <!-- ===================================================== -->
+    <!-- Content -->
+    <!-- ===================================================== -->
+    <h2>Content</h2>
+
+    <label for="aanbiedingen">Aanbiedingen</label>
+    <textarea id="aanbiedingen" name="aanbiedingen">{{ abonnement.aanbiedingen or '' }}</textarea>
+
+    <label for="frequentie_bezorging">Frequentie bezorging (legacy tekst)</label>
+    <input type="text" id="frequentie_bezorging" name="frequentie_bezorging" value="{{ abonnement.frequentie_bezorging or '' }}">
+
+    <div class="two-col">
+      <div class="form-group">
+        <label for="prijs_vanaf">Prijs vanaf (€) (legacy)</label>
+        <input type="number" id="prijs_vanaf" name="prijs_vanaf" step="0.01" value="{{ abonnement.prijs_vanaf or '' }}">
+      </div>
+      <div class="form-group">
+        <label for="prijs_tot">Prijs tot (€) (legacy)</label>
+        <input type="number" id="prijs_tot" name="prijs_tot" step="0.01" value="{{ abonnement.prijs_tot or '' }}">
+      </div>
+    </div>
+
+    <label for="wat_is_het_abonnement">Wat is het abonnement?</label>
+    <textarea id="wat_is_het_abonnement" name="wat_is_het_abonnement">{{ abonnement.wat_is_het_abonnement or '' }}</textarea>
+
+    <label for="waarom_kiezen">Waarom kiezen?</label>
+    <textarea id="waarom_kiezen" name="waarom_kiezen">{{ abonnement.waarom_kiezen or '' }}</textarea>
+
+    <label for="hoe_werkt_het">Hoe werkt het?</label>
+    <textarea id="hoe_werkt_het" name="hoe_werkt_het">{{ abonnement.hoe_werkt_het or '' }}</textarea>
+
+    <label for="past_dit_bij_jou">Past dit bij jou?</label>
+    <textarea id="past_dit_bij_jou" name="past_dit_bij_jou">{{ abonnement.past_dit_bij_jou or '' }}</textarea>
+
+    <label for="annuleringsvoorwaarden">Annuleringsvoorwaarden</label>
+    <textarea id="annuleringsvoorwaarden" name="annuleringsvoorwaarden">{{ abonnement.annuleringsvoorwaarden or '' }}</textarea>
+
+    <label for="voordelen">Voordelen</label>
+    <textarea id="voordelen" name="voordelen">{{ abonnement.voordelen or '' }}</textarea>
+
+    <!-- legacy -->
+    <label for="beoordelingen">Beoordelingen (legacy 0–5)</label>
+    <input type="number" id="beoordelingen" name="beoordelingen" step="0.1" min="0" max="5" value="{{ abonnement.beoordelingen or '' }}">
+
+    <!-- ===================================================== -->
+    <!-- Availability / levering / pauze -->
+    <!-- ===================================================== -->
+    <h2>Beschikbaarheid & levering</h2>
+
+    {# veilig ophalen uit relaties; pas aan naar jouw echte relaties #}
+    {% set selected_countries = selected_countries or [] %}
+    {% set selected_days = selected_days or [] %}
+    {% set selected_freq = selected_freq or [] %}
+
+    <label for="countries">Beschikbaar in landen</label>
+    <select id="countries" name="countries" multiple>
+      <option value="NL" {% if 'NL' in selected_countries %}selected{% endif %}>Nederland</option>
+      <option value="BE" {% if 'BE' in selected_countries %}selected{% endif %}>België</option>
+    </select>
+
+    <label>Leverdagen</label>
+    <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:6px;">
+      {% for d in range(1,8) %}
+        <label style="font-weight:normal;">
+          <input type="checkbox" name="delivery_days" value="{{ d }}" {% if d in selected_days %}checked{% endif %}>
+          {{ ['Ma','Di','Wo','Do','Vr','Za','Zo'][d-1] }}
+        </label>
+      {% endfor %}
+    </div>
+
+    <div class="two-col">
+      <div class="form-group">
+        <label for="cutoff_time">Cut-off tijd</label>
+        <input type="time" id="cutoff_time" name="cutoff_time" value="{{ abonnement.cutoff_time or '' }}">
+      </div>
+      <div class="form-group">
+        <label for="lead_time_days">Lead time (dagen)</label>
+        <input type="number" id="lead_time_days" name="lead_time_days" value="{{ abonnement.lead_time_days or '' }}">
+      </div>
+    </div>
+
+    <label style="font-weight:normal;">
+      <input type="checkbox" name="pause_possible" value="1" {% if abonnement.pause_possible %}checked{% endif %}>
+      Pauzeren mogelijk
+    </label>
+
+    <label for="pause_max_weeks">Max. pauze (weken)</label>
+    <input type="number" id="pause_max_weeks" name="pause_max_weeks" value="{{ abonnement.pause_max_weeks or '' }}">
+
+    <label for="delivery_frequency">Bezorgfrequentie (per week)</label>
+    <select id="delivery_frequency" name="delivery_frequency" multiple>
+      {% for n in [1,2,3,4,5,6,7] %}
+        <option value="{{ n }}" {% if n in selected_freq %}selected{% endif %}>{{ n }}x per week</option>
+      {% endfor %}
+    </select>
+
+    <!-- ===================================================== -->
+    <!-- Plan / prijs & voorwaarden (filterbaar) -->
+    <!-- ===================================================== -->
+    <h2>Plan / prijs & voorwaarden</h2>
+
+    {# plan moet vanuit backend worden meegegeven (plan = ...). Anders fallback #}
+    {% set plan_name = plan.plan_name if plan is defined and plan else 'Standaard' %}
+    {% set plan_price_eur = ((plan.price_cents or 0) / 100) if plan is defined and plan and plan.price_cents is not none else '' %}
+    {% set billing_period = plan.billing_period if plan is defined and plan else 'month' %}
+
+    <label for="plan_name">Plannaam</label>
+    <input type="text" id="plan_name" name="plan_name" value="{{ plan_name }}">
+
+    <label for="plan_price">Prijs (in euro) <span style="color:#c00">*</span></label>
+    <input type="number" step="0.01" id="plan_price" name="plan_price" required value="{{ plan_price_eur }}">
+
+    <label for="billing_period">Prijsperiode</label>
+    <select id="billing_period" name="billing_period" required>
+      <option value="month" {% if billing_period=='month' %}selected{% endif %}>Per maand</option>
+      <option value="year" {% if billing_period=='year' %}selected{% endif %}>Per jaar</option>
+      <option value="week" {% if billing_period=='week' %}selected{% endif %}>Per week</option>
+      <option value="portion" {% if billing_period=='portion' %}selected{% endif %}>Per portie</option>
+      <option value="one_time" {% if billing_period=='one_time' %}selected{% endif %}>Eenmalig</option>
+    </select>
+
+    <label style="font-weight:normal;">
+      <input type="checkbox" name="is_from_price" value="1"
+             {% if plan is defined and plan and plan.is_from_price %}checked{% endif %}>
+      Dit is een “vanaf prijs”
+    </label>
+
+    <label style="font-weight:normal;">
+      <input type="checkbox" name="vat_included" value="1"
+             {% if plan is defined and plan and plan.vat_included %}checked{% else %}checked{% endif %}>
+      BTW inbegrepen
+    </label>
+
+    <div class="two-col">
+      <div class="form-group">
+        <label for="setup_fee">Setup/activatiekosten (euro)</label>
+        <input type="number" step="0.01" id="setup_fee" name="setup_fee"
+               value="{{ ((plan.setup_fee_cents or 0)/100) if plan is defined and plan and plan.setup_fee_cents is not none else '' }}">
+      </div>
+      <div class="form-group">
+        <label for="delivery_fee">Bezorgkosten (euro)</label>
+        <input type="number" step="0.01" id="delivery_fee" name="delivery_fee"
+               value="{{ ((plan.delivery_fee_cents or 0)/100) if plan is defined and plan and plan.delivery_fee_cents is not none else '' }}">
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="form-group">
+        <label for="min_term_months">Minimum looptijd (maanden)</label>
+        <input type="number" id="min_term_months" name="min_term_months" value="{{ plan.min_term_months if plan is defined and plan else '' }}">
+      </div>
+      <div class="form-group">
+        <label for="cancellation_notice_days">Opzegtermijn (dagen)</label>
+        <input type="number" id="cancellation_notice_days" name="cancellation_notice_days" value="{{ plan.cancellation_notice_days if plan is defined and plan else '' }}">
+      </div>
+    </div>
+
+    <label for="trial_days">Proefperiode (dagen)</label>
+    <input type="number" id="trial_days" name="trial_days" value="{{ plan.trial_days if plan is defined and plan else '' }}">
+
+    <h3>Actie / promotie (optioneel)</h3>
+
+    <label for="promo_code">Promocode</label>
+    <input type="text" id="promo_code" name="promo_code" value="{{ plan.promo_code if plan is defined and plan else '' }}">
+
+    <label for="promo_end_date">Actie einddatum</label>
+    <input type="date" id="promo_end_date" name="promo_end_date"
+           value="{{ plan.promo_end_date.strftime('%Y-%m-%d') if plan is defined and plan and plan.promo_end_date else '' }}">
+
+    <label for="promo_terms">Actievoorwaarden</label>
+    <textarea id="promo_terms" name="promo_terms">{{ plan.promo_terms if plan is defined and plan else '' }}</textarea>
+
+    <label for="renewal_price">Prijs na actie (euro)</label>
+    <input type="number" step="0.01" id="renewal_price" name="renewal_price"
+           value="{{ ((plan.renewal_price_cents or 0)/100) if plan is defined and plan and plan.renewal_price_cents is not none else '' }}">
+
+    <label for="price_source_url">Bron URL</label>
+    <input type="url" id="price_source_url" name="price_source_url" value="{{ plan.price_source_url if plan is defined and plan else '' }}">
+
+    <!-- ===================================================== -->
+    <!-- SEO & publicatie -->
+    <!-- ===================================================== -->
+    <h2>SEO & publicatie</h2>
+
+    <label for="status">Status</label>
+    <select id="status" name="status">
+      <option value="draft" {% if abonnement.status=='draft' %}selected{% endif %}>Draft</option>
+      <option value="published" {% if abonnement.status=='published' %}selected{% endif %}>Published</option>
+      <option value="archived" {% if abonnement.status=='archived' %}selected{% endif %}>Archived</option>
+    </select>
+
+    <label for="seo_title">SEO title</label>
+    <input type="text" id="seo_title" name="seo_title" maxlength="255" value="{{ abonnement.seo_title or '' }}">
+
+    <label for="meta_description">Meta description</label>
+    <textarea id="meta_description" name="meta_description" maxlength="255">{{ abonnement.meta_description or '' }}</textarea>
+
+    <label for="canonical_url">Canonical URL</label>
+    <input type="url" id="canonical_url" name="canonical_url" value="{{ abonnement.canonical_url or '' }}">
+
+    <label for="og_image">OG image URL</label>
+    <input type="url" id="og_image" name="og_image" value="{{ abonnement.og_image or '' }}">
+
+    <label for="schema_type">Schema type</label>
+    <input type="text" id="schema_type" name="schema_type" value="{{ abonnement.schema_type or '' }}">
+
+    <label for="faq_json">FAQ JSON (optioneel)</label>
+    <textarea id="faq_json" name="faq_json">{{ abonnement.faq_json or '' }}</textarea>
+
+    <!-- ===================================================== -->
+    <!-- Tags & doelgroepen -->
+    <!-- ===================================================== -->
+    <h2>Tags & doelgroepen</h2>
+
+    <label for="doelgroepen">Doelgroepen</label>
+    <select id="doelgroepen" name="doelgroepen" multiple>
+      {% for dg in doelgroepen %}
+        <option value="{{ dg.id }}" {% if dg in abonnement.doelgroepen %}selected{% endif %}>{{ dg.naam }}</option>
+      {% endfor %}
+    </select>
+
+    <label for="tags">Tags</label>
+    <select id="tags" name="tags" multiple>
+      {% for t in tags %}
+        <option value="{{ t.id }}" {% if t in abonnement.tags %}selected{% endif %}>{{ t.naam }}</option>
+      {% endfor %}
+    </select>
+
+    <button type="submit">Opslaan</button>
+  </form>
+</div>
+
+<script src="{{ url_for('static', filename='js/edit_subscription.js') }}"></script>
 </body>
 </html>
