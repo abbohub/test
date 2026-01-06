@@ -62,13 +62,6 @@
     "@context": "https://schema.org",
     "@graph": [
       {
-        "@type": {{ schema_types | tojson }},
-        "name": {{ abonnement.naam | tojson }},
-        "description": {{ (abonnement.wat_is_het_abonnement or '') | striptags | truncate(280, True, '…') | tojson }},
-        "image": {{ og_img | tojson }},
-        "url": {{ canonical | tojson }}
-      },
-      {
         "@type": "BreadcrumbList",
         "itemListElement": [
           {"@type":"ListItem","position":1,"name":"Home","item":{{ url_for('index', _external=True) | tojson }}}
@@ -86,9 +79,11 @@
   </script>
 
   {# ---- Optioneel FAQ JSON-LD (alleen als je in route parsed naar faq_data) ---- #}
-  {% if faq_data %}
-    <script type="application/ld+json">{{ faq_data | tojson }}</script>
-  {% endif %}
+{% if faq_data %}
+  <script type="application/ld+json">
+    {{ faq_data | tojson }}
+  </script>
+{% endif %}
   <!-- Adsense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5139039913201131"
     crossorigin="anonymous"></script>
@@ -364,82 +359,78 @@
 
         <!-- JSON-LD blokken -->
         <div class="reviews">
-          {% if abonnement.reviews %}
           <script type="application/ld+json">
-          {
-            "@context": "https://schema.org",
-            "@type": ["Product", "SubscriptionService"],
-            "name": {{ abonnement.naam | tojson }},
-            "description": {{ (abonnement.wat_is_het_abonnement or '') | striptags | truncate(280, True, '…') | tojson }},
-            "image": {% if abonnement.fotos and abonnement.fotos[0] %}
-                       {{ url_for('static', filename='uploads/' ~ abonnement.fotos[0].bestandsnaam, _external=True) | tojson }}
-                     {% else %}
-                       {{ url_for('static', filename='logo.png', _external=True) | tojson }}
-                     {% endif %},
-            "url": {{ request.url | tojson }},
-            "brand": { "@type":"Brand", "name": {{ abonnement.naam | tojson }} },
+{
+  "@context": "https://schema.org",
+  "@type": ["Product", "SubscriptionService"],
+  "@id": {{ (canonical ~ "#product") | tojson }},
+  "name": {{ abonnement.naam | tojson }},
+  "description": {{ (abonnement.wat_is_het_abonnement or '') | striptags | truncate(280, True, '…') | tojson }},
+  "image": {{ og_img | tojson }},
+  "url": {{ canonical | tojson }},
 
-            "offers": {
-              "@type": "Offer",
-              "priceCurrency": "EUR",
-              "price": "{{ abonnement.prijs_vanaf }}",
-              "availability": "https://schema.org/InStock",
-              "url": {{ (abonnement.url or request.url) | tojson }},
-              "priceValidUntil": "2026-12-31"
-            },
+  "offers": {
+    "@type": "Offer",
+    "price": {{ (abonnement.prijs_vanaf or 0) | float }},
+    "priceCurrency": "EUR",
+    "availability": "https://schema.org/InStock",
+    "url": {{ (url_for('outbound', ab_id=abonnement.id, _external=True) ~ "?from=" ~ request.path ~ "&utm_source=abbohub&utm_medium=review&utm_campaign=" ~ abonnement.slug) | tojson }}
+  }
 
-            "aggregateRating": {
-              "@type": "AggregateRating",
-              "ratingValue": "{{ abonnement.get_average_score() }}",
-              "bestRating": "5",
-              "worstRating": "1",
-              "reviewCount": "{{ abonnement.reviews|length }}"
-            },
-
-            "review": [
-              {% for review in abonnement.reviews %}
-              {
-                "@type": "Review",
-                "author": { "@type": "Person", "name": {{ review.naam | tojson }} },
-                "datePublished": "{{ review.created_at.strftime('%Y-%m-%d') }}",
-                "reviewBody": {{ (review.comment or '') | tojson }},
-                "reviewRating": {
-                  "@type": "Rating",
-                  "ratingValue": "{{ review.score }}",
-                  "bestRating": "5",
-                  "worstRating": "1"
-                }
-              }{{ "," if not loop.last else "" }}
-              {% endfor %}
-            ]
-          }
-          </script>
-          {% endif %}
-
-          <script type="application/ld+json">
-          {
-            "@context":"https://schema.org",
-            "@type":"FAQPage",
-            "mainEntity":[
-              {
-                "@type":"Question",
-                "name":"Wat kost {{ abonnement.naam }} per maand?",
-                "acceptedAnswer":{"@type":"Answer","text":"Vanaf €{{ abonnement.prijs_vanaf }}{{ abonnement.prijs_tot and (' tot €' ~ abonnement.prijs_tot) or '' }} per maand, afhankelijk van pakket."}
-              },
-              {
-                "@type":"Question",
-                "name":"Kan ik {{ abonnement.naam }} pauzeren of opzeggen?",
-                "acceptedAnswer":{"@type":"Answer","text":"Ja, pauzeren en opzeggen kan. Contractduur: {{ abonnement.contractduur }}. Check de voorwaarden bij de aanbieder."}
-              },
-              {
-                "@type":"Question",
-                "name":"Voor wie is {{ abonnement.naam }} geschikt?",
-                "acceptedAnswer":{"@type":"Answer","text":"{{ abonnement.past_dit_bij_jou | striptags | truncate(280, True, '…') }}"}
-              }
-            ]
-          }
-          </script> 
-
+  {% set rc = abonnement.reviews|length %}
+  {% if rc > 0 %}
+  ,
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": {{ abonnement.get_average_score() }},
+    "bestRating": 5,
+    "worstRating": 1,
+    "reviewCount": {{ rc }}
+  },
+  "review": [
+    {% for r in abonnement.reviews %}
+    {
+      "@type": "Review",
+      "author": { "@type": "Person", "name": {{ r.naam | tojson }} },
+      "datePublished": {{ r.created_at.strftime('%Y-%m-%d') | tojson }},
+      "reviewBody": {{ (r.comment or '') | tojson }},
+      "reviewRating": {
+        "@type": "Rating",
+        "ratingValue": {{ r.score }},
+        "bestRating": 5,
+        "worstRating": 1
+      }
+    }{{ "," if not loop.last else "" }}
+    {% endfor %}
+  ]
+  {% endif %}
+}
+</script>
+{% if not faq_data %}
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"FAQPage",
+  "mainEntity":[
+    {
+      "@type":"Question",
+      "name":"Wat kost {{ abonnement.naam }} per maand?",
+      "acceptedAnswer":{"@type":"Answer","text":"Vanaf €{{ abonnement.prijs_vanaf }}{{ abonnement.prijs_tot and (' tot €' ~ abonnement.prijs_tot) or '' }} per maand, afhankelijk van pakket."}
+    },
+    {
+      "@type":"Question",
+      "name":"Kan ik {{ abonnement.naam }} pauzeren of opzeggen?",
+      "acceptedAnswer":{"@type":"Answer","text":"Ja, pauzeren en opzeggen kan. Contractduur: {{ abonnement.contractduur }}. Check de voorwaarden bij de aanbieder."}
+    },
+    {
+      "@type":"Question",
+      "name":"Voor wie is {{ abonnement.naam }} geschikt?",
+      "acceptedAnswer":{"@type":"Answer","text":"{{ abonnement.past_dit_bij_jou | striptags | truncate(280, True, '…') }}"}
+    }
+  ]
+}
+</script>
+{% endif %}
           <script type="application/ld+json">
           {
             "@context":"https://schema.org",
