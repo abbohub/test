@@ -275,3 +275,12 @@
 .floating-actions a.chat-toggle-btn:active {
   text-decoration: none;
 }
+.compare-toggle{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  font-weight:600;
+  margin-top:6px;
+}
+.vergelijk-checkbox{ width:16px; height:16px; }

@@ -27,7 +27,7 @@
   background-color: #fff;
   border: 1px solid #ddd;
   border-radius: 18px;
-  width: 250px;       /* vaste breedte */
+  width: 275px;       /* vaste breedte */
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -38,8 +38,8 @@
 
 /* Zorg dat het logo op gelijke grootte blijft */
 .abonnement-logo {
-  width: 200px;
-  height: 200px;
+  width: 175px;
+  height: 175px;
   object-fit: contain;
   margin-bottom: 5px;
   border-radius: 18px;
@@ -342,3 +342,14 @@ body.page-abonnement-reviews .sidebar-abo p {
   margin-left: 0 !important;
   padding-left: 0 !important;
 }
+
+.abbo-price{
+  display:flex;
+  align-items:baseline;
+  gap:6px;
+  margin: 6px 0 10px;
+}
+.abbo-price__value{ font-size:1.35rem; font-weight:800; }
+.abbo-price__period{ font-size:.95rem; color:#666; font-weight:600; }
+.abbo-price__from{ font-size:.8rem; color:#888; font-weight:600; }
+

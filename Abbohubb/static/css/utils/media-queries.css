@@ -202,8 +202,8 @@
   
   /* Zorg dat het logo binnen een vaste ruimte past */
   .abonnement-logo {
-    width: 200px;
-    height: 200px;
+    width: 175px;
+    height: 175px;
     object-fit: contain;
     margin-bottom: 5px;
   }

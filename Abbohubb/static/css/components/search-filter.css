@@ -13,7 +13,7 @@
 /* Linkeruitlijning voor H1 */
 .zoek-filter-container h1 {
   margin: 0;
-  font-size: 2rem;
+  font-size:1.7rem;
   color: #ebeeeb; /* Primaire kleur */
   text-align: left;
   justify-self: start; /* Links uitlijnen */
