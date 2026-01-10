@@ -494,6 +494,17 @@
                                   <span class="score-tekst">{{ score | round(1) }}</span>
                                 </div>
                               {% endif %}
+                              {# --- Cheapest plan tonen --- #}
+{% set plan = (abonnement.plannen | sort(attribute='price_cents') | first) %}
+{% if plan %}
+  {% set period_map = {'month':'mnd','year':'jr','week':'wk','portion':'portie','one_time':'eenmalig'} %}
+  <div class="abbo-price" aria-label="Prijs">
+    <span class="abbo-price__value">€{{ '%.2f' % (plan.price_cents / 100) }}</span>
+    <span class="abbo-price__period">/{{ period_map.get(plan.billing_period, plan.billing_period) }}</span>
+    {% if plan.is_from_price %}<span class="abbo-price__from">vanaf</span>{% endif %}
+  </div>
+{% endif %}
+
 
                               <div class="flip-container">
                                 <div class="flip-inner">
