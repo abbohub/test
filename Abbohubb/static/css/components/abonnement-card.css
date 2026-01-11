@@ -65,7 +65,7 @@
   flex: 1;
 }
 .abonnement-tags {
-  margin: 10px 0;
+  margin: 5px 0;
 }
 .vergelijk-checkbox {
   margin-right: 5px;
@@ -81,7 +81,7 @@
   padding: 5px 10px;
   font-size: 0.85rem;
   border-radius: 12px;
-  margin: 2px;
+  margin: 0.5px;
   text-align: center;
 }
 
@@ -149,7 +149,7 @@
 /* review knop */
 .btn-review {
   display: inline-block;
-  margin-top: 10px;
+  margin-top: 3px;
   padding: 8px 15px;
   background-color: #f4cd00; /* Aangepast */
   color: white;

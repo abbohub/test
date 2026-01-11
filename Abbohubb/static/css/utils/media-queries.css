@@ -354,3 +354,10 @@
     visibility: visible !important;
     opacity: 1 !important;
   }}
+@media (max-width: 900px) {
+  .abonnementen-container {
+    margin-left: 0;
+    margin-right: auto;
+    padding-left: 0px;   /* optioneel: nog iets meer naar links */
+  }
+}
