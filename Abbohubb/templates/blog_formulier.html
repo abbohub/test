@@ -35,6 +35,14 @@
   <form method="POST" enctype="multipart/form-data">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
+    <label for="auteur_naam">Auteur (weergavenaam)</label>
+<input
+  type="text"
+  id="auteur_naam"
+  name="auteur_naam"
+  value="{{ post.auteur_naam if post else '' }}"
+  placeholder="Bijv. AbboHub Redactie of Tim"
+/>
     <label for="titel">Titel</label>
     <input type="text" id="titel" name="titel" required value="{{ post.titel if post else '' }}">
 

@@ -61,7 +61,7 @@
       <h1>{{ post.titel }}</h1>
       <div class="blog-meta">
         Gepubliceerd op {{ post.datum.strftime('%d %b %Y').lstrip('0') }} door 
-        {{ post.auteur.username if post.auteur else "AbboHub" }}
+        {{ post.auteur_naam or (post.auteur.username if post.auteur else 'AbboHub') }}
       </div>
     </div>
 

@@ -194,7 +194,7 @@
           <div class="blog-tekst">
             <div class="meta">
               {{ post.datum.strftime('%d %b %Y').lstrip('0') }} ·
-              <span>{{ post.auteur.username if post.auteur else 'AbboHub' }}</span>
+              <span>{{ post.auteur_naam or (post.auteur.username if post.auteur else 'AbboHub') }}</span>
             </div>
             <h2><a class="blog-link" href="{{ url_for('blog_detail', slug=post.slug) }}">{{ post.titel }}</a></h2>
             <div class="badges" style="margin-top:6px;">
