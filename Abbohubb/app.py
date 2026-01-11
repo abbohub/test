@@ -600,6 +600,7 @@ class BlogPost(db.Model):
     datum = db.Column(db.DateTime, default=db.func.now())
     auteur_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     auteur = db.relationship('User', backref='blogposts')
+    auteur_naam = db.Column(db.String(120), nullable=True)  # <-- NIEUW (display name)
     
 
     # SEO fields
@@ -2003,6 +2004,7 @@ def blog_toevoegen_v2():
     abonnementen = Abonnement.query.order_by(Abonnement.naam.asc()).all()
 
     if request.method == 'POST':
+        auteur_naam = (request.form.get("auteur_naam") or "").strip() or None
         titel = request.form['titel'].strip()
         inhoud = request.form['inhoud']
         video_url = (request.form.get('video_url') or '').strip()
@@ -2034,7 +2036,8 @@ def blog_toevoegen_v2():
             inhoud=inhoud,
             afbeelding=bestandsnaam,
             video_url=video_url,
-            auteur=current_user
+            auteur=current_user,
+            auteur_naam=auteur_naam
         )
 
         # Meervoudige koppelingen (allemaal optioneel)
@@ -2084,6 +2087,7 @@ def blog_bewerken_v2(post_id):
     abonnementen = Abonnement.query.order_by(Abonnement.naam.asc()).all()
 
     if request.method == 'POST':
+        post.auteur_naam = (request.form.get("auteur_naam") or "").strip() or None
         post.titel = request.form['titel'].strip()
         post.inhoud = request.form['inhoud']
 
