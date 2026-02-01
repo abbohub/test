@@ -17,6 +17,29 @@
     .btn-primary:hover { background:#45a049; }
     .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
     .muted { font-size: .85rem; color:#777; }
+  /* Responsive: maak grids 1 kolom op mobiel */
+  @media (max-width: 900px) {
+    .row { grid-template-columns: 1fr !important; }
+    .grid-3 { grid-template-columns: 1fr !important; }
+    select[multiple] { min-height: 180px; }
+  }
+
+  /* Editor layout */
+  .editor-wrap { margin-top: 14px; }
+  .editor-label { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .counter { font-size: .85rem; color:#666; white-space:nowrap; }
+
+  /* Sticky actions (altijd “Publiceer” in beeld) */
+  .form-actions {
+    position: sticky;
+    bottom: 0;
+    background: #fff;
+    padding: 12px;
+    margin-top: 16px;
+    border-top: 1px solid #eee;
+  }
+  .btn-row { display:flex; gap:10px; }
+  .btn-row button { flex: 1; }
   </style>
 </head>
 <body>
@@ -46,9 +69,11 @@
     <label for="titel">Titel</label>
     <input type="text" id="titel" name="titel" required value="{{ post.titel if post else '' }}">
 
-    <label for="inhoud">Inhoud (HTML toegestaan)</label>
-    <textarea id="inhoud" name="inhoud">{{ post.inhoud if post else '' }}</textarea>
-    <p class="help">Tip: Gebruik <code>&lt;p&gt;</code>, <code>&lt;h2&gt;</code>, <code>&lt;ul&gt;</code> voor nette formatting.</p>
+    <label for="inhoud">Inhoud (Markdown)</label>
+<textarea id="inhoud" name="inhoud" placeholder="Schrijf hier je artikel...">{{ post.inhoud if post else '' }}</textarea>
+<p class="help">
+  Gebruik: <code>##</code> voor kop (H2), lege regel voor alinea, <code>-</code> voor bullets.
+</p>
 
     <div class="row">
       <div>
@@ -105,7 +130,59 @@
         </select>
         <p class="help muted">Wordt gefilterd door gekozen subcategorie(ën).</p>
       </div>
-    </div>
+    </div><hr style="margin: 22px 0;">
+<h3>Banners (optioneel)</h3>
+<p class="help muted">Kies per plek: standaard banner (afbeelding+link), HTML advertorial of rotator.</p>
+
+{% set slots = [
+  ("top", "Bovenaan (onder titel/meta)"),
+  ("mid", "Midden (na afbeelding / intro)"),
+  ("bottom", "Onderaan (na content)"),
+  ("sidebar_right", "Sidebar rechts (sticky op desktop)"),
+  ("sidebar_left", "Sidebar links (alleen zichtbaar op brede schermen)")
+] %}
+
+
+{% for key, label in slots %}
+  {% set b = (post.banners | selectattr("slot","equalto",key) | list | first) if post and post.banners else None %}
+
+  <div style="border:1px solid #eee; padding:14px; border-radius:8px; margin: 12px 0;">
+    <strong>{{ label }}</strong>
+
+    <label for="banner_{{ key }}_type">Type</label>
+    <select id="banner_{{ key }}_type" name="banner_{{ key }}_type">
+      <option value="none" {{ 'selected' if not b or b.banner_type=='none' else '' }}>Geen</option>
+      <option value="image" {{ 'selected' if b and b.banner_type=='image' else '' }}>Standaard banner (afbeelding + link)</option>
+      <option value="html" {{ 'selected' if b and b.banner_type=='html' else '' }}>HTML advertorial</option>
+      <option value="rotator" {{ 'selected' if b and b.banner_type=='rotator' else '' }}>Rotator (meerdere banners)</option>
+    </select>
+
+    <label>Standaard banner afbeelding</label>
+    <input type="file" name="banner_{{ key }}_image" accept="image/*">
+    {% if b and b.image_filename %}
+      <p class="help">Huidig: <strong>{{ b.image_filename }}</strong></p>
+      <img src="{{ url_for('static', filename='uploads/' ~ b.image_filename) }}" style="max-width:180px;border-radius:6px;">
+    {% endif %}
+
+    <label>Link-URL (bij standaard banner)</label>
+    <input type="url" name="banner_{{ key }}_link" value="{{ b.link_url if b else '' }}" placeholder="https://...">
+
+    <label>HTML advertorial (alleen als type=HTML)</label>
+    <textarea name="banner_{{ key }}_html" placeholder="Plak hier je HTML...">{{ b.html_code if b else '' }}</textarea>
+
+    <label>Rotator afbeeldingen (meerdere selecteren)</label>
+    <input type="file" name="banner_{{ key }}_rotator_images" accept="image/*" multiple>
+    <p class="help muted">
+      Rotator links: 1 URL per regel, in dezelfde volgorde als de uploads.
+    </p>
+    <textarea name="banner_{{ key }}_rotator_links" placeholder="https://adverteerder1.nl&#10;https://adverteerder2.nl"></textarea>
+
+    <label style="margin-top:10px;">
+      <input type="checkbox" name="banner_{{ key }}_active" value="1" {{ 'checked' if not b or b.is_active else '' }}>
+      Actief
+    </label>
+  </div>
+{% endfor %}
 
     <button type="submit" class="btn-primary">{{ 'Update' if post else 'Publiceer' }}</button>
   </form>
@@ -194,7 +271,155 @@
   // Init: één keer renderen zodat filtering direct klopt bij bewerken
   renderSubcats();
 })();
-</script>
 
+</script>
+<link rel="stylesheet" href="https://unpkg.com/easymde/dist/easymde.min.css">
+<script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
+
+<script>
+  // ---------------------------
+  // Helpers: vind category/subcategory in je formulier
+  // ---------------------------
+  const BASE_URL = "https://abbohub.nl";
+
+  function pickValue(selectors) {
+    for (const sel of selectors) {
+      const el = document.querySelector(sel);
+      if (el && typeof el.value === "string" && el.value.trim() !== "") {
+        return el.value.trim();
+      }
+    }
+    return "";
+  }
+
+  function getDefaultCtaUrl() {
+    // Probeer categorie + subcategorie te vinden (pas gerust selectors aan naar jouw echte ids/names)
+    const category = pickValue([
+      "#categorie_slug", "[name='categorie_slug']",
+      "#category_slug",  "[name='category_slug']",
+      "#categorie",      "[name='categorie']",
+      "#category",       "[name='category']"
+    ]);
+
+    const subcategory = pickValue([
+      "#subcategorie_slug", "[name='subcategorie_slug']",
+      "#subcategory_slug",  "[name='subcategory_slug']",
+      "#subcategorie",      "[name='subcategorie']",
+      "#subcategory",       "[name='subcategory']"
+    ]);
+
+    // Bouw jouw AbboHub categorie-URL structuur: /categorie/<category>/<subcategory>/
+    if (category && subcategory) return `${BASE_URL}/categorie/${category}/${subcategory}/`;
+    if (category) return `${BASE_URL}/categorie/${category}/`;
+
+    // Fallback
+    return `${BASE_URL}/`;
+  }
+
+  // ---------------------------
+  // EasyMDE init
+  // ---------------------------
+  const mde = new EasyMDE({
+    element: document.getElementById("inhoud"),
+    spellChecker: false,
+    status: ["lines", "words"],
+
+    toolbar: [
+      "bold", "italic", "strikethrough", "|",
+      "heading-2", "heading-3", "|",
+      "unordered-list", "ordered-list", "quote", "|",
+      "link", "table", "horizontal-rule", "|",
+      "preview", "side-by-side", "fullscreen", "|",
+
+      // ✅ CTA (Optie 2): URL op basis van categorie/subcategorie
+      {
+        name: "cta",
+        title: "CTA knop (automatisch op categorie)",
+        className: "fa fa-bullseye",
+        action: function(editor) {
+          const cm = editor.codemirror;
+          const url = getDefaultCtaUrl();
+          const text = "👉 Vergelijk abonnementen";
+
+          // NB: {: .btn-cta } werkt als je Python-Markdown 'attr_list' gebruikt
+          const snippet = `[${text}](${url}){: .btn-cta }\n`;
+          cm.replaceSelection(snippet);
+          cm.focus();
+        }
+      },
+
+      // ✅ FAQ blok (uitklapbaar)
+      {
+        name: "faq",
+        title: "FAQ blok (uitklapbaar)",
+        className: "fa fa-question-circle",
+        action: function(editor) {
+          const cm = editor.codemirror;
+          const snippet =
+`<details class="faq">
+  <summary>Vraag hier...</summary>
+
+  Antwoord hier...
+</details>
+
+`;
+          cm.replaceSelection(snippet);
+          cm.focus();
+        }
+      },
+
+      // ✅ Tabel snippet (voorgevulde vergelijking)
+      {
+        name: "table-snippet",
+        title: "Vergelijkingstabel invoegen",
+        className: "fa fa-table",
+        action: function(editor) {
+          const cm = editor.codemirror;
+          const snippet =
+`| Keuze | Beste voor | Pluspunten | Minpunten |
+|------|------------|------------|----------|
+| Abonnement / herhaalservice | Dagelijkse koffiedrinkers | Automatisch bezorgd, vaak voordeel | Soms bijsturen (pauze/aanpassen) |
+| Los kopen | Koopjesjagers & variatiezoekers | Maximale vrijheid | Meer werk, soms duurder |
+
+`;
+          cm.replaceSelection(snippet);
+          cm.focus();
+        }
+      },
+
+      // ✅ Artikel-template
+      {
+        name: "template",
+        title: "Plaats artikel-template",
+        className: "fa fa-file",
+        action: function(editor){
+          const cm = editor.codemirror;
+          const t =
+`## Intro
+Schrijf in 3-5 zinnen wat de lezer gaat leren.
+
+## Voor wie is dit interessant?
+- Punt 1
+- Punt 2
+
+## Prijs & voorwaarden
+Leg prijzen / contract / opzeggen uit.
+
+## Vergelijking
+(Voeg een tabel toe met de tabelknop)
+
+## FAQ
+(Voeg FAQ-blokken toe met de FAQ-knop)
+
+## Conclusie
+Kort advies + voor wie wel/niet.
+`;
+          cm.replaceSelection(t);
+          cm.focus();
+        }
+      }
+    ]
+  });
+</script>
 </body>
 </html>

@@ -18,24 +18,248 @@
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5139039913201131" crossorigin="anonymous"></script>
 
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-  <style>
-    .blog-container { max-width: 600px; margin: 30px auto; padding: 0 15px; background-color: white;}
-    .blog-header h1 { font-size: 2rem; margin-bottom: 0.2rem; }
+    <style>
+    body { background: #fff; }
+
+    /* Layout wrapper */
+    .blog-shell{
+      max-width: 1800px;
+      margin: 30px auto;
+      padding: 0 15px;
+    }
+
+    /* Grid + center content always */
+    .blog-layout{
+      display: grid;
+      gap: 22px;
+      align-items: start;
+    }
+    .blog-layout.layout-both{
+      grid-template-columns: 300px minmax(0, 720px) 300px;
+      justify-content: center;
+    }
+    .blog-layout.layout-left{
+      grid-template-columns: 300px minmax(0, 720px);
+      justify-content: center;
+    }
+    .blog-layout.layout-right{
+      grid-template-columns: minmax(0, 720px) 300px;
+      justify-content: center;
+    }
+    .blog-layout.layout-none{
+      grid-template-columns: minmax(0, 720px);
+      justify-content: center;
+    }
+
+    /* Sidebars */
+    .sidebar{ background:#fff; }
+    .sidebar-inner{ position: sticky; top: 16px; }
+
+    /* Tablet: hide left sidebar */
+    @media (max-width: 1100px){
+      .sidebar-left{ display: none !important; }
+      .blog-layout.layout-both{ grid-template-columns: minmax(0, 720px) 300px; }
+      .blog-layout.layout-left{ grid-template-columns: minmax(0, 720px); }
+    }
+
+    /* Mobile: hide both sidebars */
+    @media (max-width: 900px){
+      .sidebar-left, .sidebar-right{ display: none !important; }
+      .blog-layout{
+        grid-template-columns: minmax(0, 720px) !important;
+        justify-content: center;
+      }
+      .sidebar-inner{ position: static; }
+    }
+
+    /* Article styles */
+    .blog-container{ background:#fff; }
+    .blog-header h1 { font-size: 2rem; margin: 0 0 .2rem 0; }
     .blog-meta { color: #777; font-size: 0.9rem; margin-bottom: 1rem; }
-    .blog-image { max-width: 90%; height: auto; margin: 15px 0; border-radius: 8px; }
-    .blog-video iframe { width: 100%; height: 400px; border: none; margin: 20px 0; border-radius: 8px; }
-    .blog-inhoud { font-size: 1rem; line-height: 1.6; color: #333; }
-    body {background: white;
+    .blog-image { max-width: 90%; height: auto; margin: 15px 0; border-radius: 10px; }
+    .blog-video iframe { width: 90%; height: 380px; border: none; margin: 20px 0; border-radius: 10px; }
+    .blog-inhoud { font-size: 1.03rem; line-height: 1.75; color: #333; }
+
+    /* Banners */
+    .blog-banner { margin: 16px 0; }
+    .blog-banner a { display:block; }
+    .blog-banner img { width: 100%; height: auto; display: block; border-radius: 12px; }
+
+    /* Sidebar cards */
+    .sidebar-card{
+      border: 1px solid #eee;
+      border-radius: 12px;
+      padding: 14px;
+      margin: 0 10px 14px 10px;
+      box-shadow: 0 6px 18px rgba(0,0,0,.04);
+    }
+    .sidebar-title{
+      font-weight: 800;
+      font-size: 0.95rem;
+      margin: 0 0 10px 0;
+      color: #222;
+    }
+    .blog-inhoud img{
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 14px 0;
+  border-radius: 10px;
 }
+
+.blog-video iframe{
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  height: auto;
+}
+
+/* Featured image: altijd netjes schalen + centreren */
+.blog-image{
+  width: 100%;
+  max-width: 720px;
+  height: auto;
+  display: block;
+  margin: 16px auto;
+  border-radius: 10px;
+}
+
+/* Video: echte responsive embed (geen vaste px hoogte) */
+.blog-video{
+  position: relative;
+  width: 100%;
+  max-width: 720px;
+  margin: 20px auto;
+  padding-top: 56.25%; /* 16:9 */
+  border-radius: 10px;
+  overflow: hidden;
+}
+.blog-video iframe{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+/* Voorkom horizontaal scrollen door lange woorden/URLs */
+.blog-inhoud{
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Alle afbeeldingen in de content: altijd responsive */
+.blog-inhoud img{
+  max-width: 100% !important;
+  height: auto !important;
+  display: block;
+  margin: 14px auto;
+  border-radius: 10px;
+}
+
+/* Iframes in content (als je ooit embeds plakt in de tekst) */
+.blog-inhoud iframe{
+  max-width: 100% !important;
+}
+
+/* Tabellen zijn vaak de oorzaak van “mobile niet fijn” */
+.blog-inhoud table{
+  width: 100%;
+  border-collapse: collapse;
+}
+.blog-inhoud table,
+.blog-inhoud thead,
+.blog-inhoud tbody,
+.blog-inhoud th,
+.blog-inhoud td,
+.blog-inhoud tr{
+  max-width: 100%;
+}
+.blog-inhoud .table-wrap,
+.blog-inhoud table{
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Code/pre kan ook overflow veroorzaken */
+.blog-inhoud pre{
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px;
+  border-radius: 10px;
+}
+.blog-inhoud code{
+  word-break: break-word;
+}
+/* blog formulier*/
+/* CTA knop */
+.blog-inhoud a.btn-cta{
+  background-color: #f4cd00; /* Aangepast */
+  color: #fff;
+  padding: 0.7rem 1.2rem; /* Consistente padding met zoekknop */
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 1rem;
+  padding: 10px 12px;
+  transition: background-color 0.3s, transform 0.2s;
+  text-align: center; /* Knoptekst gecentreerd */
+  justify-self: end; /* Rechts uitlijnen */
+}
+@media (max-width: 600px){
+  .blog-inhoud a.btn-cta{
+    width: 100%;
+  }
+}
+
+/* FAQ (details/summary) */
+.blog-inhoud details.faq{
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 10px 12px;
+  margin: 12px 0;
+  background: #fff;
+}
+.blog-inhoud details.faq > summary{
+  cursor: pointer;
+  font-weight: 700;
+}
+.blog-inhoud details.faq[open]{
+  border-color: #ddd;
+}
+
+/* Tabellen responsive maken */
+.blog-inhoud table{
+  width: 100%;
+  border-collapse: collapse;
+  margin: 14px 0;
+  font-size: 0.95rem;
+}
+.blog-inhoud th, .blog-inhoud td{
+  border: 1px solid #eee;
+  padding: 10px;
+  vertical-align: top;
+}
+.blog-inhoud th{
+  text-align: left;
+}
+
+/* Op mobiel: horizontaal scrollbaar i.p.v. kapot breken */
+.blog-inhoud .table-wrap{
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+
+    
   </style>
 </head>
+
 <body>
+  <!-- GTM: noscript in BODY -->
+  <noscript>
+    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NRGH8P6W" height="0" width="0" style="display:none;visibility:hidden"></iframe>
+  </noscript>
 
-  <!-- GTM: noscript in BODY, zo hoog mogelijk -->
-  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NRGH8P6W"
-    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-
-  <!-- HELE header hoort binnen body -->
   <header>
     <nav class="main-nav" aria-label="Hoofdnavigatie">
       <ul>
@@ -56,27 +280,158 @@
     </div>
   </header>
 
-  <div class="blog-container">
-    <div class="blog-header">
-      <h1>{{ post.titel }}</h1>
-      <div class="blog-meta">
-        Gepubliceerd op {{ post.datum.strftime('%d %b %Y').lstrip('0') }} door 
-        {{ post.auteur_naam or (post.auteur.username if post.auteur else 'AbboHub') }}
+  {# ----------------------------------------------------------
+     Banner macros
+     Slots: top, mid, bottom, sidebar_right, sidebar_left
+     ---------------------------------------------------------- #}
+  {% macro render_banner(slot) %}
+    {% set b = (post.banners | selectattr("slot","equalto",slot) | list | first) if post and post.banners else None %}
+    {% if b and b.is_active and b.banner_type != 'none' %}
+      <div class="blog-banner blog-banner-{{ slot }}">
+        {% if b.banner_type == 'image' and b.image_filename %}
+          <a href="{{ b.link_url or '#' }}" rel="nofollow sponsored noopener" target="_blank">
+            <img src="{{ url_for('static', filename='uploads/' ~ b.image_filename) }}" alt="Advertentie" loading="lazy">
+          </a>
+        {% elif b.banner_type == 'html' and b.html_code %}
+          <div class="blog-banner-html">
+            {{ b.html_code | safe }}
+          </div>
+        {% elif b.banner_type == 'rotator' and b.rotator_json %}
+          <div class="blog-banner-rotator" data-items='{{ b.rotator_json | tojson }}'></div>
+        {% endif %}
       </div>
-    </div>
+    {% endif %}
+  {% endmacro %}
 
-    {% if post.afbeelding %}
-      <img class="blog-image" src="{{ url_for('static', filename='uploads/' ~ post.afbeelding) }}" alt="{{ post.titel }}">
+  {% macro has_banner(slot) %}
+    {% set b = (post.banners | selectattr("slot","equalto",slot) | list | first) if post and post.banners else None %}
+    {% if not b or not b.is_active or b.banner_type == 'none' %}
+      {{ false }}
+    {% elif b.banner_type == 'image' and b.image_filename %}
+      {{ true }}
+    {% elif b.banner_type == 'html' and b.html_code %}
+      {{ true }}
+    {% elif b.banner_type == 'rotator' and b.rotator_json %}
+      {{ true }}
+    {% else %}
+      {{ false }}
     {% endif %}
-    <div class="blog-inhoud">
-      {{ post.inhoud | safe }}
+  {% endmacro %}
+
+{% set show_left = (has_banner('sidebar_left')|trim|lower == 'true') %}
+{% set show_right = (has_banner('sidebar_right')|trim|lower == 'true') %}
+
+  {% set layout_class = 'layout-both' %}
+  {% if show_left and not show_right %}
+    {% set layout_class = 'layout-left' %}
+  {% elif show_right and not show_left %}
+    {% set layout_class = 'layout-right' %}
+  {% elif not show_left and not show_right %}
+    {% set layout_class = 'layout-none' %}
+  {% endif %}
+
+  <div class="blog-shell">
+    <div class="blog-layout {{ layout_class }}">
+
+      {% if show_left %}
+      <!-- LEFT SIDEBAR -->
+      <aside class="sidebar sidebar-left" aria-label="Linker sidebar">
+        <div class="sidebar-inner">
+          <div class="sidebar-card">
+            <div class="sidebar-title">Advertentie</div>
+            {{ render_banner('sidebar_left') }}
+          </div>
+        </div>
+      </aside>
+      {% endif %}
+
+      <!-- MAIN CONTENT -->
+      <main class="blog-container">
+                  {{ render_banner('top') }}
+
+          {% if post.afbeelding %}
+            <img class="blog-image" src="{{ url_for('static', filename='uploads/' ~ post.afbeelding) }}" alt="{{ post.titel }}">
+          {% endif %}
+        <article aria-label="Blogartikel">
+          <div class="blog-header">
+            <div class="blog-meta">
+              Gepubliceerd op {{ post.datum.strftime('%d %b %Y').lstrip('0') }} door
+              {{ post.auteur_naam or (post.auteur.username if post.auteur else 'AbboHub') }}
+            </div>
+          </div>
+
+          <!-- Banner TOP -->
+          {# Mid banner injected in article body via your insert_mid_banner filter #}
+          {% set mid_html = render_banner('mid') %}
+          <div class="blog-inhoud">
+            {{ post.inhoud | insert_mid_banner(mid_html) }}
+          </div>
+
+          <!-- Banner BOTTOM -->
+          {{ render_banner('bottom') }}
+
+          {% if post.video_url %}
+            <div class="blog-video">
+              <iframe src="{{ post.video_url }}" allowfullscreen loading="lazy"></iframe>
+            </div>
+          {% endif %}
+        </article>
+      </main>
+
+      {% if show_right %}
+      <!-- RIGHT SIDEBAR -->
+      <aside class="sidebar sidebar-right" aria-label="Rechter sidebar">
+        <div class="sidebar-inner">
+          <div class="sidebar-card">
+            <div class="sidebar-title">Advertentie</div>
+            {{ render_banner('sidebar_right') }}
+          </div>
+
+          {% if related_posts %}
+          <div class="sidebar-card">
+            <div class="sidebar-title">Meer lezen</div>
+            <ul style="margin:0; padding-left:18px;">
+              {% for p in related_posts %}
+                <li style="margin:8px 0;">
+                  <a href="{{ url_for('blog_detail', slug=p.slug) }}">{{ p.titel }}</a>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% endif %}
+        </div>
+      </aside>
+      {% endif %}
+
     </div>
-    {% if post.video_url %}
-      <div class="blog-video">
-        <iframe src="{{ post.video_url }}" allowfullscreen></iframe>
-      </div>
-    {% endif %}
   </div>
 
+  <!-- Rotator JS -->
+  <script>
+    (function(){
+      const nodes = document.querySelectorAll('.blog-banner-rotator');
+      nodes.forEach(node => {
+        let items;
+        try { items = JSON.parse(node.dataset.items || "[]"); } catch(e){ items = []; }
+        if (!items.length) return;
+
+        let i = 0;
+        function render(){
+          const it = items[i % items.length] || {};
+          const img = it.image ? ("/static/uploads/" + it.image) : "";
+          const href = it.url || "#";
+          if (!img) return;
+
+          node.innerHTML =
+            `<a href="${href}" target="_blank" rel="nofollow sponsored noopener">
+               <img src="${img}" alt="Advertentie" loading="lazy" style="width:100%;height:auto;border-radius:12px;">
+             </a>`;
+          i++;
+        }
+        render();
+        setInterval(render, 6000);
+      });
+    })();
+  </script>
 </body>
 </html>
