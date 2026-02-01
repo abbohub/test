@@ -3,6 +3,8 @@ import os
 import uuid
 import csv
 import sqlite3
+import re
+from markupsafe import Markup
 import hashlib
 from io import StringIO
 from datetime import datetime, timedelta, timezone
@@ -12,6 +14,7 @@ import json
 
 from dotenv import load_dotenv
 from PIL import Image
+from httpx import post
 from slugify import slugify
 
 from flask import (
@@ -601,7 +604,6 @@ class BlogPost(db.Model):
     auteur_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     auteur = db.relationship('User', backref='blogposts')
     auteur_naam = db.Column(db.String(120), nullable=True)  # <-- NIEUW (display name)
-    
 
     # SEO fields
     seo_title = db.Column(db.String(255), nullable=True)
@@ -618,6 +620,43 @@ class BlogPost(db.Model):
     categorieen = db.relationship('Categorie', secondary=blogpost_categorie, lazy='dynamic')
     subcategorieen = db.relationship('Subcategorie', secondary=blogpost_subcategorie, lazy='dynamic')
     abonnementen = db.relationship('Abonnement', secondary=blogpost_abonnement, lazy='dynamic')
+
+class BlogBanner(db.Model):
+    __tablename__ = "blog_banner"
+
+    id = db.Column(db.Integer, primary_key=True)
+    blogpost_id = db.Column(db.Integer, db.ForeignKey('blog_post.id'), nullable=False, index=True)
+
+    # vaste posities/slots in je blog_detail
+    slot = db.Column(db.String(30), nullable=False)  # top, mid, bottom
+
+    # banner types
+    banner_type = db.Column(db.String(20), nullable=False, default="none")
+    # none | image | html | rotator
+
+    # image banner
+    image_filename = db.Column(db.String(255), nullable=True)
+    link_url = db.Column(db.String(500), nullable=True)
+
+    # html advertorial
+    html_code = db.Column(db.Text, nullable=True)
+
+    # rotator: JSON string met items [{image:"x.jpg", url:"https://..."}, ...]
+    rotator_json = db.Column(db.Text, nullable=True)
+
+    is_active = db.Column(db.Boolean, nullable=False, default=True)
+
+    __table_args__ = (
+        UniqueConstraint('blogpost_id', 'slot', name='uq_blogbanner_post_slot'),
+    )
+
+# relatie op BlogPost
+BlogPost.banners = db.relationship(
+    "BlogBanner",
+    backref="post",
+    lazy=True,
+    cascade="all, delete-orphan"
+)
 
 class Review(db.Model):
     __tablename__ = 'review'
@@ -741,6 +780,36 @@ class LoginForm(FlaskForm):
 # ---------------------------------------
 # Hulpfuncties
 # ---------------------------------------
+import markdown
+import bleach
+
+ALLOWED_TAGS = {
+  "p","br","hr",
+  "h2","h3","h4",
+  "ul","ol","li",
+  "strong","em","blockquote",
+  "a","img",
+  "details","summary",
+  "table","thead","tbody","tr","th","td"
+}
+
+ALLOWED_ATTRS = {
+  "a": ["href", "title", "rel", "target", "class"],
+  "img": ["src", "alt", "title", "loading"],
+  "details": ["class"],
+}
+
+def markdown_to_safe_html(text: str) -> str:
+    text = text or ""
+    html = markdown.markdown(text, extensions=["extra", "sane_lists", "attr_list"])
+    clean = bleach.clean(
+        html,
+        tags=ALLOWED_TAGS,
+        attributes=ALLOWED_ATTRS,
+        protocols=["http","https","mailto"],
+        strip=True
+    )
+    return clean
 def allowed_file(filename):
     """Controleer of het bestand de juiste extensie heeft."""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -2006,7 +2075,8 @@ def blog_toevoegen_v2():
     if request.method == 'POST':
         auteur_naam = (request.form.get("auteur_naam") or "").strip() or None
         titel = request.form['titel'].strip()
-        inhoud = request.form['inhoud']
+        inhoud_raw = request.form['inhoud']
+        inhoud = markdown_to_safe_html(inhoud_raw)
         video_url = (request.form.get('video_url') or '').strip()
         afbeelding = request.files.get('afbeelding')
 
@@ -2053,7 +2123,11 @@ def blog_toevoegen_v2():
             nieuw.abonnementen = Abonnement.query.filter(Abonnement.id.in_(abo_ids)).all()
 
         db.session.add(nieuw)
+        db.session.flush()
+        for slot in ("top", "mid", "bottom", "sidebar_right", "sidebar_left"):
+            upsert_blog_banner(nieuw, slot)
         db.session.commit()
+        
         flash("Blogbericht geplaatst!", "success")
         return redirect(url_for('admin_blog_overzicht'))
 
@@ -2089,7 +2163,9 @@ def blog_bewerken_v2(post_id):
     if request.method == 'POST':
         post.auteur_naam = (request.form.get("auteur_naam") or "").strip() or None
         post.titel = request.form['titel'].strip()
-        post.inhoud = request.form['inhoud']
+        inhoud_raw = request.form['inhoud']
+        post.inhoud = markdown_to_safe_html(inhoud_raw)
+
 
         video_url = (request.form.get('video_url') or '').strip()
         if video_url and 'watch?v=' in video_url:
@@ -2112,6 +2188,8 @@ def blog_bewerken_v2(post_id):
         post.subcategorieen = Subcategorie.query.filter(Subcategorie.id.in_(sub_ids)).all() if sub_ids else []
         post.abonnementen = Abonnement.query.filter(Abonnement.id.in_(abo_ids)).all() if abo_ids else []
 
+        for slot in ("top", "mid", "bottom", "sidebar_right", "sidebar_left"):
+            upsert_blog_banner(post, slot)
         db.session.commit()
         flash("Blog bijgewerkt", "success")
         return redirect(url_for('admin_blog_overzicht'))
@@ -2236,6 +2314,80 @@ def slug_leaf(s: str) -> str:
 
 def _normalize_combo(slugs):
     return "-vs-".join(sorted(s.strip() for s in slugs if s and s.strip()))
+def save_upload_image(file_storage) -> str | None:
+    if not file_storage or not file_storage.filename:
+        return None
+    if not allowed_file(file_storage.filename):
+        return None
+    filename = secure_filename(file_storage.filename)
+    path = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+    file_storage.save(path)
+    return filename
+
+def upsert_blog_banner(post: BlogPost, slot: str) -> None:
+    btype = (request.form.get(f"banner_{slot}_type") or "none").strip()
+    active = request.form.get(f"banner_{slot}_active") == "1"
+
+    banner = BlogBanner.query.filter_by(blogpost_id=post.id, slot=slot).first()
+    if not banner:
+        banner = BlogBanner(blogpost_id=post.id, slot=slot)
+        db.session.add(banner)
+
+    banner.banner_type = btype
+    banner.is_active = active
+
+    # reset velden (voorkomt “oude data blijft hangen”)
+    banner.image_filename = None
+    banner.link_url = None
+    banner.html_code = None
+    banner.rotator_json = None
+
+    if btype == "image":
+        img = request.files.get(f"banner_{slot}_image")
+        fn = save_upload_image(img) or banner.image_filename
+        banner.image_filename = fn
+        banner.link_url = (request.form.get(f"banner_{slot}_link") or "").strip() or None
+
+    elif btype == "html":
+        banner.html_code = (request.form.get(f"banner_{slot}_html") or "").strip() or None
+
+    elif btype == "rotator":
+        imgs = request.files.getlist(f"banner_{slot}_rotator_images")
+        links_text = (request.form.get(f"banner_{slot}_rotator_links") or "").strip()
+        links = [l.strip() for l in links_text.splitlines() if l.strip()]
+
+        items = []
+        for idx, img in enumerate(imgs):
+            fn = save_upload_image(img)
+            if not fn:
+                continue
+            url = links[idx] if idx < len(links) else None
+            items.append({"image": fn, "url": url})
+
+        banner.rotator_json = json.dumps(items) if items else None
+
+    else:
+        # none
+        pass
+
+@app.template_filter("insert_mid_banner")
+def insert_mid_banner(html: str, insert_html) -> Markup:
+    html = html or ""
+    insert_html = insert_html or ""
+
+    # Zorg dat banner-html niet als tekst wordt behandeld
+    insert_html = Markup(insert_html)
+
+    matches = list(re.finditer(r"</p\s*>", html, flags=re.IGNORECASE))
+
+    if len(matches) >= 2:
+        mid_index = matches[len(matches) // 2].end()
+        out = html[:mid_index] + str(insert_html) + html[mid_index:]
+        return Markup(out)
+
+    return Markup(html + str(insert_html))
+
+
 
 
 @app.route('/vergelijk')
